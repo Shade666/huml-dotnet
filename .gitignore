@@ -52,6 +52,7 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
 # GSD planning docs (local only)
 .planning/
 !.planning/config.json
