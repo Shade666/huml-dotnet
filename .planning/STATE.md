@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-21T00:21:33.911Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-21T00:29:31.568Z"
 progress:
   total_phases: 8
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -50,6 +50,7 @@ Plan: 2 of 2
 | Phase 01 P02 | 1 | 2 tasks | 2 files |
 | Phase 02 P01 | 4 | 3 tasks | 12 files |
 | Phase 03 P01 | 3 | 1 tasks | 6 files |
+| Phase 03 P02 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,7 @@ Recent decisions affecting current work:
 - [Phase 03]: HumlParseException placed in Huml.Net.Exceptions (not Huml.Net.Lexer.Exceptions) — thrown by both Lexer and Parser
 - [Phase 03]: Token.Value is string? (nullable) so structural tokens carry null, eliminating heap allocations on the hot path
 - [Phase 03]: No binary serialisation constructor on HumlParseException — SYSLIB0051 pattern from Phase 02 maintained
+- [Phase 03]: Test namespace collision resolved with using alias: Huml.Net.Tests.Lexer namespace shadows Lexer class — using HumlLexer = Huml.Net.Lexer.Lexer in test files
 
 ### Pending Todos
 
@@ -85,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T00:21:33.909Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-21T00:29:31.565Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

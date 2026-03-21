@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Project Scaffold and CI Foundations** - Compilable multi-TFM solution with green CI, SourceLink, and shared fixture submodules (completed 2026-03-20)
 - [x] **Phase 2: Versioning Foundation** - Full versioning type hierarchy with support-window enforcement (completed 2026-03-20)
-- [ ] **Phase 3: Lexer and Token Types** - Single-pass `ReadOnlySpan<char>` lexer producing typed tokens with version-gated rules
+- [x] **Phase 3: Lexer and Token Types** - Single-pass `ReadOnlySpan<char>` lexer producing typed tokens with version-gated rules (completed 2026-03-21)
 - [ ] **Phase 4: AST Node Hierarchy** - Immutable `abstract record` AST tree consumed by parser and future linting package
 - [ ] **Phase 5: Parser** - Recursive-descent parser covering full HUML v0.1 and v0.2 grammar with depth-limit guard
 - [ ] **Phase 6: Attributes and Serializer/Deserializer** - Reflection-based serialization and deserialization with attribute-driven mapping
@@ -60,10 +60,10 @@ Plans:
   2. Lexing a document with a tab character for indentation produces a `HumlParseException` whose `Line` and `Column` int properties identify the exact position
   3. Lexing input that is valid HUML v0.1 but invalid in v0.2 (or vice versa) produces different results depending on `HumlOptions.SpecVersion`, confirming version-gated rules are active
   4. No `ToString()` or heap allocation occurs on the hot lexer path for a document containing only ASCII characters (confirmed by allocation unit test or benchmark)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 03-01-PLAN.md — Token contracts: TokenType enum, Token struct, HumlParseException (LEX-01, LEX-02, LEX-06)
-- [ ] 03-02-PLAN.md — Lexer implementation with full tokenisation, version gating, and allocation tests (LEX-03, LEX-04, LEX-05)
+- [x] 03-02-PLAN.md — Lexer implementation with full tokenisation, version gating, and allocation tests (LEX-03, LEX-04, LEX-05)
 
 ### Phase 4: AST Node Hierarchy
 **Goal**: The immutable `abstract record` AST node hierarchy is defined and structurally verified, so the parser phase can focus purely on grammar without debating node shapes
@@ -139,7 +139,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 |-------|----------------|--------|-----------|
 | 1. Project Scaffold and CI Foundations | 2/2 | Complete   | 2026-03-20 |
 | 2. Versioning Foundation | 1/1 | Complete   | 2026-03-20 |
-| 3. Lexer and Token Types | 1/2 | In Progress|  |
+| 3. Lexer and Token Types | 2/2 | Complete   | 2026-03-21 |
 | 4. AST Node Hierarchy | 0/? | Not started | - |
 | 5. Parser | 0/? | Not started | - |
 | 6. Attributes and Serializer/Deserializer | 0/? | Not started | - |
