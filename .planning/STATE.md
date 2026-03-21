@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-21T01:03:52.371Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-21T08:16:22.652Z"
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 04 — ast-node-hierarchy
+**Current focus:** Phase 05 — parser
 
 ## Current Position
 
-Phase: 5
-Plan: Not started
+Phase: 05 (parser) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Plan: Not started
 | Phase 03 P01 | 3 | 1 tasks | 6 files |
 | Phase 03 P02 | 5 | 2 tasks | 3 files |
 | Phase 04 P01 | 2 | 2 tasks | 8 files |
+| Phase 05 P01 | 7 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 04]: ScalarKind.Integer (not Int) — asymmetry from TokenType.Int for semantic clarity at AST level
 - [Phase 04]: HumlScalar.Value is object? — accommodates heterogeneous runtime values (string, long, double, bool, null) without generics
 - [Phase 04]: IReadOnlyList<HumlNode> for collection nodes — readonly contract with reference equality for structural equality tests
+- [Phase 05]: Inline vs multiline vector dispatch uses VectorIndicator.Line vs next-token.Line comparison — Key tokens always have SpaceBefore=false so SpaceBefore is unreliable
+- [Phase 05]: Lexer no longer throws for digit at line-start; root integer/float scalars valid; integer-as-key error is parser-level
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T01:01:24.098Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-21T08:16:22.650Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None

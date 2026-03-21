@@ -86,9 +86,9 @@ Plans:
   2. Parsing the same document with `SpecVersion` set to `V0_1` produces a different result where v0.2-only constructs are rejected, confirming version-gated grammar branches are active
   3. Parsing a pathologically nested document (depth > 512) throws `HumlParseException` with a clear recursion-depth message rather than crashing the process
   4. All parser unit tests pass across all TFMs in CI
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 05-01-PLAN.md — TDD recursive-descent parser with full grammar coverage and version gating (PARS-03, PARS-04)
+- [x] 05-01-PLAN.md — TDD recursive-descent parser with full grammar coverage and version gating (PARS-03, PARS-04)
 - [ ] 05-02-PLAN.md — Configurable recursion depth limit with depth-guard tests (PARS-05)
 
 ### Phase 6: Attributes and Serializer/Deserializer
@@ -142,7 +142,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Versioning Foundation | 1/1 | Complete   | 2026-03-20 |
 | 3. Lexer and Token Types | 2/2 | Complete   | 2026-03-21 |
 | 4. AST Node Hierarchy | 1/1 | Complete   | 2026-03-21 |
-| 5. Parser | 0/2 | Not started | - |
+| 5. Parser | 1/2 | In Progress|  |
 | 6. Attributes and Serializer/Deserializer | 0/? | Not started | - |
 | 7. Static Entry Point and Shared Fixture Compliance | 0/? | Not started | - |
 | 8. NuGet Release Preparation | 0/? | Not started | - |
