@@ -34,8 +34,8 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Parser & AST
 
-- [ ] **PARS-01**: AST node hierarchy is an immutable `abstract record` tree: `HumlNode` base → `HumlDocument` (entries list), `HumlMapping` (key + value), `HumlSequence` (items list), `HumlScalar` (`object? Value`, `ScalarKind Kind`)
-- [ ] **PARS-02**: `ScalarKind` enum covers `String`, `Integer`, `Float`, `Bool`, `Null`, `NaN`, `Inf`
+- [x] **PARS-01**: AST node hierarchy is an immutable `abstract record` tree: `HumlNode` base → `HumlDocument` (entries list), `HumlMapping` (key + value), `HumlSequence` (items list), `HumlScalar` (`object? Value`, `ScalarKind Kind`)
+- [x] **PARS-02**: `ScalarKind` enum covers `String`, `Integer`, `Float`, `Bool`, `Null`, `NaN`, `Inf`
 - [ ] **PARS-03**: Recursive-descent `Parser` consumes the token stream produced by the `Lexer` and produces a `HumlDocument` AST; covers full HUML v0.2 grammar (scalar values, vector blocks, inline lists, nested mappings, indent-driven nesting)
 - [ ] **PARS-04**: Parser applies version-gated rule branches (v0.1 vs v0.2 grammar differences) inside a single class using the same `>=` convention as the Lexer
 - [ ] **PARS-05**: Parser enforces a configurable recursion depth limit (default 512); reaching the limit throws `HumlParseException` with a clear message rather than an unrecoverable `StackOverflowException`
@@ -125,8 +125,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LEX-04 | Phase 3 | Complete |
 | LEX-05 | Phase 3 | Complete |
 | LEX-06 | Phase 3 | Complete |
-| PARS-01 | Phase 4 | Pending |
-| PARS-02 | Phase 4 | Pending |
+| PARS-01 | Phase 4 | Complete |
+| PARS-02 | Phase 4 | Complete |
 | PARS-03 | Phase 5 | Pending |
 | PARS-04 | Phase 5 | Pending |
 | PARS-05 | Phase 5 | Pending |

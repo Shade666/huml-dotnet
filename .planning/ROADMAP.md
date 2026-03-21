@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Project Scaffold and CI Foundations** - Compilable multi-TFM solution with green CI, SourceLink, and shared fixture submodules (completed 2026-03-20)
 - [x] **Phase 2: Versioning Foundation** - Full versioning type hierarchy with support-window enforcement (completed 2026-03-20)
 - [x] **Phase 3: Lexer and Token Types** - Single-pass `ReadOnlySpan<char>` lexer producing typed tokens with version-gated rules (completed 2026-03-21)
-- [ ] **Phase 4: AST Node Hierarchy** - Immutable `abstract record` AST tree consumed by parser and future linting package
+- [x] **Phase 4: AST Node Hierarchy** - Immutable `abstract record` AST tree consumed by parser and future linting package (completed 2026-03-21)
 - [ ] **Phase 5: Parser** - Recursive-descent parser covering full HUML v0.1 and v0.2 grammar with depth-limit guard
 - [ ] **Phase 6: Attributes and Serializer/Deserializer** - Reflection-based serialization and deserialization with attribute-driven mapping
 - [ ] **Phase 7: Static Entry Point and Shared Fixture Compliance** - `Huml` static class wiring all pipeline stages; CI passes all fixture suite tests
@@ -73,9 +73,9 @@ Plans:
   1. `HumlDocument`, `HumlMapping`, `HumlSequence`, and `HumlScalar` nodes can be constructed directly in tests and compared with `==` (structural equality via `record`)
   2. All seven `ScalarKind` values (`String`, `Integer`, `Float`, `Bool`, `Null`, `NaN`, `Inf`) are representable as `HumlScalar` nodes with the correct `Kind` and `Value` combination
   3. The node hierarchy compiles with `TreatWarningsAsErrors` across all TFMs without any nullability warnings on `Value` properties
-**Plans:** 0/1 plans complete
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 02-01-PLAN.md — Versioning types, exceptions, and unit tests (VER-01, VER-02, VER-03, VER-04, VER-05)
+- [x] 04-01-PLAN.md — AST node hierarchy and ScalarKind enum with TDD tests (PARS-01, PARS-02)
 
 ### Phase 5: Parser
 **Goal**: A recursive-descent parser consumes the token stream and produces a `HumlDocument` AST covering the full HUML v0.1 and v0.2 grammar, with an explicit depth limit preventing unrecoverable `StackOverflowException`
@@ -140,7 +140,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 1. Project Scaffold and CI Foundations | 2/2 | Complete   | 2026-03-20 |
 | 2. Versioning Foundation | 1/1 | Complete   | 2026-03-20 |
 | 3. Lexer and Token Types | 2/2 | Complete   | 2026-03-21 |
-| 4. AST Node Hierarchy | 0/? | Not started | - |
+| 4. AST Node Hierarchy | 1/1 | Complete   | 2026-03-21 |
 | 5. Parser | 0/? | Not started | - |
 | 6. Attributes and Serializer/Deserializer | 0/? | Not started | - |
 | 7. Static Entry Point and Shared Fixture Compliance | 0/? | Not started | - |

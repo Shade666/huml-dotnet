@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-21T00:29:31.568Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-21T01:01:24.101Z"
 progress:
   total_phases: 8
-  completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 4
+  total_plans: 6
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 03 — lexer-and-token-types
+**Current focus:** Phase 04 — ast-node-hierarchy
 
 ## Current Position
 
-Phase: 03 (lexer-and-token-types) — EXECUTING
-Plan: 2 of 2
+Phase: 04 (ast-node-hierarchy) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: 2 of 2
 | Phase 02 P01 | 4 | 3 tasks | 12 files |
 | Phase 03 P01 | 3 | 1 tasks | 6 files |
 | Phase 03 P02 | 5 | 2 tasks | 3 files |
+| Phase 04 P01 | 2 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Recent decisions affecting current work:
 - [Phase 03]: Token.Value is string? (nullable) so structural tokens carry null, eliminating heap allocations on the hot path
 - [Phase 03]: No binary serialisation constructor on HumlParseException — SYSLIB0051 pattern from Phase 02 maintained
 - [Phase 03]: Test namespace collision resolved with using alias: Huml.Net.Tests.Lexer namespace shadows Lexer class — using HumlLexer = Huml.Net.Lexer.Lexer in test files
+- [Phase 04]: ScalarKind.Integer (not Int) — asymmetry from TokenType.Int for semantic clarity at AST level
+- [Phase 04]: HumlScalar.Value is object? — accommodates heterogeneous runtime values (string, long, double, bool, null) without generics
+- [Phase 04]: IReadOnlyList<HumlNode> for collection nodes — readonly contract with reference equality for structural equality tests
 
 ### Pending Todos
 
@@ -87,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T00:29:31.565Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-21T01:01:24.098Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
