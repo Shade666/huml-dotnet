@@ -12,7 +12,16 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Version-aware options: `HumlOptions`, `VersionSource`, `UnknownVersionBehaviour` — Validated in Phase 02: Versioning Foundation
+- [x] Structured error types: `HumlUnsupportedVersionException` with spec-policy-wired message — Validated in Phase 02: Versioning Foundation
+- [x] `[Obsolete]` deprecation process for spec versions exiting support window — Validated in Phase 02: Versioning Foundation
+- [x] Structured error types with line/column: `HumlParseException` — Validated in Phase 03: Lexer and Token Types
+- [x] Single-pass lexer with full HUML v0.2 tokenisation rules, version-gated backtick multiline — Validated in Phase 03: Lexer and Token Types
+- [x] Immutable AST node hierarchy: `HumlNode` (abstract), `HumlDocument`, `HumlMapping`, `HumlSequence`, `HumlScalar` sealed records — Validated in Phase 04: AST Node Hierarchy
+- [x] `ScalarKind` enum with 7 members (String, Integer, Float, Bool, Null, NaN, Inf) — Validated in Phase 04: AST Node Hierarchy
+- [x] Recursive-descent parser producing `HumlDocument` AST from Lexer token stream (PARS-03) — Validated in Phase 05: Parser
+- [x] `HumlOptions` propagated to Lexer; `>=` version gate convention established in parser (PARS-04) — Validated in Phase 05: Parser
+- [x] Configurable recursion depth guard (`MaxRecursionDepth = 512`) preventing `StackOverflowException` (PARS-05) — Validated in Phase 05: Parser
 
 ### Active
 
@@ -21,9 +30,6 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 - [ ] `System.Text.Json`-style static API: `Huml.Serialize<T>()` / `Huml.Deserialize<T>()`
 - [ ] `Deserialize<T>(ReadOnlySpan<char> huml, ...)` overload for zero-allocation parsing paths
 - [ ] Attribute-driven property mapping: `[HumlProperty]`, `[HumlIgnore]`
-- [ ] Version-aware options: `HumlOptions`, `VersionSource`, `UnknownVersionBehaviour`
-- [ ] Structured error types with line/column: `HumlParseException`, `HumlSerializeException`, `HumlUnsupportedVersionException`
-- [ ] `[Obsolete]` deprecation process for spec versions exiting support window
 - [ ] Zero external runtime dependencies
 - [ ] NuGet-publishable: correct metadata, XML doc comments, README
 - [ ] CI pipeline: GitHub Actions running both fixture suite versions
@@ -65,4 +71,4 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 | `SpecVersionPolicy` constants as code | `HumlUnsupportedVersionException` references them directly — error message stays accurate without manual updates | — Pending |
 
 ---
-*Last updated: 2026-03-20 after initialization*
+*Last updated: 2026-03-21 — Phase 05 complete: recursive-descent parser implemented (HumlParser), version gating wired, recursion depth guard added (MaxRecursionDepth = 512). 140 tests green across net8.0/net9.0/net10.0.*
