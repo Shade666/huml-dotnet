@@ -116,9 +116,9 @@ Plans:
   2. `Huml.Deserialize<T>(ReadOnlySpan<char> huml, ...)` is the single implementation overload; `Huml.Deserialize<T>(string huml, ...)` is a thin `AsSpan()` wrapper -- confirmed by inspecting that only one overload reaches the Lexer
   3. All xUnit Theory rows from both `huml-lang/tests@v0.1` and `huml-lang/tests@v0.2` fixture suites pass in CI with a non-zero Theory count logged for each version
   4. All public members of `Huml`, `HumlOptions`, `HumlSpecVersion`, `HumlParseException`, `HumlSerializeException`, `HumlDeserializeException`, `HumlUnsupportedVersionException`, `[HumlProperty]`, and `[HumlIgnore]` carry XML doc comments visible in IntelliSense
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 07-01-PLAN.md — Huml static facade with XML doc comments and unit tests (API-01, API-02, API-03)
+- [x] 07-01-PLAN.md — Huml static facade with XML doc comments and unit tests (API-01, API-02, API-03)
 - [ ] 07-02-PLAN.md — SharedSuiteTests Theory runner for v0.1 and v0.2 fixture compliance (API-06, API-03)
 
 ### Phase 8: NuGet Release Preparation
@@ -147,5 +147,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. AST Node Hierarchy | 1/1 | Complete   | 2026-03-21 |
 | 5. Parser | 2/2 | Complete   | 2026-03-21 |
 | 6. Attributes and Serializer/Deserializer | 3/3 | Complete   | 2026-03-21 |
-| 7. Static Entry Point and Shared Fixture Compliance | 0/2 | Not started | - |
+| 7. Static Entry Point and Shared Fixture Compliance | 1/2 | In Progress|  |
 | 8. NuGet Release Preparation | 0/? | Not started | - |

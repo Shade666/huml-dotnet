@@ -45,16 +45,16 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **SER-01**: `[HumlProperty(string name)]` attribute renames a property in HUML input/output; `OmitIfDefault = true` skips default/zero/empty values
 - [x] **SER-02**: `[HumlIgnore]` attribute excludes a property from both serialisation and deserialisation
 - [x] **SER-03**: `HumlSerializer` produces HUML text from a .NET object via reflection with a per-type `PropertyDescriptor[]` cache (`ConcurrentDictionary<Type, ...>`); properties are emitted in source declaration order (not alphabetically)
-- [ ] **SER-04**: `HumlSerializer` emits the `%HUML vX.Y.Z` version header matching `HumlOptions.SpecVersion`, two-space indentation, and correct type literals for all supported .NET types (`string` → `"value"`, `bool` → `true`/`false`, integers → bare, `double.NaN` → `nan`, infinities → `+inf`/`-inf`, `null` → `null`, collections → `::` vector block or `[]` empty, POCOs → `::` mapping block or `{}` empty)
+- [x] **SER-04**: `HumlSerializer` emits the `%HUML vX.Y.Z` version header matching `HumlOptions.SpecVersion`, two-space indentation, and correct type literals for all supported .NET types (`string` → `"value"`, `bool` → `true`/`false`, integers → bare, `double.NaN` → `nan`, infinities → `+inf`/`-inf`, `null` → `null`, collections → `::` vector block or `[]` empty, POCOs → `::` mapping block or `{}` empty)
 - [x] **SER-05**: `HumlDeserializer` maps a `HumlDocument` AST to a target .NET type via reflection with caching; detects `init`-only properties via `IsExternalInit` custom modifier on the setter and throws `HumlDeserializeException` with a clear message rather than silently skipping or failing at runtime
 - [x] **SER-06**: `HumlDeserializer` handles `List<T>`, `T[]`, `IEnumerable<T>` sequences, `Dictionary<string, T>` mappings, nested POCOs, and all primitive scalar types; throws `HumlDeserializeException` on type coercion failures with the offending key/line in the message
 - [x] **SER-07**: `HumlSerializeException` is thrown on unrecoverable serialisation errors; `HumlDeserializeException` is thrown on mapping or type-coercion failures
 
 ### Public API & Packaging
 
-- [ ] **API-01**: `Huml` static class exposes `Serialize<T>(T, HumlOptions?)`, `Serialize(object?, Type, HumlOptions?)`, `Deserialize<T>(string, HumlOptions?)`, `Deserialize<T>(ReadOnlySpan<char>, HumlOptions?)`, `Deserialize(string, Type, HumlOptions?)`, and `Parse(string, HumlOptions?)`
-- [ ] **API-02**: The `Deserialize<T>(string, ...)` overload is a thin wrapper calling `AsSpan()` on the string argument; `ReadOnlySpan<char>` is the single implementation overload to avoid C# 14 overload resolution ambiguity (CS0121)
-- [ ] **API-03**: All public members carry XML doc comments (`<summary>`, `<param>`, `<returns>`, `<exception>`) shipped in the NuGet package for IntelliSense
+- [x] **API-01**: `Huml` static class exposes `Serialize<T>(T, HumlOptions?)`, `Serialize(object?, Type, HumlOptions?)`, `Deserialize<T>(string, HumlOptions?)`, `Deserialize<T>(ReadOnlySpan<char>, HumlOptions?)`, `Deserialize(string, Type, HumlOptions?)`, and `Parse(string, HumlOptions?)`
+- [x] **API-02**: The `Deserialize<T>(string, ...)` overload is a thin wrapper calling `AsSpan()` on the string argument; `ReadOnlySpan<char>` is the single implementation overload to avoid C# 14 overload resolution ambiguity (CS0121)
+- [x] **API-03**: All public members carry XML doc comments (`<summary>`, `<param>`, `<returns>`, `<exception>`) shipped in the NuGet package for IntelliSense
 - [ ] **API-04**: NuGet package metadata is complete: `PackageId`, `Authors`, `Description`, `PackageLicenseExpression` (MIT), `PackageTags`, `PackageProjectUrl`, `RepositoryUrl`, `PackageReadmeFile` (embedded README), `GenerateDocumentationFile`
 - [ ] **API-05**: NuGet package uses MinVer for git-tag-driven `PackageVersion` derivation and ships with embedded PDB (SourceLink with `PublishRepositoryUrl=true`, `EmbedUntrackedSources=true`, `ContinuousIntegrationBuild` gated on `$(GITHUB_ACTIONS)=='true'`)
 - [ ] **API-06**: `SharedSuiteTests.cs` Theory runner consumes `huml-lang/tests` v0.1 and v0.2 fixture suites; both fixture suites pass in CI with a verified non-zero Theory count for each version
@@ -133,13 +133,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SER-01 | Phase 6 | Complete |
 | SER-02 | Phase 6 | Complete |
 | SER-03 | Phase 6 | Complete |
-| SER-04 | Phase 6 | Pending |
+| SER-04 | Phase 6 | Complete |
 | SER-05 | Phase 6 | Complete |
 | SER-06 | Phase 6 | Complete |
 | SER-07 | Phase 6 | Complete |
-| API-01 | Phase 7 | Pending |
-| API-02 | Phase 7 | Pending |
-| API-03 | Phase 7 | Pending |
+| API-01 | Phase 7 | Complete |
+| API-02 | Phase 7 | Complete |
+| API-03 | Phase 7 | Complete |
 | API-04 | Phase 8 | Pending |
 | API-05 | Phase 8 | Pending |
 | API-06 | Phase 7 | Pending |

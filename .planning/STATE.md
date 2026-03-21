@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-21T10:40:18.165Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-21T12:32:14.943Z"
 progress:
   total_phases: 8
   completed_phases: 6
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 13
+  completed_plans: 12
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 06 — attributes-and-serializer-deserializer
+**Current focus:** Phase 07 — static-entry-point-and-shared-fixture-compliance
 
 ## Current Position
 
-Phase: 7
-Plan: Not started
+Phase: 07 (static-entry-point-and-shared-fixture-compliance) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Plan: Not started
 | Phase 06 P01 | 3 | 2 tasks | 10 files |
 | Phase 06 P03 | 4 | 2 tasks | 2 files |
 | Phase 06 P02 | 39min | 2 tasks | 2 files |
+| Phase 07 P01 | 6 | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,9 @@ Recent decisions affecting current work:
 - [Phase 06]: HumlDeserializer.Deserialize(string, Type) untyped overload is internal — Phase 7 public API delegates to it
 - [Phase 06]: HumlSerializer is internal static class; SerializeValue dispatches by exact CLR type for correct priority (string before IEnumerable)
 - [Phase 06]: EmitEntry materializes IEnumerable into List<object?> once to check empty without double-enumerating
+- [Phase 07]: Huml.Deserialize<T>(string) calls Deserialize<T>(huml.AsSpan(), options) — never HumlDeserializer directly — preserving single lexer path (API-02)
+- [Phase 07]: Parser consumes optional %HUML version token at document start; pre-existing gap exposed by facade round-trip tests
+- [Phase 07]: cref attributes referencing Huml.Net.Exceptions.* use T: prefix to avoid ambiguity with new Huml class name
 
 ### Pending Todos
 
@@ -107,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T10:05:11.621Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-03-21T12:32:14.941Z
+Stopped at: Completed 07-01-PLAN.md
 Resume file: None
