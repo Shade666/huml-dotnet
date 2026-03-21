@@ -37,6 +37,10 @@ internal sealed class Lexer
             if (_col == 0)
             {
                 _lineIndent = MeasureIndent();
+                // MeasureIndent may advance _pos to or past EOF (e.g., trailing blank lines).
+                // Re-check bounds before accessing _source[_pos].
+                if (_pos >= _source.Length)
+                    continue;
             }
 
             char ch = _source[_pos];
@@ -68,9 +72,22 @@ internal sealed class Lexer
 
             if (ch == ',')
             {
+                // Space before comma is not allowed (space would have been consumed already,
+                // leaving the previous character as a space at _pos - 1).
+                if (_pos > 0 && _source[_pos - 1] == ' ')
+                    ThrowParseError("No space is allowed before a comma.");
+
                 var t = MakeStructuralToken(TokenType.Comma, false);
                 _pos++;
                 _col++;
+
+                // Exactly one space must follow the comma.
+                if (_pos >= _source.Length || _source[_pos] != ' ')
+                    ThrowParseError("A single space must follow a comma.");
+                // Ensure it is exactly one space (not two or more spaces before next token).
+                if (_pos + 1 < _source.Length && _source[_pos + 1] == ' ')
+                    ThrowParseError("Only one space is allowed after a comma.");
+
                 return t;
             }
 
@@ -383,14 +400,17 @@ internal sealed class Lexer
         _pos += 3; // skip opening """
         _col += 3;
 
-        // After opening """, must be end of line (optional whitespace check)
-        CheckTrailingWhitespaceBeforeNewline();
+        // After opening """, the very next character must be a newline (no inline content).
+        if (_pos >= _source.Length || _source[_pos] != '\n')
+            ThrowParseError("Triple-quote multiline delimiter '\"\"\"' must be followed by a newline.");
+
         AdvancePastNewline();
 
         // Collect content lines
         var sb = new StringBuilder();
         bool first = true;
         int stripIndent = keyIndent + 2;
+        bool closed = false;
 
         while (_pos < _source.Length)
         {
@@ -418,6 +438,7 @@ internal sealed class Lexer
                 // Nothing else allowed on closing line
                 CheckTrailingWhitespaceBeforeNewline();
                 AdvancePastNewline();
+                closed = true;
                 break;
             }
 
@@ -455,6 +476,9 @@ internal sealed class Lexer
             }
         }
 
+        if (!closed)
+            ThrowParseError("Unclosed triple-quote multiline string: expected closing '\"\"\"'.");
+
         return new Token
         {
             Type = TokenType.String,
@@ -487,14 +511,19 @@ internal sealed class Lexer
 
         int tokenCol = _col;
         int tokenLine = _line;
+        int keyIndent = _lineIndent;
         _pos += 3; // skip opening ```
         _col += 3;
 
-        CheckTrailingWhitespaceBeforeNewline();
+        // The opening ``` must be immediately followed by a newline (no content on same line).
+        if (_pos >= _source.Length || _source[_pos] != '\n')
+            ThrowParseError("Backtick multiline delimiter '```' must be followed by a newline.");
+
         AdvancePastNewline();
 
         var sb = new StringBuilder();
         bool first = true;
+        bool closed = false;
 
         while (_pos < _source.Length)
         {
@@ -509,10 +538,14 @@ internal sealed class Lexer
 
             if (_pos + 2 < _source.Length && _source[_pos] == '`' && _source[_pos + 1] == '`' && _source[_pos + 2] == '`')
             {
+                // Closing ``` — verify indent matches keyIndent
+                if (spaces != keyIndent)
+                    ThrowParseError($"Closing '```' must be at indentation {keyIndent}, found {spaces}.");
                 _pos += 3;
                 _col += 3;
                 CheckTrailingWhitespaceBeforeNewline();
                 AdvancePastNewline();
+                closed = true;
                 break;
             }
 
@@ -540,6 +573,9 @@ internal sealed class Lexer
             }
         }
 
+        if (!closed)
+            ThrowParseError("Unclosed backtick multiline string: expected closing '```'.");
+
         return new Token
         {
             Type = TokenType.String,
@@ -547,7 +583,7 @@ internal sealed class Lexer
             Line = tokenLine,
             Column = tokenCol,
             Indent = _lineIndent,
-            SpaceBefore = tokenCol > _lineIndent,
+            SpaceBefore = tokenCol > keyIndent,
         };
     }
 
@@ -586,6 +622,30 @@ internal sealed class Lexer
         {
             _pos++; // skip second ':'
             _col++;
+
+            // After '::', the next char must be exactly one space (for inline content) or
+            // end-of-line / EOF (for multiline block). Multiple spaces are not allowed.
+            if (_pos < _source.Length && _source[_pos] == ' ')
+            {
+                // Peek ahead: if the character after the single space is also a space, that is
+                // "multiple spaces after '::'", which is invalid.
+                if (_pos + 1 < _source.Length && _source[_pos + 1] == ' ')
+                    ThrowParseError("Only one space is allowed after '::'.");
+            }
+        }
+        else
+        {
+            // Scalar indicator ':' must be followed by exactly one space before the value,
+            // OR by end-of-line / EOF (which the parser will reject as empty value anyway).
+            // Reject the case where ':' is directly followed by a non-space, non-newline, non-EOF
+            // character (e.g., key:"value" or key:#comment is caught here).
+            if (_pos < _source.Length && _source[_pos] != ' ' && _source[_pos] != '\n')
+                ThrowParseError("Expected a space after ':'.");
+
+            // Also reject multiple spaces after ':' (e.g., key:  value).
+            if (_pos < _source.Length && _source[_pos] == ' '
+                && _pos + 1 < _source.Length && _source[_pos + 1] == ' ')
+                ThrowParseError("Only one space is allowed after ':'.");
         }
 
         return new Token
@@ -857,6 +917,22 @@ internal sealed class Lexer
 
     private static bool IsFloatSpan(ReadOnlySpan<char> span)
     {
+        // Hex, octal, and binary literals are always integers regardless of their digits.
+        // A span like "0xCAFEBABE" contains 'E' but is not a float.
+        // Skip over an optional sign prefix when checking for a base prefix.
+        int start = 0;
+        if (span.Length > 0 && (span[0] == '+' || span[0] == '-'))
+            start = 1;
+
+        if (span.Length - start >= 2 && span[start] == '0')
+        {
+            char prefix = span[start + 1];
+            if (prefix == 'x' || prefix == 'X' ||
+                prefix == 'o' || prefix == 'O' ||
+                prefix == 'b' || prefix == 'B')
+                return false; // hex / octal / binary — always integer
+        }
+
         foreach (char c in span)
         {
             if (c == '.' || c == 'e' || c == 'E')

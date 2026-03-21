@@ -344,6 +344,9 @@ internal sealed class HumlParser
         var entries = new List<HumlMapping>();
         var seenKeys = new HashSet<string>(StringComparer.Ordinal);
 
+        // When >= 0, we are in inline-dict mode: all entries must be on this line.
+        int inlineLine = -1;
+
         while (true)
         {
             var tk = Peek();
@@ -352,6 +355,13 @@ internal sealed class HumlParser
             if (tk.Indent != indent)
                 throw new HumlParseException(
                     $"Bad indentation: expected {indent} spaces, got {tk.Indent}.",
+                    tk.Line, tk.Column);
+
+            // In inline mode, entries after the first comma must all be on the same line.
+            if (inlineLine >= 0 && tk.Line != inlineLine)
+                throw new HumlParseException(
+                    "Inline dict entries must all be on the same line. " +
+                    "Do not mix inline and multiline dict syntax.",
                     tk.Line, tk.Column);
 
             // Expect Key or QuotedKey
@@ -378,8 +388,29 @@ internal sealed class HumlParser
                     throw new HumlParseException(
                         $"Expected a scalar value after ':', got '{valueToken.Type}'.",
                         valueToken.Line, valueToken.Column);
+                int entryLine = keyToken.Line;
                 var scalar = TokenToScalar(Advance());
                 entries.Add(new HumlMapping(key, scalar));
+
+                // Support root inline dict notation: key: val1, key2: val2, ...
+                // When a comma follows, enter inline mode and record the line number.
+                if (Peek().Type == TokenType.Comma)
+                {
+                    Advance(); // consume comma
+                    inlineLine = entryLine; // all subsequent keys must be on this line
+                    continue;
+                }
+
+                // No comma — if a key or value follows on the same line, missing comma.
+                var followTk = Peek();
+                if (followTk.Type != TokenType.Eof && followTk.Line == entryLine
+                    && (followTk.Type == TokenType.Key || followTk.Type == TokenType.QuotedKey
+                        || IsValueToken(followTk.Type)))
+                {
+                    throw new HumlParseException(
+                        $"Expected ',' between inline dict entries, got '{followTk.Type}'.",
+                        followTk.Line, followTk.Column);
+                }
             }
             else if (indicator.Type == TokenType.VectorIndicator)
             {
@@ -520,7 +551,17 @@ internal sealed class HumlParser
             }
 
             // Inline
-            return ParseInlineVectorValue();
+            var inlineValue = ParseInlineVectorValue();
+
+            // After an inline vector value, no more tokens are allowed on the same line.
+            var afterInline = Peek();
+            if (afterInline.Type != TokenType.Eof && afterInline.Line == indicatorLine)
+                throw new HumlParseException(
+                    $"Unexpected token '{afterInline.Type}' after inline vector value. " +
+                    "Use commas to separate inline dict/list entries.",
+                    afterInline.Line, afterInline.Column);
+
+            return inlineValue;
         }
         finally
         {
