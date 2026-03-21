@@ -30,7 +30,7 @@ public sealed class HumlOptions
 
     /// <summary>
     /// Maximum recursion depth allowed during parsing. Exceeding this limit throws
-    /// <see cref="Huml.Net.Exceptions.HumlParseException"/> instead of risking an unrecoverable
+    /// <see cref="T:Huml.Net.Exceptions.HumlParseException"/> instead of risking an unrecoverable
     /// <see cref="StackOverflowException"/>. Default is 512.
     /// </summary>
     public int MaxRecursionDepth { get; init; } = 512;

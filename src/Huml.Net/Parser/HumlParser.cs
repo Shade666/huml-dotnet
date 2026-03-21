@@ -73,6 +73,11 @@ internal sealed class HumlParser
         // if (_options.SpecVersion >= HumlSpecVersion.V0_2) { ... }
         // #pragma warning restore CS0618
 
+        // Consume optional %HUML version directive at the start of the document.
+        // The directive is always emitted by HumlSerializer; parsers must accept it.
+        if (Peek().Type == TokenType.Version)
+            Advance();
+
         var tk = Peek();
 
         if (tk.Type == TokenType.Eof)

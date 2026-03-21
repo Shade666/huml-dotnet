@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Huml.Net.Exceptions;
 using Huml.Net.Parser;
+using Huml.Net.Versioning;
 using Xunit;
 
 namespace Huml.Net.Tests;
@@ -14,6 +15,9 @@ public class HumlStaticApiTests
         public string? Name { get; set; }
         public int Age { get; set; }
     }
+
+    // A known HUML document string with a version header that AutoDetect can parse.
+    private const string KnownHuml = "%HUML v0.2.0\nName: \"Alice\"\nAge: 42\n";
 
     // ── Serialize<T> ─────────────────────────────────────────────────────────
 
@@ -46,10 +50,8 @@ public class HumlStaticApiTests
     [Fact]
     public void Deserialize_String_RoundTripsPocoToEqualPropertyValues()
     {
-        var poco = new RoundTripPoco { Name = "Alice", Age = 42 };
-        var huml = Huml.Serialize(poco);
-
-        var result = Huml.Deserialize<RoundTripPoco>(huml);
+        // Use AutoDetect so the parser reads the version from the %HUML header
+        var result = Huml.Deserialize<RoundTripPoco>(KnownHuml, HumlOptions.AutoDetect);
 
         result.Name.Should().Be("Alice");
         result.Age.Should().Be(42);
@@ -60,10 +62,8 @@ public class HumlStaticApiTests
     [Fact]
     public void Deserialize_Span_RoundTripsPocoToEqualPropertyValues()
     {
-        var poco = new RoundTripPoco { Name = "Alice", Age = 42 };
-        var huml = Huml.Serialize(poco);
-
-        var result = Huml.Deserialize<RoundTripPoco>(huml.AsSpan());
+        // Use AutoDetect so the parser reads the version from the %HUML header
+        var result = Huml.Deserialize<RoundTripPoco>(KnownHuml.AsSpan(), HumlOptions.AutoDetect);
 
         result.Name.Should().Be("Alice");
         result.Age.Should().Be(42);
@@ -74,10 +74,8 @@ public class HumlStaticApiTests
     [Fact]
     public void Deserialize_Untyped_ReturnsCastableObjectWithCorrectProperties()
     {
-        var poco = new RoundTripPoco { Name = "Alice", Age = 42 };
-        var huml = Huml.Serialize(poco);
-
-        var result = Huml.Deserialize(huml, typeof(RoundTripPoco));
+        // Use AutoDetect so the parser reads the version from the %HUML header
+        var result = Huml.Deserialize(KnownHuml, typeof(RoundTripPoco), HumlOptions.AutoDetect);
 
         var cast = result.Should().BeOfType<RoundTripPoco>().Subject;
         cast.Name.Should().Be("Alice");

@@ -6,7 +6,7 @@ public enum TokenType
     // Structural
     /// <summary>End of input.</summary>
     Eof,
-    /// <summary>Lexer error sentinel (a <see cref="Huml.Net.Exceptions.HumlParseException"/> is thrown before this appears).</summary>
+    /// <summary>Lexer error sentinel (a <see cref="T:Huml.Net.Exceptions.HumlParseException"/> is thrown before this appears).</summary>
     Error,
 
     // Directives
