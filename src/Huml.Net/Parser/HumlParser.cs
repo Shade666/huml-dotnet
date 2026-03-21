@@ -286,8 +286,8 @@ internal sealed class HumlParser
         TokenType.Bool    => new HumlScalar(ScalarKind.Bool,    string.Equals(tok.Value, "true",
                                  StringComparison.OrdinalIgnoreCase)),
         TokenType.Null    => new HumlScalar(ScalarKind.Null,    null),
-        TokenType.NaN     => new HumlScalar(ScalarKind.NaN,     null),
-        TokenType.Inf     => new HumlScalar(ScalarKind.Inf,     null),
+        TokenType.NaN     => new HumlScalar(ScalarKind.NaN,     tok.Value),
+        TokenType.Inf     => new HumlScalar(ScalarKind.Inf,     tok.Value),
         _                 => throw new HumlParseException(
                                  $"Unexpected token '{tok.Type}' where scalar expected.",
                                  tok.Line, tok.Column),

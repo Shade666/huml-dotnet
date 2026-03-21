@@ -324,7 +324,7 @@ public class HumlParserTests
         doc.Entries.Should().HaveCount(1);
         var scalar = (HumlScalar)doc.Entries[0];
         scalar.Kind.Should().Be(ScalarKind.NaN);
-        scalar.Value.Should().BeNull();
+        scalar.Value.Should().Be("nan");
     }
 
     [Fact]
@@ -335,7 +335,33 @@ public class HumlParserTests
         doc.Entries.Should().HaveCount(1);
         var scalar = (HumlScalar)doc.Entries[0];
         scalar.Kind.Should().Be(ScalarKind.Inf);
-        scalar.Value.Should().BeNull();
+        scalar.Value.Should().Be("inf");
+    }
+
+    [Fact]
+    public void Parse_PositiveInfScalar_ReturnsPositiveInf()
+    {
+        // +inf as a mapping value (root scalar would conflict with sign parsing at column 0)
+        var doc = new HumlParser("val: +inf", HumlOptions.Default).Parse();
+
+        doc.Entries.Should().HaveCount(1);
+        var mapping = (HumlMapping)doc.Entries[0];
+        var scalar = (HumlScalar)mapping.Value;
+        scalar.Kind.Should().Be(ScalarKind.Inf);
+        scalar.Value.Should().Be("+inf");
+    }
+
+    [Fact]
+    public void Parse_NegativeInfScalar_ReturnsNegativeInf()
+    {
+        // -inf as a mapping value (root scalar '-' at col 0 is consumed as ListItem)
+        var doc = new HumlParser("val: -inf", HumlOptions.Default).Parse();
+
+        doc.Entries.Should().HaveCount(1);
+        var mapping = (HumlMapping)doc.Entries[0];
+        var scalar = (HumlScalar)mapping.Value;
+        scalar.Kind.Should().Be(ScalarKind.Inf);
+        scalar.Value.Should().Be("-inf");
     }
 
     [Fact]
