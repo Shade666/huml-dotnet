@@ -22,6 +22,9 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 - [x] Recursive-descent parser producing `HumlDocument` AST from Lexer token stream (PARS-03) — Validated in Phase 05: Parser
 - [x] `HumlOptions` propagated to Lexer; `>=` version gate convention established in parser (PARS-04) — Validated in Phase 05: Parser
 - [x] Configurable recursion depth guard (`MaxRecursionDepth = 512`) preventing `StackOverflowException` (PARS-05) — Validated in Phase 05: Parser
+- [x] Attribute-driven property mapping: `[HumlProperty]` (rename + OmitIfDefault), `[HumlIgnore]` — Validated in Phase 06: Attributes and Serializer/Deserializer
+- [x] `HumlSerializer` — .NET objects → HUML text, declaration-order, version header, all CLR scalar types — Validated in Phase 06: Attributes and Serializer/Deserializer
+- [x] `HumlDeserializer` — HUML text → typed .NET objects, full collection dispatch, diagnostic exceptions — Validated in Phase 06: Attributes and Serializer/Deserializer
 
 ### Active
 
@@ -29,7 +32,6 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 - [ ] HUML v0.1 support within the 3-version rolling support window
 - [ ] `System.Text.Json`-style static API: `Huml.Serialize<T>()` / `Huml.Deserialize<T>()`
 - [ ] `Deserialize<T>(ReadOnlySpan<char> huml, ...)` overload for zero-allocation parsing paths
-- [ ] Attribute-driven property mapping: `[HumlProperty]`, `[HumlIgnore]`
 - [ ] Zero external runtime dependencies
 - [ ] NuGet-publishable: correct metadata, XML doc comments, README
 - [ ] CI pipeline: GitHub Actions running both fixture suite versions
@@ -71,4 +73,4 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 | `SpecVersionPolicy` constants as code | `HumlUnsupportedVersionException` references them directly — error message stays accurate without manual updates | — Pending |
 
 ---
-*Last updated: 2026-03-21 — Phase 05 complete: recursive-descent parser implemented (HumlParser), version gating wired, recursion depth guard added (MaxRecursionDepth = 512). 140 tests green across net8.0/net9.0/net10.0.*
+*Last updated: 2026-03-21 — Phase 06 complete: serialization attributes ([HumlProperty]/[HumlIgnore]), HumlSerializeException/HumlDeserializeException, PropertyDescriptor cache (declaration-order, init-only detection), HumlSerializer, HumlDeserializer, parser Inf/NaN sign fix. 218 tests green across net8.0/net9.0/net10.0.*
