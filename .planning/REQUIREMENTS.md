@@ -42,13 +42,13 @@ Requirements for initial release. Each maps to a roadmap phase.
 
 ### Serialisation
 
-- [ ] **SER-01**: `[HumlProperty(string name)]` attribute renames a property in HUML input/output; `OmitIfDefault = true` skips default/zero/empty values
-- [ ] **SER-02**: `[HumlIgnore]` attribute excludes a property from both serialisation and deserialisation
-- [ ] **SER-03**: `HumlSerializer` produces HUML text from a .NET object via reflection with a per-type `PropertyDescriptor[]` cache (`ConcurrentDictionary<Type, ...>`); properties are emitted in source declaration order (not alphabetically)
+- [x] **SER-01**: `[HumlProperty(string name)]` attribute renames a property in HUML input/output; `OmitIfDefault = true` skips default/zero/empty values
+- [x] **SER-02**: `[HumlIgnore]` attribute excludes a property from both serialisation and deserialisation
+- [x] **SER-03**: `HumlSerializer` produces HUML text from a .NET object via reflection with a per-type `PropertyDescriptor[]` cache (`ConcurrentDictionary<Type, ...>`); properties are emitted in source declaration order (not alphabetically)
 - [ ] **SER-04**: `HumlSerializer` emits the `%HUML vX.Y.Z` version header matching `HumlOptions.SpecVersion`, two-space indentation, and correct type literals for all supported .NET types (`string` → `"value"`, `bool` → `true`/`false`, integers → bare, `double.NaN` → `nan`, infinities → `+inf`/`-inf`, `null` → `null`, collections → `::` vector block or `[]` empty, POCOs → `::` mapping block or `{}` empty)
-- [ ] **SER-05**: `HumlDeserializer` maps a `HumlDocument` AST to a target .NET type via reflection with caching; detects `init`-only properties via `IsExternalInit` custom modifier on the setter and throws `HumlDeserializeException` with a clear message rather than silently skipping or failing at runtime
-- [ ] **SER-06**: `HumlDeserializer` handles `List<T>`, `T[]`, `IEnumerable<T>` sequences, `Dictionary<string, T>` mappings, nested POCOs, and all primitive scalar types; throws `HumlDeserializeException` on type coercion failures with the offending key/line in the message
-- [ ] **SER-07**: `HumlSerializeException` is thrown on unrecoverable serialisation errors; `HumlDeserializeException` is thrown on mapping or type-coercion failures
+- [x] **SER-05**: `HumlDeserializer` maps a `HumlDocument` AST to a target .NET type via reflection with caching; detects `init`-only properties via `IsExternalInit` custom modifier on the setter and throws `HumlDeserializeException` with a clear message rather than silently skipping or failing at runtime
+- [x] **SER-06**: `HumlDeserializer` handles `List<T>`, `T[]`, `IEnumerable<T>` sequences, `Dictionary<string, T>` mappings, nested POCOs, and all primitive scalar types; throws `HumlDeserializeException` on type coercion failures with the offending key/line in the message
+- [x] **SER-07**: `HumlSerializeException` is thrown on unrecoverable serialisation errors; `HumlDeserializeException` is thrown on mapping or type-coercion failures
 
 ### Public API & Packaging
 
@@ -130,13 +130,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PARS-03 | Phase 5 | Complete |
 | PARS-04 | Phase 5 | Complete |
 | PARS-05 | Phase 5 | Complete |
-| SER-01 | Phase 6 | Pending |
-| SER-02 | Phase 6 | Pending |
-| SER-03 | Phase 6 | Pending |
+| SER-01 | Phase 6 | Complete |
+| SER-02 | Phase 6 | Complete |
+| SER-03 | Phase 6 | Complete |
 | SER-04 | Phase 6 | Pending |
-| SER-05 | Phase 6 | Pending |
-| SER-06 | Phase 6 | Pending |
-| SER-07 | Phase 6 | Pending |
+| SER-05 | Phase 6 | Complete |
+| SER-06 | Phase 6 | Complete |
+| SER-07 | Phase 6 | Complete |
 | API-01 | Phase 7 | Pending |
 | API-02 | Phase 7 | Pending |
 | API-03 | Phase 7 | Pending |

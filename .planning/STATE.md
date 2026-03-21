@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-21T09:23:52.135Z"
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-03-21T09:30:53.304Z"
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 ## Current Position
 
 Phase: 06 (attributes-and-serializer-deserializer) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Plan: 2 of 3
 | Phase 05 P01 | 7 | 2 tasks | 4 files |
 | Phase 05 P02 | 2 | 2 tasks | 3 files |
 | Phase 06 P01 | 3 | 2 tasks | 10 files |
+| Phase 06 P03 | 4 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 06]: PropertyDescriptor uses BaseType chain walk (root-first) so base properties always precede derived properties
 - [Phase 06]: HumlScalar.Value for Inf/NaN now carries raw token string ('+inf'/'-inf'/'nan') not null — deserializer needs sign to distinguish PositiveInfinity from NegativeInfinity
 - [Phase 06]: Test for -inf uses mapping value (key: -inf) not root scalar — '-' at col 0 is ListItem token, not sign prefix
+- [Phase 06]: IEnumerable<T> dispatch checks typeDef == typeof(IEnumerable<>) before GetInterface() — GetInterface() returns null when targetType IS the interface
+- [Phase 06]: HumlDeserializer.Deserialize(string, Type) untyped overload is internal — Phase 7 public API delegates to it
 
 ### Pending Todos
 
@@ -101,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T09:23:52.132Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-21T09:30:53.302Z
+Stopped at: Completed 06-03-PLAN.md
 Resume file: None
