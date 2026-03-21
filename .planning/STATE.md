@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-21T08:16:22.652Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-21T08:20:18.143Z"
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -53,6 +53,7 @@ Plan: 2 of 2
 | Phase 03 P02 | 5 | 2 tasks | 3 files |
 | Phase 04 P01 | 2 | 2 tasks | 8 files |
 | Phase 05 P01 | 7 | 2 tasks | 4 files |
+| Phase 05 P02 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Recent decisions affecting current work:
 - [Phase 04]: IReadOnlyList<HumlNode> for collection nodes — readonly contract with reference equality for structural equality tests
 - [Phase 05]: Inline vs multiline vector dispatch uses VectorIndicator.Line vs next-token.Line comparison — Key tokens always have SpaceBefore=false so SpaceBefore is unreliable
 - [Phase 05]: Lexer no longer throws for digit at line-start; root integer/float scalars valid; integer-as-key error is parser-level
+- [Phase 05]: Each nesting level consumes 2 depth units (ParseVector + ParseMultilineDict both guard) — WithinDepthLimit tests must use MaxRecursionDepth >= 2x nesting levels
+- [Phase 05]: HumlParser constructor parameter maxDepth removed; parser reads options.MaxRecursionDepth directly to keep API consistent
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T08:16:22.650Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-21T08:20:18.141Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None

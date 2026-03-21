@@ -38,7 +38,7 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **PARS-02**: `ScalarKind` enum covers `String`, `Integer`, `Float`, `Bool`, `Null`, `NaN`, `Inf`
 - [x] **PARS-03**: Recursive-descent `Parser` consumes the token stream produced by the `Lexer` and produces a `HumlDocument` AST; covers full HUML v0.2 grammar (scalar values, vector blocks, inline lists, nested mappings, indent-driven nesting)
 - [x] **PARS-04**: Parser applies version-gated rule branches (v0.1 vs v0.2 grammar differences) inside a single class using the same `>=` convention as the Lexer
-- [ ] **PARS-05**: Parser enforces a configurable recursion depth limit (default 512); reaching the limit throws `HumlParseException` with a clear message rather than an unrecoverable `StackOverflowException`
+- [x] **PARS-05**: Parser enforces a configurable recursion depth limit (default 512); reaching the limit throws `HumlParseException` with a clear message rather than an unrecoverable `StackOverflowException`
 
 ### Serialisation
 
@@ -129,7 +129,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PARS-02 | Phase 4 | Complete |
 | PARS-03 | Phase 5 | Complete |
 | PARS-04 | Phase 5 | Complete |
-| PARS-05 | Phase 5 | Pending |
+| PARS-05 | Phase 5 | Complete |
 | SER-01 | Phase 6 | Pending |
 | SER-02 | Phase 6 | Pending |
 | SER-03 | Phase 6 | Pending |
