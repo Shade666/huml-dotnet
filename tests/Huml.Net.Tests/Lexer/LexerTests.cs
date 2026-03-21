@@ -7,6 +7,7 @@ using Huml.Net.Exceptions;
 using Huml.Net.Lexer;
 using Huml.Net.Versioning;
 using Xunit;
+using HumlLexer = Huml.Net.Lexer.Lexer;
 
 namespace Huml.Net.Tests.Lexer;
 
@@ -14,7 +15,7 @@ public class LexerTests
 {
     private static List<Token> LexAll(string input, HumlOptions? options = null)
     {
-        var lexer = new Lexer(input, options ?? HumlOptions.Default);
+        var lexer = new HumlLexer(input, options ?? HumlOptions.Default);
         var tokens = new List<Token>();
         Token t;
         do { t = lexer.NextToken(); tokens.Add(t); } while (t.Type != TokenType.Eof);
