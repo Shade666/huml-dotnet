@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-21T08:23:05.945Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-21T09:23:52.135Z"
 progress:
   total_phases: 8
   completed_phases: 5
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 11
+  completed_plans: 9
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 05 — parser
+**Current focus:** Phase 06 — attributes-and-serializer-deserializer
 
 ## Current Position
 
-Phase: 6
-Plan: Not started
+Phase: 06 (attributes-and-serializer-deserializer) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Plan: Not started
 | Phase 04 P01 | 2 | 2 tasks | 8 files |
 | Phase 05 P01 | 7 | 2 tasks | 4 files |
 | Phase 05 P02 | 2 | 2 tasks | 3 files |
+| Phase 06 P01 | 3 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Lexer no longer throws for digit at line-start; root integer/float scalars valid; integer-as-key error is parser-level
 - [Phase 05]: Each nesting level consumes 2 depth units (ParseVector + ParseMultilineDict both guard) — WithinDepthLimit tests must use MaxRecursionDepth >= 2x nesting levels
 - [Phase 05]: HumlParser constructor parameter maxDepth removed; parser reads options.MaxRecursionDepth directly to keep API consistent
+- [Phase 06]: PropertyDescriptor uses BaseType chain walk (root-first) so base properties always precede derived properties
+- [Phase 06]: HumlScalar.Value for Inf/NaN now carries raw token string ('+inf'/'-inf'/'nan') not null — deserializer needs sign to distinguish PositiveInfinity from NegativeInfinity
+- [Phase 06]: Test for -inf uses mapping value (key: -inf) not root scalar — '-' at col 0 is ListItem token, not sign prefix
 
 ### Pending Todos
 
@@ -97,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T08:20:18.141Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-03-21T09:23:52.132Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None
