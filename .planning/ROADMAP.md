@@ -156,13 +156,13 @@ Plans:
 
 ### Phase 07.4: Fix HumlSerializer key-quoting for non-ASCII dictionary keys (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal:** `HumlSerializer.EmitEntry` emits quoted keys (`"key": value`) when the key string fails the bare-key grammar `[a-zA-Z][a-zA-Z0-9_-]*`, fixing invalid HUML output for `Dictionary<string, T>` with non-ASCII, digit-start, space-containing, or empty-string keys. Resolves tracked defect D-08.
+**Requirements**: SER-KEY-01, SER-KEY-02, SER-KEY-03, SER-KEY-04, SER-KEY-05, SER-KEY-06, SER-KEY-07
 **Depends on:** Phase 07.3
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 07.4 to break down)
+- [x] 07.4-01-PLAN.md — TDD key-quoting fix: NeedsQuoting/AppendKey helpers + 7 tests + D-08 comment update (SER-KEY-01, SER-KEY-02, SER-KEY-03, SER-KEY-04, SER-KEY-05, SER-KEY-06, SER-KEY-07)
 
 ### Phase 07.5: Inline serialisation support via HumlOptions and HumlProperty (INSERTED)
 

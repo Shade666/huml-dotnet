@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07.3-02-PLAN.md
-last_updated: "2026-03-22T19:47:41.148Z"
+stopped_at: Completed 07.4-01-PLAN.md
+last_updated: "2026-03-22T20:30:46.671Z"
 progress:
   total_phases: 18
-  completed_phases: 10
-  total_plans: 19
-  completed_plans: 19
+  completed_phases: 11
+  total_plans: 20
+  completed_plans: 20
 ---
 
 # Project State
@@ -19,11 +19,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 07.3 — unicode-and-rtl-support-with-fixture-extensions
+**Current focus:** Phase 07.4 — fix-humlserializer-key-quoting-for-non-ascii-dictionary-keys
 
 ## Current Position
 
-Phase: 07.4
+Phase: 07.5
 Plan: Not started
 
 ## Performance Metrics
@@ -65,6 +65,7 @@ Plan: Not started
 | Phase 07.2 P03 | 3min | 2 tasks | 5 files |
 | Phase 07.3 P01 | 3min | 2 tasks | 3 files |
 | Phase 07.3 P02 | 8min | 2 tasks | 8 files |
+| Phase 07.4 P01 | 5min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,7 @@ Recent decisions affecting current work:
 - [Phase 07.3]: fixtures/extensions/ is a plain tracked directory (not a git submodule) committed directly to the repo
 - [Phase 07.3]: Extension fixtures integrate transparently into existing V01_fixture_passes and V02_fixture_passes Theory runs via LoadFixtures extension scan with Directory.Exists guard (D-01, D-02)
 - [Phase 07.3]: D-03 verified: ambiguous_empty_vector_bare Theory row passes (HumlParseException thrown for 'key::' as expected)
+- [Phase 07.4]: NeedsQuoting mirrors Lexer bare-key grammar [a-zA-Z][a-zA-Z0-9_-]*; AppendKey reuses AppendEscapedString for consistent escape semantics; all 6 EmitEntry key-emission sites replaced with AppendKey(sb, key)
 
 ### Roadmap Evolution
 
@@ -147,6 +149,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T12:54:58.032Z
-Stopped at: Completed 07.3-02-PLAN.md
+Last session: 2026-03-22T20:16:19.005Z
+Stopped at: Completed 07.4-01-PLAN.md
 Resume file: None

@@ -49,6 +49,13 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **SER-05**: `HumlDeserializer` maps a `HumlDocument` AST to a target .NET type via reflection with caching; detects `init`-only properties via `IsExternalInit` custom modifier on the setter and throws `HumlDeserializeException` with a clear message rather than silently skipping or failing at runtime
 - [x] **SER-06**: `HumlDeserializer` handles `List<T>`, `T[]`, `IEnumerable<T>` sequences, `Dictionary<string, T>` mappings, nested POCOs, and all primitive scalar types; throws `HumlDeserializeException` on type coercion failures with the offending key/line in the message
 - [x] **SER-07**: `HumlSerializeException` is thrown on unrecoverable serialisation errors; `HumlDeserializeException` is thrown on mapping or type-coercion failures
+- [x] **SER-KEY-01**: `HumlSerializer` emits a quoted key when a dictionary key contains non-ASCII characters (e.g. Arabic, Chinese scripts)
+- [x] **SER-KEY-02**: `HumlSerializer` emits a quoted key when a dictionary key starts with a digit
+- [x] **SER-KEY-03**: `HumlSerializer` emits a quoted key when a dictionary key contains spaces or other characters outside the bare-key grammar `[a-zA-Z][a-zA-Z0-9_-]*`
+- [x] **SER-KEY-04**: `HumlSerializer` emits `"": ` when a dictionary key is the empty string
+- [x] **SER-KEY-05**: `Dictionary<string, T>` with non-ASCII keys round-trips through `Serialize`/`Deserialize` with full key and value equality
+- [x] **SER-KEY-06**: `HumlSerializer` continues to emit bare keys (no quotes) for keys that satisfy the bare-key grammar — no regression on valid ASCII keys
+- [x] **SER-KEY-07**: Non-ASCII keys used in vector indicator paths (nested dicts, sequences, POCOs) are emitted with `"key"::` syntax
 
 ### Public API & Packaging
 
@@ -143,12 +150,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 | API-04 | Phase 8 | Pending |
 | API-05 | Phase 8 | Pending |
 | API-06 | Phase 7 | Complete |
+| SER-KEY-01 | Phase 7.4 | Complete |
+| SER-KEY-02 | Phase 7.4 | Complete |
+| SER-KEY-03 | Phase 7.4 | Complete |
+| SER-KEY-04 | Phase 7.4 | Complete |
+| SER-KEY-05 | Phase 7.4 | Complete |
+| SER-KEY-06 | Phase 7.4 | Complete |
+| SER-KEY-07 | Phase 7.4 | Complete |
 
 **Coverage:**
-- v1 requirements: 31 total
-- Mapped to phases: 31
+- v1 requirements: 38 total
+- Mapped to phases: 38
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-20 after roadmap creation*
+*Last updated: 2026-03-22 — SER-KEY-01..07 added after Phase 7.4 gap closure*
