@@ -169,11 +169,11 @@ Plans:
 **Goal:** Add `CollectionFormat` enum to `HumlOptions` (global default: `Multiline`), add `bool? Inline` to `[HumlProperty]` for per-property override. Scalar-only collections emit inline when opted-in; complex-valued collections silently fall back to multiline. Include XML doc comments on all new public members and a `docs/inline-serialisation.md` usage guide.
 **Requirements**: INL-01, INL-02, INL-03, INL-04, INL-05, INL-06, INL-07, INL-08, INL-09, INL-10, INL-11, INL-12, INL-13
 **Depends on:** Phase 07.4
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 07.5-01-PLAN.md — Contracts: CollectionFormat enum, HumlOptions.CollectionFormat, HumlPropertyAttribute.Inline, PropertyDescriptor.Inline cache, test stubs (INL-01, INL-02, INL-03, INL-04, INL-07, INL-08, INL-12)
-- [ ] 07.5-02-PLAN.md — Implementation: EmitEntry inline dispatch, EmitInlineSequence, EmitInlineDictionary, all tests green, docs/inline-serialisation.md (INL-05, INL-06, INL-07, INL-08, INL-09, INL-10, INL-11, INL-12, INL-13)
+- [x] 07.5-01-PLAN.md — Contracts: CollectionFormat enum, HumlOptions.CollectionFormat, HumlPropertyAttribute.Inline, PropertyDescriptor.Inline cache, test stubs (INL-01, INL-02, INL-03, INL-04, INL-07, INL-08, INL-12)
+- [x] 07.5-02-PLAN.md — Implementation: EmitEntry inline dispatch, EmitInlineSequence, EmitInlineDictionary, all tests green, docs/inline-serialisation.md (INL-05, INL-06, INL-07, INL-08, INL-09, INL-10, INL-11, INL-12, INL-13)
 
 ### Phase 07.6: Comprehensive round-trip tests against mixed fixture files (INSERTED)
 

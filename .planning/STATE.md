@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07.5-01-PLAN.md
-last_updated: "2026-03-22T21:44:40.448Z"
+stopped_at: Completed 07.5-02-PLAN.md
+last_updated: "2026-03-22T21:51:08.489Z"
 progress:
   total_phases: 18
-  completed_phases: 11
+  completed_phases: 12
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 # Project State
@@ -67,6 +67,7 @@ Plan: 2 of 2
 | Phase 07.3 P02 | 8min | 2 tasks | 8 files |
 | Phase 07.4 P01 | 5min | 2 tasks | 3 files |
 | Phase 07.5 P01 | 7 | 2 tasks | 6 files |
+| Phase 07.5-inline-serialisation-support-via-humloptions-and-humlproperty P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,7 @@ Recent decisions affecting current work:
 - [Phase 07.5]: InlineMode enum replaces planned bool? on HumlPropertyAttribute.Inline — C# attribute named argument/constructor types cannot be nullable (CS0655/CS0181); enum with Inherit=0 achieves identical semantics
 - [Phase 07.5]: PropertyDescriptor.Inline remains bool? — converted from InlineMode via switch at BuildDescriptors time, keeping serializer dispatch simple
 - [Phase 07.5]: InlineMode in separate InlineMode.cs file — Meziantou MA0048 enforces one-type-per-file under TreatWarningsAsErrors
+- [Phase 07.5]: SerializeDictionaryBody passes inlineOverride: false to EmitEntry — inline is a POCO-property-level concern, not recursive into dict body entries; inner scalar lists within a complex dict body emit multiline
 
 ### Roadmap Evolution
 
@@ -153,6 +155,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T21:44:40.445Z
-Stopped at: Completed 07.5-01-PLAN.md
+Last session: 2026-03-22T21:51:08.485Z
+Stopped at: Completed 07.5-02-PLAN.md
 Resume file: None
