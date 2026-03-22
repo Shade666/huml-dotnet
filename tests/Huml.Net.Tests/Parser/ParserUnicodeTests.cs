@@ -8,7 +8,7 @@ namespace Huml.Net.Tests.Parser;
 
 public class ParserUnicodeTests
 {
-    // Private POCO with ASCII property names to avoid serializer key-quoting gap (D-08)
+    // Private POCO with ASCII property names (D-08 key-quoting gap resolved in Phase 07.4)
     private class UnicodePoco
     {
         public string? Greeting { get; set; }

@@ -180,7 +180,7 @@ internal static class HumlSerializer
         if (IsScalarValue(value))
         {
             sb.Append(indent);
-            sb.Append(key);
+            AppendKey(sb, key);
             sb.Append(": ");
             SerializeValue(sb, value, depth + 1, options);
             sb.Append('\n');
@@ -195,12 +195,12 @@ internal static class HumlSerializer
             if (dict.Count == 0)
             {
                 sb.Append(indent);
-                sb.Append(key);
+                AppendKey(sb, key);
                 sb.Append(":: {}\n");
                 return;
             }
             sb.Append(indent);
-            sb.Append(key);
+            AppendKey(sb, key);
             sb.Append("::\n");
             SerializeDictionaryBody(sb, dict, depth + 1, options);
             return;
@@ -216,12 +216,12 @@ internal static class HumlSerializer
             if (items.Count == 0)
             {
                 sb.Append(indent);
-                sb.Append(key);
+                AppendKey(sb, key);
                 sb.Append(":: []\n");
                 return;
             }
             sb.Append(indent);
-            sb.Append(key);
+            AppendKey(sb, key);
             sb.Append("::\n");
             EmitSequenceItems(sb, items, depth + 1, options);
             return;
@@ -234,7 +234,7 @@ internal static class HumlSerializer
                 $"Cannot serialize type '{valueType.FullName}': delegates, function pointers, and " +
                 "similar non-data types are not supported by HumlSerializer.");
         sb.Append(indent);
-        sb.Append(key);
+        AppendKey(sb, key);
         sb.Append("::\n");
         SerializeMappingBody(sb, value!, depth + 1, options);
     }
@@ -345,6 +345,47 @@ internal static class HumlSerializer
                 case '\t': sb.Append("\\t");  break;
                 default:   sb.Append(c);      break;
             }
+        }
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> when <paramref name="key"/> cannot be emitted as a bare HUML key.
+    /// The bare-key grammar is <c>[a-zA-Z][a-zA-Z0-9_-]*</c>; anything outside this requires quoting.
+    /// </summary>
+    private static bool NeedsQuoting(string key)
+    {
+        if (key.Length == 0) return true;
+
+        char first = key[0];
+        if (!((first >= 'a' && first <= 'z') || (first >= 'A' && first <= 'Z')))
+            return true;
+
+        for (int i = 1; i < key.Length; i++)
+        {
+            char c = key[i];
+            bool valid = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+                      || (c >= '0' && c <= '9') || c == '_' || c == '-';
+            if (!valid) return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Appends <paramref name="key"/> to <paramref name="sb"/>, quoting and escaping if
+    /// the key does not satisfy the bare-key grammar.
+    /// </summary>
+    private static void AppendKey(StringBuilder sb, string key)
+    {
+        if (NeedsQuoting(key))
+        {
+            sb.Append('"');
+            AppendEscapedString(sb, key);
+            sb.Append('"');
+        }
+        else
+        {
+            sb.Append(key);
         }
     }
 
