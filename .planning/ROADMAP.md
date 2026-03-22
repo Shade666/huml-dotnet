@@ -148,10 +148,10 @@ Plans:
 **Goal:** Actionable error message for non-ASCII bare keys, fixture extension infrastructure (`fixtures/extensions/`) for local test cases not yet in upstream suite, comprehensive Unicode/RTL test coverage, and a repeatable fixture-gap audit rule
 **Requirements**: UNI-01, UNI-02, UNI-03, UNI-04, UNI-05, UNI-06
 **Depends on:** Phase 07.2
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] 07.3-01-PLAN.md — Lexer error branch + IsLetter XML doc + LexerUnicodeTests (13 tests) + ParserUnicodeTests (8 tests) (UNI-01, UNI-02, UNI-03, UNI-04)
+- [x] 07.3-01-PLAN.md — Lexer error branch + IsLetter XML doc + LexerUnicodeTests (13 tests) + ParserUnicodeTests (8 tests) (UNI-01, UNI-02, UNI-03, UNI-04)
 - [ ] 07.3-02-PLAN.md — Fixture extension infrastructure (gaps.json, unicode.json, SharedSuiteTests extension, .csproj, fixture-gaps.md rule) (UNI-05, UNI-06)
 
 ### Phase 8: NuGet Release Preparation

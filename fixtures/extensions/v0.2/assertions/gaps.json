@@ -1,0 +1,13 @@
+[
+  {"name": "bool_true_uppercase", "input": "key: TRUE", "error": false},
+  {"name": "bool_false_uppercase", "input": "key: FALSE", "error": false},
+  {"name": "null_uppercase", "input": "key: NULL", "error": false},
+  {"name": "tab_indentation_at_line_start", "input": "\tkey: \"value\"", "error": true},
+  {"name": "quoted_key_with_integer_value", "input": "\"my-key\": 42", "error": false},
+  {"name": "root_float_scalar", "input": "3.14", "error": false},
+  {"name": "root_nan_scalar", "input": "nan", "error": false},
+  {"name": "root_inf_scalar", "input": "inf", "error": false},
+  {"name": "root_hex_scalar", "input": "0xFF", "error": false},
+  {"name": "multiline_list_integer_items", "input": "list::\n  - 1\n  - 2\n  - 3", "error": false},
+  {"name": "ambiguous_empty_vector_bare", "input": "key::", "error": true}
+]

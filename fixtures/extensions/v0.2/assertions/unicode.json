@@ -1,0 +1,19 @@
+[
+  {"name": "bare_arabic_key", "input": "\u0627\u0633\u0645: \"value\"", "error": true},
+  {"name": "bare_chinese_key", "input": "\u540D: \"value\"", "error": true},
+  {"name": "bare_cyrillic_key", "input": "\u0414: \"value\"", "error": true},
+  {"name": "bare_devanagari_key", "input": "\u0928\u093E\u092E: \"value\"", "error": true},
+  {"name": "bare_emoji_key", "input": "\uD83D\uDE80: \"value\"", "error": true},
+  {"name": "quoted_arabic_key", "input": "\"\u0627\u0633\u0645\": \"\u0623\u062D\u0645\u062F\"", "error": false},
+  {"name": "quoted_chinese_key", "input": "\"\u540D\u524D\": \"\u592A\u90CE\"", "error": false},
+  {"name": "quoted_cyrillic_key", "input": "\"\u0418\u043C\u044F\": \"\u0418\u0432\u0430\u043D\"", "error": false},
+  {"name": "quoted_emoji_key", "input": "\"\uD83D\uDE80\": \"launch\"", "error": false},
+  {"name": "arabic_string_value", "input": "key: \"\u0645\u0631\u062D\u0628\u0627\"", "error": false},
+  {"name": "hebrew_string_value", "input": "key: \"\u05E9\u05DC\u05D5\u05DD\"", "error": false},
+  {"name": "chinese_string_value", "input": "key: \"\u4F60\u597D\u4E16\u754C\"", "error": false},
+  {"name": "korean_string_value", "input": "key: \"\uC548\uB155\uD558\uC138\uC694\"", "error": false},
+  {"name": "emoji_string_value", "input": "key: \"\uD83D\uDE80\uD83C\uDF0D\"", "error": false},
+  {"name": "mixed_ltr_rtl_string", "input": "key: \"Hello \u0645\u0631\u062D\u0628\u0627 World\"", "error": false},
+  {"name": "rtl_mark_in_string", "input": "key: \"text\u200Fmore\"", "error": false},
+  {"name": "ltr_mark_in_string", "input": "key: \"text\u200Emore\"", "error": false}
+]
