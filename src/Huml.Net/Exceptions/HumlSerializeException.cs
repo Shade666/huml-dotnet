@@ -1,5 +1,3 @@
-using System;
-
 namespace Huml.Net.Exceptions;
 
 /// <summary>

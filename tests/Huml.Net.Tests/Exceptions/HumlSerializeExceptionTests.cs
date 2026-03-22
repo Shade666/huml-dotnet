@@ -1,4 +1,3 @@
-using System;
 using AwesomeAssertions;
 using Huml.Net.Exceptions;
 using Xunit;
@@ -42,7 +41,7 @@ public class HumlSerializeExceptionTests
             var parameters = ctor.GetParameters();
             bool hasSerializationInfo = false;
             foreach (var p in parameters)
-                if (p.ParameterType.FullName == "System.Runtime.Serialization.SerializationInfo")
+                if (string.Equals(p.ParameterType.FullName, "System.Runtime.Serialization.SerializationInfo", StringComparison.Ordinal))
                     hasSerializationInfo = true;
             hasSerializationInfo.Should().BeFalse("binary serialization constructor must not be present");
         }

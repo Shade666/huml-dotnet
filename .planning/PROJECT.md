@@ -26,13 +26,14 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 - [x] `HumlSerializer` — .NET objects → HUML text, declaration-order, version header, all CLR scalar types — Validated in Phase 06: Attributes and Serializer/Deserializer
 - [x] `HumlDeserializer` — HUML text → typed .NET objects, full collection dispatch, diagnostic exceptions — Validated in Phase 06: Attributes and Serializer/Deserializer
 
+- [x] Full HUML v0.2.0 spec compliance validated against `huml-lang/tests` shared suite — Validated in Phase 07: Static Entry Point and Shared Fixture Compliance
+- [x] HUML v0.1 support within the 3-version rolling support window — Validated in Phase 07: Static Entry Point and Shared Fixture Compliance
+- [x] `System.Text.Json`-style static API: `Huml.Serialize<T>()` / `Huml.Deserialize<T>()` — Validated in Phase 07: Static Entry Point and Shared Fixture Compliance
+- [x] `Deserialize<T>(ReadOnlySpan<char> huml, ...)` overload for zero-allocation parsing paths — Validated in Phase 07: Static Entry Point and Shared Fixture Compliance
+- [x] Zero external runtime dependencies — Validated in Phase 07: Static Entry Point and Shared Fixture Compliance
+
 ### Active
 
-- [ ] Full HUML v0.2.0 spec compliance validated against `huml-lang/tests` shared suite
-- [ ] HUML v0.1 support within the 3-version rolling support window
-- [ ] `System.Text.Json`-style static API: `Huml.Serialize<T>()` / `Huml.Deserialize<T>()`
-- [ ] `Deserialize<T>(ReadOnlySpan<char> huml, ...)` overload for zero-allocation parsing paths
-- [ ] Zero external runtime dependencies
 - [ ] NuGet-publishable: correct metadata, XML doc comments, README
 - [ ] CI pipeline: GitHub Actions running both fixture suite versions
 
@@ -73,4 +74,4 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 | `SpecVersionPolicy` constants as code | `HumlUnsupportedVersionException` references them directly — error message stays accurate without manual updates | — Pending |
 
 ---
-*Last updated: 2026-03-21 — Phase 06 complete: serialization attributes ([HumlProperty]/[HumlIgnore]), HumlSerializeException/HumlDeserializeException, PropertyDescriptor cache (declaration-order, init-only detection), HumlSerializer, HumlDeserializer, parser Inf/NaN sign fix. 218 tests green across net8.0/net9.0/net10.0.*
+*Last updated: 2026-03-21 — Phase 07 complete: `Huml` public static facade (6 overloads, XML docs), SharedSuiteTests Theory runner, 11 Lexer/Parser spec-compliance fixes. 577 tests green across net8.0/net9.0/net10.0. API-01, API-02, API-03, API-06 all satisfied.*

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using AwesomeAssertions;
 using Huml.Net.Exceptions;
 using Huml.Net.Serialization;

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Huml.Net.Exceptions;
 using Huml.Net.Lexer;
@@ -187,7 +185,7 @@ internal sealed class HumlParser
     /// multiline or inline, then stores the consumed tokens for replay via a
     /// two-item lookahead buffer.
     /// </summary>
-    private RootType InferDictRootType()
+    private static RootType InferDictRootType()
     {
         // We cannot un-read from the lexer, so we peek token-by-token and store
         // the read tokens in a small replay buffer. We resolve by inspecting whether
@@ -283,7 +281,7 @@ internal sealed class HumlParser
     // ── Scalar conversion ─────────────────────────────────────────────────────
 
     /// <summary>Converts a scalar token to a typed <see cref="HumlScalar"/> node.</summary>
-    private HumlScalar TokenToScalar(Token tok) => tok.Type switch
+    private static HumlScalar TokenToScalar(Token tok) => tok.Type switch
     {
         TokenType.String  => new HumlScalar(ScalarKind.String,  tok.Value),
         TokenType.Int     => new HumlScalar(ScalarKind.Integer, ParseInt(tok.Value!)),
@@ -324,13 +322,13 @@ internal sealed class HumlParser
             }
         }
 
-        string digits = s.Substring(idx).Replace("_", "");
+        string digits = s.Substring(idx).Replace("_", "", StringComparison.Ordinal);
         return sign * Convert.ToInt64(digits, radix);
     }
 
     /// <summary>Parses a floating-point literal, stripping underscore separators.</summary>
     private static double ParseFloat(string s) =>
-        double.Parse(s.Replace("_", ""), CultureInfo.InvariantCulture);
+        double.Parse(s.Replace("_", "", StringComparison.Ordinal), CultureInfo.InvariantCulture);
 
     // ── Block parsers ─────────────────────────────────────────────────────────
 

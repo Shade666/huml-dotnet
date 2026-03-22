@@ -7,8 +7,16 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Enable all CA rules the .NET team considers safe at recommended severity -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <!-- Make IDE style rules (unused usings, namespace matching, etc.) fire during build -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Meziantou.Analyzer: PrivateAssets=All ensures it does not leak to library consumers -->
+    <PackageReference Include="Meziantou.Analyzer" Version="2.0.195" PrivateAssets="All" />
+  </ItemGroup>
 </Project>

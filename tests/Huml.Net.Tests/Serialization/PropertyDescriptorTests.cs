@@ -1,4 +1,3 @@
-using System.Reflection;
 using AwesomeAssertions;
 using Huml.Net.Serialization;
 using Xunit;

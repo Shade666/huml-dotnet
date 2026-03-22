@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using Huml.Net.Exceptions;
 using Huml.Net.Versioning;

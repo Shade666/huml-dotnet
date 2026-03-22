@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Huml.Net.Exceptions;
@@ -395,10 +393,10 @@ internal static class HumlSerializer
     private static string EscapeString(string s)
     {
         // Order matters: escape backslash first to avoid double-escaping
-        s = s.Replace("\\", "\\\\");
-        s = s.Replace("\"", "\\\"");
-        s = s.Replace("\n", "\\n");
-        s = s.Replace("\t", "\\t");
+        s = s.Replace("\\", "\\\\", StringComparison.Ordinal);
+        s = s.Replace("\"", "\\\"", StringComparison.Ordinal);
+        s = s.Replace("\n", "\\n", StringComparison.Ordinal);
+        s = s.Replace("\t", "\\t", StringComparison.Ordinal);
         return s;
     }
 

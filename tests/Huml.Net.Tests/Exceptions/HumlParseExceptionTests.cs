@@ -1,4 +1,3 @@
-using System;
 using AwesomeAssertions;
 using Huml.Net.Exceptions;
 using Xunit;

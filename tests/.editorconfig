@@ -1,0 +1,25 @@
+# Overrides for test projects — inherits root .editorconfig
+
+[*.cs]
+# CS1591: Missing XML comment for publicly visible type or member
+# Test classes do not require XML documentation.
+dotnet_diagnostic.CS1591.severity = none
+
+# CA1707: Underscores in identifiers — xUnit test names use underscores.
+dotnet_diagnostic.CA1707.severity = none
+
+# MA0018: Do not declare static members on generic types
+# Common pattern in xUnit theory data helpers.
+dotnet_diagnostic.MA0018.severity = none
+
+# MA0002: IEqualityComparer<string> is missing — test assertions are not production code
+dotnet_diagnostic.MA0002.severity = none
+
+# CA1852: Type can be sealed — test fixture POCOs are intentionally unsealed (PropertyDescriptorTests
+# specifically uses InheritedPoco to verify base-class-first ordering).
+dotnet_diagnostic.CA1852.severity = none
+
+# CA1305 / MA0011: StringBuilder.Append without IFormatProvider — test helper methods build
+# HUML fixture strings from integers; culture variance is irrelevant in test infrastructure.
+dotnet_diagnostic.CA1305.severity = none
+dotnet_diagnostic.MA0011.severity = none

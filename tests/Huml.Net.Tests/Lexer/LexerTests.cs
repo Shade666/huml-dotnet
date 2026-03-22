@@ -1,7 +1,5 @@
 #pragma warning disable CS0618 // V0_1 is obsolete but used intentionally in version-gate tests
 
-using System;
-using System.Collections.Generic;
 using AwesomeAssertions;
 using Huml.Net.Exceptions;
 using Huml.Net.Lexer;
@@ -327,7 +325,7 @@ public class LexerTests
         // a is on line 1, b is on line 2
         tokens[0].Line.Should().Be(1); // Key "a"
         // find Key "b"
-        var bKey = tokens.Find(t => t.Type == TokenType.Key && t.Value == "b");
+        var bKey = tokens.Find(t => t.Type == TokenType.Key && string.Equals(t.Value, "b", StringComparison.Ordinal));
         bKey.Line.Should().Be(2);
     }
 

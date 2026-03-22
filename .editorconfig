@@ -1,0 +1,102 @@
+root = true
+
+[*]
+indent_style = space
+end_of_line = crlf
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.cs]
+indent_size = 4
+charset = utf-8
+
+# ── .NET / IDE code style ────────────────────────────────────────────────────
+
+# IDE0005: Remove unnecessary using directives
+dotnet_diagnostic.IDE0005.severity = warning
+
+# IDE0055: Fix formatting — high agent friction; downgrade to suggestion
+dotnet_diagnostic.IDE0055.severity = suggestion
+
+# IDE0130: Namespace does not match folder structure
+# Suppressed: public attributes intentionally use Huml.Net.Serialization (not the Attributes
+# subfolder namespace) to keep the public API import path clean. IsExternalInit.cs must use
+# System.Runtime.CompilerServices as a polyfill.
+dotnet_diagnostic.IDE0130.severity = none
+
+# ── CA: rules irrelevant to this codebase ───────────────────────────────────
+
+# CA1062: Validate arguments of public methods
+# Nullable reference types already enforce this at compile time.
+dotnet_diagnostic.CA1062.severity = none
+
+# CA1303: Do not pass literals as localized parameters
+# Huml.Net is not localised; exception messages are developer-facing.
+dotnet_diagnostic.CA1303.severity = none
+
+# CA1304: Specify CultureInfo — managed by explicit StringComparison in lexer
+dotnet_diagnostic.CA1304.severity = warning
+
+# CA1307: Specify StringComparison for clarity
+dotnet_diagnostic.CA1307.severity = warning
+
+# CA1200: Avoid using cref tags with a prefix
+# Suppressed: removing the T: prefix causes CS1574 (unresolved cref) for cross-namespace
+# references in files without a using directive for the target type.
+dotnet_diagnostic.CA1200.severity = none
+
+# CA1308: Normalise strings to uppercase
+# HUML keywords (true/false/null/nan/inf) are canonically lowercase.
+dotnet_diagnostic.CA1308.severity = none
+
+# CA1720: Identifier contains type name
+# TokenType.String/Int/Float and ScalarKind.String/Integer/Float directly mirror the HUML
+# specification's grammar vocabulary. Renaming them would destroy semantic clarity.
+dotnet_diagnostic.CA1720.severity = none
+
+# CA1707: Identifiers should not contain underscores
+# xUnit test method names use underscores by convention.
+dotnet_diagnostic.CA1707.severity = none
+
+# CA1711: Identifiers should not have incorrect suffix
+# HumlSpecVersion enum name is intentional.
+dotnet_diagnostic.CA1711.severity = suggestion
+
+# CA1716: Identifiers should not match keywords
+# 'Huml.Parse' conflicts with VB keyword 'Parse' — acceptable for a C#-first library.
+dotnet_diagnostic.CA1716.severity = none
+
+# CA1848: Use LoggerMessage delegates — no logging in this library
+dotnet_diagnostic.CA1848.severity = none
+
+# CA2007: Consider calling ConfigureAwait — no async code in this library
+dotnet_diagnostic.CA2007.severity = none
+
+# ── Meziantou rules ──────────────────────────────────────────────────────────
+
+# MA0004: Use ConfigureAwait — no async code
+dotnet_diagnostic.MA0004.severity = none
+
+# MA0007: Add comma after last enum value — style preference, agent friction
+dotnet_diagnostic.MA0007.severity = suggestion
+
+# MA0011: IFormatProvider is missing — downgrade; most format calls are invariant
+dotnet_diagnostic.MA0011.severity = warning
+
+# MA0049: Type name should not match namespace name
+# Huml class intentionally lives in Huml.Net namespace.
+dotnet_diagnostic.MA0049.severity = none
+
+# MA0051: Method is too long — not enforced; parser methods are necessarily long
+dotnet_diagnostic.MA0051.severity = none
+
+# MA0076: Do not use implicit culture-sensitive ToString
+# All violations are integer line/column numbers in developer-facing exception messages.
+# This library has no localisation requirement; integer formatting is culture-invariant in practice.
+dotnet_diagnostic.MA0076.severity = none
+
+# MA0097: A class that implements IComparable<T> should also implement IEquatable<T>
+dotnet_diagnostic.MA0097.severity = warning
+
+[*.{csproj,props,targets}]
+indent_size = 2

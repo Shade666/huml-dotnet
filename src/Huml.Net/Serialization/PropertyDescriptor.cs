@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Huml.Net.Serialization;
@@ -97,7 +95,7 @@ internal sealed record PropertyDescriptor(
         var modifiers = setMethod.ReturnParameter.GetRequiredCustomModifiers();
         foreach (var m in modifiers)
         {
-            if (m.FullName == "System.Runtime.CompilerServices.IsExternalInit")
+            if (string.Equals(m.FullName, "System.Runtime.CompilerServices.IsExternalInit", StringComparison.Ordinal))
                 return true;
         }
 
