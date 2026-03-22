@@ -9,10 +9,22 @@ internal sealed class Lexer
 {
     private readonly string _source;
     private readonly HumlOptions _options;
+    private HumlSpecVersion _effectiveSpecVersion;
     private int _pos;
     private int _line = 1;
     private int _col;
     private int _lineIndent;
+
+    /// <summary>
+    /// Gets or sets the effective spec version used for version-gated tokenisation rules.
+    /// Initialised from <see cref="HumlOptions.SpecVersion"/>; may be updated by the parser
+    /// after reading the document <c>%HUML</c> version header.
+    /// </summary>
+    internal HumlSpecVersion EffectiveSpecVersion
+    {
+        get => _effectiveSpecVersion;
+        set => _effectiveSpecVersion = value;
+    }
 
     /// <summary>Initialises the lexer with a string source and parsing options.</summary>
     internal Lexer(string source, HumlOptions options)
@@ -20,6 +32,7 @@ internal sealed class Lexer
         _source = source.Replace("\r\n", "\n", StringComparison.Ordinal)
                         .Replace("\r", "\n", StringComparison.Ordinal);
         _options = options;
+        _effectiveSpecVersion = options.SpecVersion;
     }
 
     // -----------------------------------------------------------------------
@@ -494,7 +507,7 @@ internal sealed class Lexer
     {
         // Check version gate
 #pragma warning disable CS0618 // V0_1 obsolete
-        if (_options.SpecVersion >= HumlSpecVersion.V0_2)
+        if (_effectiveSpecVersion >= HumlSpecVersion.V0_2)
 #pragma warning restore CS0618
         {
             throw new HumlParseException(

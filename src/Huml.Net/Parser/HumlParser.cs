@@ -2,6 +2,7 @@ using System.Globalization;
 using Huml.Net.Exceptions;
 using Huml.Net.Lexer;
 using Huml.Net.Versioning;
+using Huml.Net.Versioning.Exceptions;
 
 namespace Huml.Net.Parser;
 
@@ -39,6 +40,7 @@ internal sealed class HumlParser
     private readonly int _maxDepth;
     private int _depth;
     private Token _lookahead;
+    private HumlSpecVersion _effectiveSpecVersion;
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
@@ -54,6 +56,7 @@ internal sealed class HumlParser
         _lexer = new Lexer.Lexer(source, options);
         _options = options;
         _maxDepth = options.MaxRecursionDepth;
+        _effectiveSpecVersion = options.SpecVersion;
         _lookahead = _lexer.NextToken(); // prime lookahead
     }
 
@@ -73,8 +76,13 @@ internal sealed class HumlParser
 
         // Consume optional %HUML version directive at the start of the document.
         // The directive is always emitted by HumlSerializer; parsers must accept it.
+        // When VersionSource.Header is active, parse the version string and apply it.
         if (Peek().Type == TokenType.Version)
-            Advance();
+        {
+            var versionToken = Advance();
+            if (_options.VersionSource == VersionSource.Header)
+                ApplyVersionFromHeader(versionToken.Value!);
+        }
 
         var tk = Peek();
 
@@ -687,6 +695,100 @@ internal sealed class HumlParser
             throw new HumlParseException(
                 "Unexpected content after root element.",
                 tk.Line, tk.Column);
+    }
+
+    // ── Version header helpers ────────────────────────────────────────────────
+
+    /// <summary>
+    /// Applies the version declared in the document <c>%HUML</c> header.
+    /// Validates the version against <see cref="SpecVersionPolicy"/> and dispatches
+    /// <see cref="HumlOptions.UnknownVersionBehaviour"/> when out of the support window.
+    /// Updates both <see cref="_effectiveSpecVersion"/> and <see cref="Lexer.Lexer.EffectiveSpecVersion"/>
+    /// so that version-gated tokenisation rules are applied correctly for the rest of the document.
+    /// </summary>
+    private void ApplyVersionFromHeader(string versionValue)
+    {
+        var parsed = TryParseSpecVersion(versionValue);
+
+#pragma warning disable CS0618 // MinimumSupportedVersion references V0_1
+        bool isKnown = parsed.HasValue
+            && parsed.Value >= SpecVersionPolicy.MinimumSupportedVersion
+            && parsed.Value <= SpecVersionPolicy.LatestVersion;
+#pragma warning restore CS0618
+
+        if (isKnown && parsed.HasValue)
+        {
+            _effectiveSpecVersion = parsed.Value;
+            _lexer.EffectiveSpecVersion = parsed.Value;
+            return;
+        }
+
+        // Version is outside the support window.
+        switch (_options.UnknownVersionBehaviour)
+        {
+            case UnknownVersionBehaviour.Throw:
+                throw new HumlUnsupportedVersionException(versionValue);
+
+            case UnknownVersionBehaviour.UseLatest:
+                _effectiveSpecVersion = SpecVersionPolicy.LatestVersion;
+                _lexer.EffectiveSpecVersion = SpecVersionPolicy.LatestVersion;
+                return;
+
+            case UnknownVersionBehaviour.UsePrevious:
+                // UsePrevious falls back to the nearest older supported version.
+                // If the declared version is entirely below the minimum supported version
+                // (major.minor < 0.1), there is nothing to fall back to — throw instead.
+                var majorMinor = TryExtractMajorMinor(versionValue);
+                bool isBelowMinimum = !majorMinor.HasValue
+                    || (majorMinor.Value.major == 0 && majorMinor.Value.minor < 1);
+
+                if (isBelowMinimum)
+                    throw new HumlUnsupportedVersionException(versionValue);
+
+                // Above the window maximum — use the latest supported version.
+                _effectiveSpecVersion = SpecVersionPolicy.LatestVersion;
+                _lexer.EffectiveSpecVersion = SpecVersionPolicy.LatestVersion;
+                return;
+        }
+    }
+
+    /// <summary>
+    /// Attempts to parse a HUML version string (e.g., "v0.1.0" or "v0.2") into a
+    /// <see cref="HumlSpecVersion"/> enum value. Returns <c>null</c> if unrecognised.
+    /// </summary>
+    private static HumlSpecVersion? TryParseSpecVersion(string versionValue)
+    {
+        var major_minor = TryExtractMajorMinor(versionValue);
+        if (!major_minor.HasValue) return null;
+
+        return (major_minor.Value.major, major_minor.Value.minor) switch
+        {
+#pragma warning disable CS0618 // V0_1 obsolete
+            (0, 1) => HumlSpecVersion.V0_1,
+#pragma warning restore CS0618
+            (0, 2) => HumlSpecVersion.V0_2,
+            _ => null,
+        };
+    }
+
+    /// <summary>
+    /// Extracts the major and minor integer components from a version string.
+    /// Strips a leading 'v' if present, then parses "major.minor[.patch...]".
+    /// Returns <c>null</c> if the string cannot be parsed.
+    /// </summary>
+    private static (int major, int minor)? TryExtractMajorMinor(string versionValue)
+    {
+        var s = versionValue;
+        if (s.Length > 0 && (s[0] == 'v' || s[0] == 'V'))
+            s = s.Substring(1);
+
+        var parts = s.Split('.');
+        if (parts.Length < 2) return null;
+
+        if (!int.TryParse(parts[0], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int major)) return null;
+        if (!int.TryParse(parts[1], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int minor)) return null;
+
+        return (major, minor);
     }
 
 }
