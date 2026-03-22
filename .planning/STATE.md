@@ -4,9 +4,9 @@ milestone: v0.1
 milestone_name: milestone
 status: unknown
 stopped_at: Completed 07.3-02-PLAN.md
-last_updated: "2026-03-22T12:54:58.036Z"
+last_updated: "2026-03-22T19:47:41.148Z"
 progress:
-  total_phases: 14
+  total_phases: 18
   completed_phases: 10
   total_plans: 19
   completed_plans: 19
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 
 ## Current Position
 
-Phase: 07.3 (unicode-and-rtl-support-with-fixture-extensions) — EXECUTING
-Plan: 2 of 2
+Phase: 07.4
+Plan: Not started
 
 ## Performance Metrics
 
@@ -130,6 +130,10 @@ Recent decisions affecting current work:
 - Phase 07.1 inserted after Phase 7: Version header parsing and versioning completeness (INSERTED)
 - Phase 07.2 inserted after Phase 7: Code quality, API accuracy and performance optimisations (INSERTED)
 - Phase 07.3 inserted after Phase 7: Unicode and RTL support with fixture extensions (INSERTED)
+- Phase 07.4 inserted after Phase 07.3: Fix HumlSerializer key-quoting for non-ASCII dictionary keys (INSERTED)
+- Phase 07.5 inserted after Phase 07.4: Inline serialisation support via HumlOptions and HumlProperty (INSERTED)
+- Phase 07.6 inserted after Phase 07.5: Comprehensive round-trip tests against mixed fixture files (INSERTED)
+- Phase 07.7 inserted after Phase 07.6: Documentation suite for first public NuGet release (INSERTED)
 
 ### Pending Todos
 

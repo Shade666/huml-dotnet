@@ -148,11 +148,51 @@ Plans:
 **Goal:** Actionable error message for non-ASCII bare keys, fixture extension infrastructure (`fixtures/extensions/`) for local test cases not yet in upstream suite, comprehensive Unicode/RTL test coverage, and a repeatable fixture-gap audit rule
 **Requirements**: UNI-01, UNI-02, UNI-03, UNI-04, UNI-05, UNI-06
 **Depends on:** Phase 07.2
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 07.3-01-PLAN.md — Lexer error branch + IsLetter XML doc + LexerUnicodeTests (13 tests) + ParserUnicodeTests (8 tests) (UNI-01, UNI-02, UNI-03, UNI-04)
 - [ ] 07.3-02-PLAN.md — Fixture extension infrastructure (gaps.json, unicode.json, SharedSuiteTests extension, .csproj, fixture-gaps.md rule) (UNI-05, UNI-06)
+
+### Phase 07.4: Fix HumlSerializer key-quoting for non-ASCII dictionary keys (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 07.3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 07.4 to break down)
+
+### Phase 07.5: Inline serialisation support via HumlOptions and HumlProperty (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 07.4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 07.5 to break down)
+
+### Phase 07.6: Comprehensive round-trip tests against mixed fixture files (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 07.5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 07.6 to break down)
+
+### Phase 07.7: Documentation suite for first public NuGet release (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 07.6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 07.7 to break down)
 
 ### Phase 8: NuGet Release Preparation
 **Goal**: The NuGet package is verified complete -- correct TFM coverage, working SourceLink, embedded XML docs, and a successful pre-release publish to NuGet.org via OIDC Trusted Publishing
