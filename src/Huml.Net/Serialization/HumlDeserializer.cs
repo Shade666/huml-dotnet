@@ -60,7 +60,10 @@ internal static class HumlDeserializer
             return CoerceScalar(scalar, targetType, key: string.Empty, line: 0);
 
         if (node is HumlDocument doc)
-            return DeserializeDocument(doc, targetType);
+            return DeserializeMappingEntries(doc.Entries, targetType);
+
+        if (node is HumlInlineMapping inlineMapping)
+            return DeserializeMappingEntries(inlineMapping.Entries, targetType);
 
         if (node is HumlSequence seq)
             return DeserializeSequence(seq, targetType);
@@ -71,15 +74,16 @@ internal static class HumlDeserializer
     // ── Document (mapping) deserialization ───────────────────────────────────
 
     /// <summary>
-    /// Deserialises a <see cref="HumlDocument"/> (key-value mapping) into either a
-    /// <c>Dictionary&lt;string, T&gt;</c> (if <paramref name="targetType"/> is a string-keyed dict)
-    /// or a POCO with public settable properties.
+    /// Deserialises mapping entries into either a <c>Dictionary&lt;string, T&gt;</c>
+    /// (if <paramref name="targetType"/> is a string-keyed dict) or a POCO with public
+    /// settable properties. Shared by <see cref="HumlDocument"/> and <see cref="HumlInlineMapping"/>
+    /// dispatch paths.
     /// </summary>
-    private static object? DeserializeDocument(HumlDocument doc, Type targetType)
+    private static object? DeserializeMappingEntries(IReadOnlyList<HumlNode> entries, Type targetType)
     {
         // Dispatch to dictionary path if targetType is Dictionary<string, T>
         if (IsStringKeyedDictionary(targetType))
-            return DeserializeDictionary(doc, targetType);
+            return DeserializeDictionary(entries, targetType);
 
         // Create instance via parameterless constructor
         object instance;
@@ -99,7 +103,7 @@ internal static class HumlDeserializer
         var descriptors = PropertyDescriptor.GetDescriptors(targetType);
 
         // Map each HUML mapping entry to a property
-        foreach (var entry in doc.Entries)
+        foreach (var entry in entries)
         {
             if (entry is not HumlMapping mapping)
                 continue;
@@ -209,14 +213,16 @@ internal static class HumlDeserializer
     // ── Dictionary deserialization ────────────────────────────────────────────
 
     /// <summary>
-    /// Deserialises a <see cref="HumlDocument"/> into a <c>Dictionary&lt;string, T&gt;</c>.
+    /// Deserialises mapping entries into a <c>Dictionary&lt;string, T&gt;</c>.
+    /// Accepts <see cref="IReadOnlyList{HumlNode}"/> so it can be called from both
+    /// <see cref="HumlDocument"/> and <see cref="HumlInlineMapping"/> dispatch paths.
     /// </summary>
-    private static object DeserializeDictionary(HumlDocument doc, Type targetType)
+    private static object DeserializeDictionary(IReadOnlyList<HumlNode> entries, Type targetType)
     {
         var valueType = targetType.GetGenericArguments()[1];
         var dict = (IDictionary)Activator.CreateInstance(targetType)!;
 
-        foreach (var entry in doc.Entries)
+        foreach (var entry in entries)
         {
             if (entry is not HumlMapping mapping)
                 continue;

@@ -161,7 +161,7 @@ public class HumlParserTests
     }
 
     [Fact]
-    public void Parse_InlineEmptyDict_ReturnsEmptyDocument()
+    public void Parse_InlineEmptyDict_ReturnsInlineMapping()
     {
         const string input = "items:: {}";
         var doc = new HumlParser(input, HumlOptions.Default).Parse();
@@ -169,8 +169,8 @@ public class HumlParserTests
         doc.Entries.Should().HaveCount(1);
         var mapping = (HumlMapping)doc.Entries[0];
         mapping.Key.Should().Be("items");
-        mapping.Value.Should().BeOfType<HumlDocument>();
-        ((HumlDocument)mapping.Value).Entries.Should().HaveCount(0);
+        mapping.Value.Should().BeOfType<HumlInlineMapping>();
+        ((HumlInlineMapping)mapping.Value).Entries.Should().HaveCount(0);
     }
 
     // ── 4. Inline collection tests ────────────────────────────────────────────
@@ -203,9 +203,9 @@ public class HumlParserTests
         doc.Entries.Should().HaveCount(1);
         var mapping = (HumlMapping)doc.Entries[0];
         mapping.Key.Should().Be("data");
-        mapping.Value.Should().BeOfType<HumlDocument>();
+        mapping.Value.Should().BeOfType<HumlInlineMapping>();
 
-        var inner = (HumlDocument)mapping.Value;
+        var inner = (HumlInlineMapping)mapping.Value;
         inner.Entries.Should().HaveCount(2);
         ((HumlMapping)inner.Entries[0]).Key.Should().Be("a");
         ((HumlMapping)inner.Entries[1]).Key.Should().Be("b");
