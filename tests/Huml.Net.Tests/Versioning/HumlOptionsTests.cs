@@ -56,4 +56,47 @@ public class HumlOptionsTests
         options.VersionSource.Should().Be(VersionSource.Header);
         options.UnknownVersionBehaviour.Should().Be(UnknownVersionBehaviour.UseLatest);
     }
+
+    [Fact]
+    public void MaxRecursionDepth_default_is_512()
+    {
+        var options = new HumlOptions();
+        options.MaxRecursionDepth.Should().Be(512);
+    }
+
+    [Fact]
+    public void MaxRecursionDepth_accepts_minimum_value_1()
+    {
+        var options = new HumlOptions { MaxRecursionDepth = 1 };
+        options.MaxRecursionDepth.Should().Be(1);
+    }
+
+    [Fact]
+    public void MaxRecursionDepth_accepts_maximum_value_65536()
+    {
+        var options = new HumlOptions { MaxRecursionDepth = 65536 };
+        options.MaxRecursionDepth.Should().Be(65536);
+    }
+
+    [Fact]
+    public void MaxRecursionDepth_zero_throws_ArgumentOutOfRangeException()
+    {
+        var act = () => new HumlOptions { MaxRecursionDepth = 0 };
+        act.Should().Throw<ArgumentOutOfRangeException>()
+            .Which.ParamName.Should().Be("MaxRecursionDepth");
+    }
+
+    [Fact]
+    public void MaxRecursionDepth_negative_throws_ArgumentOutOfRangeException()
+    {
+        var act = () => new HumlOptions { MaxRecursionDepth = -1 };
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void MaxRecursionDepth_above_65536_throws_ArgumentOutOfRangeException()
+    {
+        var act = () => new HumlOptions { MaxRecursionDepth = 65537 };
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
 }

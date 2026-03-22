@@ -46,10 +46,14 @@ public static class Huml
         => Deserialize<T>(huml.AsSpan(), options);
 
     /// <summary>
-    /// Deserialises a HUML span into <typeparamref name="T"/>. This is the single
+    /// Deserialises a HUML character span into <typeparamref name="T"/>. This is the single
     /// implementation overload; the <see cref="Deserialize{T}(string, HumlOptions?)"/>
     /// overload delegates here via <c>AsSpan()</c>.
     /// </summary>
+    /// <remarks>
+    /// The span is converted to a managed <see cref="string"/> internally before lexing.
+    /// A true zero-copy parse path (using a <c>ref struct</c> lexer) is tracked as a v2 enhancement.
+    /// </remarks>
     /// <typeparam name="T">The target type.</typeparam>
     /// <param name="huml">The HUML document as a character span.</param>
     /// <param name="options">Parsing options; defaults to <see cref="HumlOptions.Default"/>.</param>

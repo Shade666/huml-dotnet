@@ -30,6 +30,8 @@ internal static class HumlDeserializer
 
     /// <summary>
     /// Deserialises HUML text (as a span) into a typed .NET object of type <typeparamref name="T"/>.
+    /// The span is converted to a <see cref="string"/> via <c>ToString()</c> before lexing;
+    /// a true zero-copy path is a v2 enhancement.
     /// </summary>
     internal static T Deserialize<T>(ReadOnlySpan<char> huml, HumlOptions? options = null)
     {
