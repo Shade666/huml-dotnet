@@ -21,6 +21,19 @@ public class SharedSuiteTests
             foreach (var row in rows)
                 yield return new object[] { row.Name, row.Input, row.Error };
         }
+
+        // Extension fixtures — local test cases not yet in upstream huml-lang/tests
+        var extDir = Path.Combine(AppContext.BaseDirectory, "fixtures", "extensions", version, "assertions");
+        if (Directory.Exists(extDir))
+        {
+            foreach (var file in Directory.GetFiles(extDir, "*.json"))
+            {
+                var rows = JsonSerializer.Deserialize<FixtureRow[]>(File.ReadAllText(file), opts)
+                    ?? Array.Empty<FixtureRow>();
+                foreach (var row in rows)
+                    yield return new object[] { row.Name, row.Input, row.Error };
+            }
+        }
     }
 
     public static IEnumerable<object[]> V01Fixtures() => LoadFixtures("v0.1");

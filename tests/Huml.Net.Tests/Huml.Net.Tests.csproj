@@ -21,5 +21,8 @@
     <Content Include="..\..\fixtures\v0.2\**\*"
              Link="fixtures\v0.2\%(RecursiveDir)%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\fixtures\extensions\**\*"
+             Link="fixtures\extensions\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
