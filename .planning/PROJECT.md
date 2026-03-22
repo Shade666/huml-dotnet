@@ -31,6 +31,12 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 - [x] `System.Text.Json`-style static API: `Huml.Serialize<T>()` / `Huml.Deserialize<T>()` — Validated in Phase 07: Static Entry Point and Shared Fixture Compliance
 - [x] `Deserialize<T>(ReadOnlySpan<char> huml, ...)` overload for zero-allocation parsing paths — Validated in Phase 07: Static Entry Point and Shared Fixture Compliance
 - [x] Zero external runtime dependencies — Validated in Phase 07: Static Entry Point and Shared Fixture Compliance
+- [x] Serialiser hot-path allocations reduced: `AppendEscapedString` (no intermediate string), `PropertyDescriptor.DefaultValue` cached at build time — Validated in Phase 07.2: Code Quality, API Accuracy and Performance Optimisations
+- [x] `HumlInlineMapping` AST node disambiguates inline/empty dict values from root `HumlDocument` — Validated in Phase 07.2: Code Quality, API Accuracy and Performance Optimisations
+- [x] `HumlUnsupportedVersionException` in canonical `Huml.Net.Exceptions` namespace — Validated in Phase 07.2: Code Quality, API Accuracy and Performance Optimisations
+- [x] `MaxRecursionDepth` validates range `[1, 65536]` at construction time — Validated in Phase 07.2: Code Quality, API Accuracy and Performance Optimisations
+- [x] Actionable error message for non-ASCII letter at bare-key position ("Bare keys must start with [a-zA-Z]") — Validated in Phase 07.3: Unicode and RTL Support with Fixture Extensions
+- [x] `fixtures/extensions/` infrastructure with 11 gap assertions and 17 Unicode/RTL assertions, integrated into SharedSuiteTests via extension scan — Validated in Phase 07.3: Unicode and RTL Support with Fixture Extensions
 
 ### Active
 
@@ -74,4 +80,4 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 | `SpecVersionPolicy` constants as code | `HumlUnsupportedVersionException` references them directly — error message stays accurate without manual updates | — Pending |
 
 ---
-*Last updated: 2026-03-22 — Phase 07.1 complete: version header wiring — `%HUML vX.Y` directive now reads, validates, and propagates to both Lexer and Parser; all 3 `UnknownVersionBehaviour` modes implemented; 8 new VER-HEADER tests. 585 tests green across net8.0/net9.0/net10.0.*
+*Last updated: 2026-03-22 — Phase 07.3 complete: Unicode and RTL support — actionable error for non-ASCII bare keys; `fixtures/extensions/` infrastructure with 11 gap assertions + 17 Unicode/RTL assertions; SharedSuiteTests extension scan with Directory.Exists guard; `.claude/rules/fixture-gaps.md` repeatable audit rule. 655 tests green across net8.0/net9.0/net10.0.*

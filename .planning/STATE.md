@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07.3-01-PLAN.md
-last_updated: "2026-03-22T11:35:15.802Z"
+stopped_at: Completed 07.3-02-PLAN.md
+last_updated: "2026-03-22T12:54:58.036Z"
 progress:
   total_phases: 14
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # Project State
@@ -64,6 +64,7 @@ Plan: 2 of 2
 | Phase 07.2 P02 | 8 | 2 tasks | 10 files |
 | Phase 07.2 P03 | 3min | 2 tasks | 5 files |
 | Phase 07.3 P01 | 3min | 2 tasks | 3 files |
+| Phase 07.3 P02 | 8min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,9 @@ Recent decisions affecting current work:
 - [Phase 07.2]: DeserializeMappingEntries(IReadOnlyList<HumlNode>) shared helper eliminates duplication between HumlDocument and HumlInlineMapping deserializer dispatch paths
 - [Phase 07.3]: char.IsLetter error branch placed AFTER all acceptance branches — cannot affect the acceptance path which uses private IsLetter (ASCII-only)
 - [Phase 07.3]: UnicodePoco uses ASCII property names to bypass serializer quoted-key gap (D-08) — Unicode property names in POCOs would fail round-trip
+- [Phase 07.3]: fixtures/extensions/ is a plain tracked directory (not a git submodule) committed directly to the repo
+- [Phase 07.3]: Extension fixtures integrate transparently into existing V01_fixture_passes and V02_fixture_passes Theory runs via LoadFixtures extension scan with Directory.Exists guard (D-01, D-02)
+- [Phase 07.3]: D-03 verified: ambiguous_empty_vector_bare Theory row passes (HumlParseException thrown for 'key::' as expected)
 
 ### Roadmap Evolution
 
@@ -139,6 +143,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T11:35:15.799Z
-Stopped at: Completed 07.3-01-PLAN.md
+Last session: 2026-03-22T12:54:58.032Z
+Stopped at: Completed 07.3-02-PLAN.md
 Resume file: None
