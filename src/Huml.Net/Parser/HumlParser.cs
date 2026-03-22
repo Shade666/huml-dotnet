@@ -113,7 +113,7 @@ internal sealed class HumlParser
             {
                 Advance(); // consume EmptyDict token
                 AssertRootEnd();
-                return new HumlDocument(new HumlNode[] { new HumlDocument(Array.Empty<HumlNode>()) });
+                return new HumlDocument(new HumlNode[] { new HumlInlineMapping(Array.Empty<HumlNode>()) });
             }
 
             case RootType.InlineList:
@@ -125,9 +125,9 @@ internal sealed class HumlParser
 
             case RootType.InlineDict:
             {
-                var innerDoc = ParseInlineDict();
+                var inlineMapping = ParseInlineDict();
                 AssertRootEnd();
-                return innerDoc; // root inline dict entries become top-level entries
+                return new HumlDocument(inlineMapping.Entries); // root inline dict entries become top-level entries
             }
 
             case RootType.MultilineList:
@@ -471,7 +471,7 @@ internal sealed class HumlParser
                 else if (valueTk.Type == TokenType.EmptyDict)
                 {
                     Advance();
-                    items.Add(new HumlDocument(Array.Empty<HumlNode>()));
+                    items.Add(new HumlInlineMapping(Array.Empty<HumlNode>()));
                 }
                 else
                 {
@@ -557,7 +557,7 @@ internal sealed class HumlParser
         if (tk.Type == TokenType.EmptyDict)
         {
             Advance();
-            return new HumlDocument(Array.Empty<HumlNode>());
+            return new HumlInlineMapping(Array.Empty<HumlNode>());
         }
 
         if (tk.Type == TokenType.Key || tk.Type == TokenType.QuotedKey)
@@ -598,10 +598,10 @@ internal sealed class HumlParser
 
     /// <summary>
     /// Parses a comma-separated inline dict of <c>key: value</c> pairs.
-    /// Returns a <see cref="HumlDocument"/> whose entries are <see cref="HumlMapping"/> nodes.
+    /// Returns a <see cref="HumlInlineMapping"/> whose entries are <see cref="HumlMapping"/> nodes.
     /// Throws on duplicate keys.
     /// </summary>
-    private HumlDocument ParseInlineDict()
+    private HumlInlineMapping ParseInlineDict()
     {
         var entries = new List<HumlMapping>();
         var seenKeys = new HashSet<string>(StringComparer.Ordinal);
@@ -642,7 +642,7 @@ internal sealed class HumlParser
                 break;
         }
 
-        return new HumlDocument(entries.ToArray());
+        return new HumlInlineMapping(entries.ToArray());
     }
 
     // ── End-of-document assertion ─────────────────────────────────────────────

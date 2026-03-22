@@ -133,13 +133,15 @@ Plans:
 
 ### Phase 07.2: Code quality, API accuracy and performance optimisations (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
-**Depends on:** Phase 7
-**Plans:** 0 plans
+**Goal:** Fix misleading public API documentation, eliminate internal code duplication, improve hot-path serialisation performance, introduce HumlInlineMapping to disambiguate root documents from inline mapping blocks, and consolidate exception namespaces -- all pre-v1 housekeeping with no consumer-facing behaviour changes (except the intentional HumlInlineMapping AST break)
+**Requirements**: CQ-01, CQ-02, CQ-03, CQ-04, CQ-05
+**Depends on:** Phase 07.1
+**Plans:** 2/3 plans executed
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 07.2 to break down)
+- [x] 07.2-01-PLAN.md — Serializer performance: AppendEscapedString, DefaultValue caching, sequence deduplication (CQ-01, CQ-03)
+- [x] 07.2-02-PLAN.md — Infrastructure cleanup: iterative MeasureIndent, InferDictRootType removal, namespace move, API docs, MaxRecursionDepth validation (CQ-02, CQ-04)
+- [ ] 07.2-03-PLAN.md — HumlInlineMapping AST semantic split with parser, deserializer, and test updates (CQ-05)
 
 ### Phase 07.3: Unicode and RTL support with fixture extensions (INSERTED)
 
@@ -179,3 +181,23 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 6. Attributes and Serializer/Deserializer | 3/3 | Complete   | 2026-03-21 |
 | 7. Static Entry Point and Shared Fixture Compliance | 2/2 | Complete   | 2026-03-21 |
 | 8. NuGet Release Preparation | 0/? | Not started | - |
+
+## Backlog
+
+### Phase 999.1: Create comprehensive round-trip tests against documents/mixed fixture files (BACKLOG)
+
+**Goal:** Add serialisation and deserialisation tests that exercise `fixtures/v0.2/documents/mixed.huml` and `fixtures/v0.2/documents/mixed.json` as a kitchen-sink round-trip harness, plus equivalent v0.1 coverage when v0.1 document fixtures exist.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.2: Inline serialisation support via HumlOptions and [HumlProperty] — spec compliance research first (BACKLOG)
+
+**Goal:** Add a `CollectionFormat` option to `HumlOptions` (global default: `Multiline`) and an `Inline` tri-state (`bool?`) to `[HumlProperty]` for per-property overrides, mirroring `System.Text.Json` conventions. Scalar-only collections use inline format when requested; complex-valued collections fall back to multiline silently. Includes a `docs/` markdown document covering usage, edge cases, and fallback behaviour. **Pre-condition:** research whether inline formats are intended for hand-written HUML only, or are first-class serialiser output per the spec authors' intentions — could affect whether this is implemented, deferred, or spec-tracked.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)

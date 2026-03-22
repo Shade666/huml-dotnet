@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 07.2 context gathered
-last_updated: "2026-03-22T09:00:00.000Z"
+stopped_at: Completed 07.2-02-PLAN.md
+last_updated: "2026-03-22T10:15:42.954Z"
 progress:
-  total_phases: 11
+  total_phases: 13
   completed_phases: 8
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 17
+  completed_plans: 16
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 07.1 — version-header-parsing-and-versioning-completeness
+**Current focus:** Phase 07.2 — code-quality-api-accuracy-and-performance-optimisations
 
 ## Current Position
 
-Phase: 07.2
-Plan: Not started
+Phase: 07.2 (code-quality-api-accuracy-and-performance-optimisations) — EXECUTING
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -60,6 +60,8 @@ Plan: Not started
 | Phase 07 P01 | 6 | 1 tasks | 5 files |
 | Phase 07 P02 | 7 | 1 tasks | 3 files |
 | Phase 07.1-version-header-parsing-and-versioning-completeness P01 | 3min | 1 tasks | 3 files |
+| Phase 07.2 P01 | 3 | 2 tasks | 2 files |
+| Phase 07.2 P02 | 8 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -107,6 +109,11 @@ Recent decisions affecting current work:
 - [Phase 07.1]: Parser sets _lexer.EffectiveSpecVersion immediately after ApplyVersionFromHeader so backtick gate in lexer uses correct version for the rest of document
 - [Phase 07.1]: TryExtractMajorMinor uses int.TryParse with CultureInfo.InvariantCulture to satisfy Meziantou MA0011 analyzer rule (TreatWarningsAsErrors)
 - [Phase 07.1]: UsePrevious below-minimum check uses majorMinor.minor < 1 for major=0 (identifies 0.0.x as below v0.1 floor); no enum cast arithmetic
+- [Phase 07.2]: AppendEscapedString uses char-by-char switch direct to StringBuilder — eliminates 5 intermediate string allocations per serialised string value
+- [Phase 07.2]: PropertyDescriptor.DefaultValue caches Activator.CreateInstance at build time — OmitIfDefault check is now O(1) with no heap allocation per emit
+- [Phase 07.2]: EmitSequenceItems(IEnumerable) is the single sequence emitter — SerializeSequenceInline, SerializeSequenceBody, SerializeDictionaryInline deleted
+- [Phase 07.2]: MA0015 analyzer suppressed with pragma for nameof(MaxRecursionDepth) in init accessor — property name is more informative than 'value' for error messages
+- [Phase 07.2]: HumlUnsupportedVersionException moved to Huml.Net.Exceptions namespace (canonical) — consistent with HumlParseException placement from Phase 03
 
 ### Roadmap Evolution
 
@@ -126,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T08:08:30.165Z
-Stopped at: Completed 07.1-01-PLAN.md
+Last session: 2026-03-22T10:15:42.951Z
+Stopped at: Completed 07.2-02-PLAN.md
 Resume file: None

@@ -155,6 +155,7 @@ public class HumlNodeTests
         var scalar = new HumlScalar(ScalarKind.String, "x");
 
         HumlNode doc = new HumlDocument(entries);
+        HumlNode inlineMapping = new HumlInlineMapping(entries);
         HumlNode mapping = new HumlMapping("k", scalar);
         HumlNode sequence = new HumlSequence(items);
         HumlNode scalarNode = scalar;
@@ -162,6 +163,7 @@ public class HumlNodeTests
         static string Classify(HumlNode node) => node switch
         {
             HumlDocument => "document",
+            HumlInlineMapping => "inline-mapping",
             HumlMapping => "mapping",
             HumlSequence => "sequence",
             HumlScalar => "scalar",
@@ -169,8 +171,36 @@ public class HumlNodeTests
         };
 
         Classify(doc).Should().Be("document");
+        Classify(inlineMapping).Should().Be("inline-mapping");
         Classify(mapping).Should().Be("mapping");
         Classify(sequence).Should().Be("sequence");
         Classify(scalarNode).Should().Be("scalar");
+    }
+
+    // ── HumlInlineMapping type tests ──────────────────────────────────────────
+
+    [Fact]
+    public void HumlInlineMapping_is_sealed_and_derives_from_HumlNode()
+    {
+        var node = new HumlInlineMapping(Array.Empty<HumlNode>());
+        node.Should().BeAssignableTo<HumlNode>();
+        typeof(HumlInlineMapping).IsSealed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HumlInlineMapping_exposes_Entries()
+    {
+        var entries = new HumlNode[] { new HumlMapping("key", new HumlScalar(ScalarKind.String, "val")) };
+        var mapping = new HumlInlineMapping(entries);
+        mapping.Entries.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void HumlInlineMapping_structural_equality()
+    {
+        var entries = Array.Empty<HumlNode>();
+        var a = new HumlInlineMapping(entries);
+        var b = new HumlInlineMapping(entries);
+        a.Should().Be(b);
     }
 }
