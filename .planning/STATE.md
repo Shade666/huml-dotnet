@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-21T12:32:14.943Z"
+stopped_at: Completed 07.1-01-PLAN.md
+last_updated: "2026-03-22T08:08:30.168Z"
 progress:
-  total_phases: 8
-  completed_phases: 6
-  total_plans: 13
-  completed_plans: 12
+  total_phases: 11
+  completed_phases: 8
+  total_plans: 14
+  completed_plans: 14
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 07 — static-entry-point-and-shared-fixture-compliance
+**Current focus:** Phase 07.1 — version-header-parsing-and-versioning-completeness
 
 ## Current Position
 
-Phase: 07 (static-entry-point-and-shared-fixture-compliance) — EXECUTING
-Plan: 2 of 2
+Phase: 07.1 (version-header-parsing-and-versioning-completeness) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -58,6 +58,8 @@ Plan: 2 of 2
 | Phase 06 P03 | 4 | 2 tasks | 2 files |
 | Phase 06 P02 | 39min | 2 tasks | 2 files |
 | Phase 07 P01 | 6 | 1 tasks | 5 files |
+| Phase 07 P02 | 7 | 1 tasks | 3 files |
+| Phase 07.1-version-header-parsing-and-versioning-completeness P01 | 3min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -98,6 +100,19 @@ Recent decisions affecting current work:
 - [Phase 07]: Huml.Deserialize<T>(string) calls Deserialize<T>(huml.AsSpan(), options) — never HumlDeserializer directly — preserving single lexer path (API-02)
 - [Phase 07]: Parser consumes optional %HUML version token at document start; pre-existing gap exposed by facade round-trip tests
 - [Phase 07]: cref attributes referencing Huml.Net.Exceptions.* use T: prefix to avoid ambiguity with new Huml class name
+- [Phase 07]: Fixture JSON loaded with PropertyNameCaseInsensitive=true because fixture files use lowercase names
+- [Phase 07]: V01Options uses VersionSource.Options to force v0.1 rules regardless of any %HUML header in fixture input
+- [Phase 07]: IsFloatSpan excludes hex/octal/binary numbers (0x/0o/0b prefix) to prevent FormatException
+- [Phase 07]: Root inline dict support in ParseMappingEntries via inlineLine tracking enforces single-line constraint
+- [Phase 07.1]: Parser sets _lexer.EffectiveSpecVersion immediately after ApplyVersionFromHeader so backtick gate in lexer uses correct version for the rest of document
+- [Phase 07.1]: TryExtractMajorMinor uses int.TryParse with CultureInfo.InvariantCulture to satisfy Meziantou MA0011 analyzer rule (TreatWarningsAsErrors)
+- [Phase 07.1]: UsePrevious below-minimum check uses majorMinor.minor < 1 for major=0 (identifies 0.0.x as below v0.1 floor); no enum cast arithmetic
+
+### Roadmap Evolution
+
+- Phase 07.1 inserted after Phase 7: Version header parsing and versioning completeness (INSERTED)
+- Phase 07.2 inserted after Phase 7: Code quality, API accuracy and performance optimisations (INSERTED)
+- Phase 07.3 inserted after Phase 7: Unicode and RTL support with fixture extensions (INSERTED)
 
 ### Pending Todos
 
@@ -111,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T12:32:14.941Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-22T08:08:30.165Z
+Stopped at: Completed 07.1-01-PLAN.md
 Resume file: None

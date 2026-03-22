@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: AST Node Hierarchy** - Immutable `abstract record` AST tree consumed by parser and future linting package (completed 2026-03-21)
 - [x] **Phase 5: Parser** - Recursive-descent parser covering full HUML v0.1 and v0.2 grammar with depth-limit guard (completed 2026-03-21)
 - [x] **Phase 6: Attributes and Serializer/Deserializer** - Reflection-based serialization and deserialization with attribute-driven mapping (completed 2026-03-21)
-- [ ] **Phase 7: Static Entry Point and Shared Fixture Compliance** - `Huml` static class wiring all pipeline stages; CI passes all fixture suite tests
+- [x] **Phase 7: Static Entry Point and Shared Fixture Compliance** - `Huml` static class wiring all pipeline stages; CI passes all fixture suite tests (completed 2026-03-21)
 - [ ] **Phase 8: NuGet Release Preparation** - Verified multi-TFM package with SourceLink, XML docs, and first NuGet publish
 
 ## Phase Details
@@ -116,10 +116,40 @@ Plans:
   2. `Huml.Deserialize<T>(ReadOnlySpan<char> huml, ...)` is the single implementation overload; `Huml.Deserialize<T>(string huml, ...)` is a thin `AsSpan()` wrapper -- confirmed by inspecting that only one overload reaches the Lexer
   3. All xUnit Theory rows from both `huml-lang/tests@v0.1` and `huml-lang/tests@v0.2` fixture suites pass in CI with a non-zero Theory count logged for each version
   4. All public members of `Huml`, `HumlOptions`, `HumlSpecVersion`, `HumlParseException`, `HumlSerializeException`, `HumlDeserializeException`, `HumlUnsupportedVersionException`, `[HumlProperty]`, and `[HumlIgnore]` carry XML doc comments visible in IntelliSense
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 07-01-PLAN.md — Huml static facade with XML doc comments and unit tests (API-01, API-02, API-03)
-- [ ] 07-02-PLAN.md — SharedSuiteTests Theory runner for v0.1 and v0.2 fixture compliance (API-06, API-03)
+- [x] 07-02-PLAN.md — SharedSuiteTests Theory runner for v0.1 and v0.2 fixture compliance (API-06, API-03)
+
+### Phase 07.1: Version header parsing and versioning completeness (INSERTED)
+
+**Goal:** The versioning subsystem (HumlOptions.AutoDetect, VersionSource.Header, UnknownVersionBehaviour, HumlUnsupportedVersionException) is wired into the runtime parse path so that %HUML version headers are read, validated, and propagated to both parser and lexer version gates
+**Requirements**: VER-HEADER-01, VER-HEADER-02, VER-HEADER-03, VER-HEADER-04, VER-HEADER-05, VER-HEADER-06
+**Depends on:** Phase 7
+**Plans:** 1/1 plans complete
+
+Plans:
+- [x] 07.1-01-PLAN.md — Wire version header detection in Lexer and Parser with TDD tests (VER-HEADER-01, VER-HEADER-02, VER-HEADER-03, VER-HEADER-04, VER-HEADER-05, VER-HEADER-06)
+
+### Phase 07.2: Code quality, API accuracy and performance optimisations (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 07.2 to break down)
+
+### Phase 07.3: Unicode and RTL support with fixture extensions (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 07.3 to break down)
 
 ### Phase 8: NuGet Release Preparation
 **Goal**: The NuGet package is verified complete -- correct TFM coverage, working SourceLink, embedded XML docs, and a successful pre-release publish to NuGet.org via OIDC Trusted Publishing
@@ -147,5 +177,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. AST Node Hierarchy | 1/1 | Complete   | 2026-03-21 |
 | 5. Parser | 2/2 | Complete   | 2026-03-21 |
 | 6. Attributes and Serializer/Deserializer | 3/3 | Complete   | 2026-03-21 |
-| 7. Static Entry Point and Shared Fixture Compliance | 1/2 | In Progress|  |
+| 7. Static Entry Point and Shared Fixture Compliance | 2/2 | Complete   | 2026-03-21 |
 | 8. NuGet Release Preparation | 0/? | Not started | - |
