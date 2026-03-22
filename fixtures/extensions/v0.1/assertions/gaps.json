@@ -9,5 +9,6 @@
   {"name": "root_inf_scalar", "input": "inf", "error": false},
   {"name": "root_hex_scalar", "input": "0xFF", "error": false},
   {"name": "multiline_list_integer_items", "input": "list::\n  - 1\n  - 2\n  - 3", "error": false},
-  {"name": "ambiguous_empty_vector_bare", "input": "key::", "error": true}
+  {"name": "ambiguous_empty_vector_bare", "input": "key::", "error": true},
+  {"name": "quoted_key_containing_colon", "input": "\"a:b\": \"v\"", "error": false}
 ]
