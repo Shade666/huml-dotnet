@@ -12,15 +12,15 @@ All properties use `init`-only setters, making instances immutable after constru
 | `VersionSource`           | `VersionSource`           | `Options`   | `Options`, `Header`                 | `Options` = use `SpecVersion` property; `Header` = read `%HUML` directive from document                                    |
 | `UnknownVersionBehaviour` | `UnknownVersionBehaviour` | `Throw`     | `Throw`, `UseLatest`, `UsePrevious` | What happens when a `%HUML` header declares an unrecognised version                                                        |
 | `CollectionFormat`        | `CollectionFormat`        | `Multiline` | `Multiline`, `Inline`               | Global default for collection serialisation format; per-property override via `[HumlProperty(Inline = InlineMode.Inline)]` |
-| `MaxRecursionDepth`       | `int`                     | `512`       | `1`–`65536`                         | Max nesting depth before `HumlParseException` is thrown                                                                    |
+| `MaxRecursionDepth`       | `int`                     | `64`        | `1`–`1024`                          | Max nesting depth before `HumlParseException` is thrown                                                                    |
 
 ## Convenience Instances
 
 | Instance                      | SpecVersion | VersionSource | UnknownVersionBehaviour | CollectionFormat | MaxRecursionDepth |
 | ----------------------------- | ----------- | ------------- | ----------------------- | ---------------- | ----------------- |
-| `HumlOptions.Default`         | V0_2        | Header        | Throw                   | Multiline        | 512               |
-| `HumlOptions.LatestSupported` | V0_2        | Options       | Throw                   | Multiline        | 512               |
-| `HumlOptions.AutoDetect`      | V0_2        | Header        | Throw                   | Multiline        | 512               |
+| `HumlOptions.Default`         | V0_2        | Header        | Throw                   | Multiline        | 64                |
+| `HumlOptions.LatestSupported` | V0_2        | Options       | Throw                   | Multiline        | 64                |
+| `HumlOptions.AutoDetect`      | V0_2        | Header        | Throw                   | Multiline        | 64                |
 
 `HumlOptions.Default` reads the `%HUML vX.Y.Z` header from the document to determine the spec version.
 If no header is present, it falls back to `V0_2`. `HumlOptions.AutoDetect` is a reference-equal alias for `Default`.
@@ -51,5 +51,5 @@ var result3 = Huml.Deserialize<MyDto>(humlText, HumlOptions.LatestSupported);
 ## Notes
 
 - Passing `null` for `options` in any `Huml.*` method is equivalent to passing `HumlOptions.Default` (header-aware auto-detect).
-- `MaxRecursionDepth` throws `ArgumentOutOfRangeException` at construction time if the value is outside `[1, 65536]`.
+- `MaxRecursionDepth` throws `ArgumentOutOfRangeException` at construction time if the value is outside `[1, 1024]`.
 - `CollectionFormat.Inline` is silently ignored for collection properties that contain non-scalar items — those always emit in multiline format.

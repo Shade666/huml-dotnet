@@ -78,7 +78,7 @@ public class ServerConfig
 | `VersionSource` | `VersionSource` | `Options` | `Options` = use `SpecVersion` property; `Header` = read `%HUML` directive from document |
 | `UnknownVersionBehaviour` | `UnknownVersionBehaviour` | `Throw` | What happens when a `%HUML` header declares an unrecognised version |
 | `CollectionFormat` | `CollectionFormat` | `Multiline` | Global default for collection serialisation format; per-property override via `[HumlProperty(Inline = InlineMode.Inline)]` |
-| `MaxRecursionDepth` | `int` | `512` | Max nesting depth before `HumlParseException` is thrown |
+| `MaxRecursionDepth` | `int` | `64` | Max nesting depth before `HumlParseException` is thrown |
 
 ## Compatibility
 
