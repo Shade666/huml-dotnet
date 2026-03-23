@@ -62,8 +62,8 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **API-01**: `Huml` static class exposes `Serialize<T>(T, HumlOptions?)`, `Serialize(object?, Type, HumlOptions?)`, `Deserialize<T>(string, HumlOptions?)`, `Deserialize<T>(ReadOnlySpan<char>, HumlOptions?)`, `Deserialize(string, Type, HumlOptions?)`, and `Parse(string, HumlOptions?)`
 - [x] **API-02**: The `Deserialize<T>(string, ...)` overload is a thin wrapper calling `AsSpan()` on the string argument; `ReadOnlySpan<char>` is the single implementation overload to avoid C# 14 overload resolution ambiguity (CS0121)
 - [x] **API-03**: All public members carry XML doc comments (`<summary>`, `<param>`, `<returns>`, `<exception>`) shipped in the NuGet package for IntelliSense
-- [ ] **API-04**: NuGet package metadata is complete: `PackageId`, `Authors`, `Description`, `PackageLicenseExpression` (MIT), `PackageTags`, `PackageProjectUrl`, `RepositoryUrl`, `PackageReadmeFile` (embedded README), `GenerateDocumentationFile`
-- [ ] **API-05**: NuGet package uses MinVer for git-tag-driven `PackageVersion` derivation and ships with embedded PDB (SourceLink with `PublishRepositoryUrl=true`, `EmbedUntrackedSources=true`, `ContinuousIntegrationBuild` gated on `$(GITHUB_ACTIONS)=='true'`)
+- [x] **API-04**: NuGet package metadata is complete: `PackageId`, `Authors`, `Description`, `PackageLicenseExpression` (MIT), `PackageTags`, `PackageProjectUrl`, `RepositoryUrl`, `PackageReadmeFile` (embedded README), `GenerateDocumentationFile`
+- [x] **API-05**: NuGet package uses MinVer for git-tag-driven `PackageVersion` derivation and ships with embedded PDB (SourceLink with `PublishRepositoryUrl=true`, `EmbedUntrackedSources=true`, `ContinuousIntegrationBuild` gated on `$(GITHUB_ACTIONS)=='true'`)
 - [x] **API-06**: `SharedSuiteTests.cs` Theory runner consumes `huml-lang/tests` v0.1 and v0.2 fixture suites; both fixture suites pass in CI with a verified non-zero Theory count for each version
 
 ## v2 Requirements
@@ -147,8 +147,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | API-01 | Phase 7 | Complete |
 | API-02 | Phase 7 | Complete |
 | API-03 | Phase 7 | Complete |
-| API-04 | Phase 8 | Pending |
-| API-05 | Phase 8 | Pending |
+| API-04 | Phase 8 | Complete |
+| API-05 | Phase 8 | Complete |
 | API-06 | Phase 7 | Complete |
 | SER-KEY-01 | Phase 7.4 | Complete |
 | SER-KEY-02 | Phase 7.4 | Complete |

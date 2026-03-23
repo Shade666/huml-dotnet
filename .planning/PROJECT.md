@@ -44,10 +44,10 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 - [x] Empty collections always emit `key:: []` / `key:: {}` regardless of `CollectionFormat` — Validated in Phase 07.5: Inline Serialisation Support
 - [x] Inline output round-trips through `Huml.Parse` without `HumlParseException` — Validated in Phase 07.5: Inline Serialisation Support
 - [x] Comprehensive round-trip tests against mixed fixture documents (v0.1 + v0.2): parse verification, typed sub-section value-equality (integers, floats, strings, booleans, nulls, 3-level nesting, edge-case keys), inline serialisation value-equality (lists, dicts, attribute overrides) — Validated in Phase 07.6: Comprehensive Round-Trip Tests Against Mixed Fixture Files
+- [x] NuGet-publishable: production-quality README.md (109 lines, code examples, compatibility table), CHANGELOG.md (Keep a Changelog 1.1.0), 6 docs/ guides (options, versioning, AST usage, error handling, inline serialisation, publish checklist), `Huml.Net.csproj` metadata patched (author, pitch description, repository URLs), `dotnet pack` verified clean across all 4 TFMs — Validated in Phase 07.7: Documentation Suite for First Public NuGet Release
 
 ### Active
 
-- [ ] NuGet-publishable: correct metadata, XML doc comments, README
 - [ ] CI pipeline: GitHub Actions running both fixture suite versions
 
 ### Out of Scope
@@ -87,4 +87,4 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 | `SpecVersionPolicy` constants as code | `HumlUnsupportedVersionException` references them directly — error message stays accurate without manual updates | — Pending |
 
 ---
-*Last updated: 2026-03-22 — Phase 07.6 complete: Comprehensive round-trip tests added — `MixedFixtureRoundTripTests` (18 tests) covers parse verification, typed sub-section value-equality, and inline value-equality for both v0.1 and v0.2 mixed fixtures. 704 tests green across net8.0/net9.0/net10.0.*
+*Last updated: 2026-03-23 — Phase 07.7 complete: Full documentation suite written — README.md, CHANGELOG.md, 6 docs/ guides, and NuGet metadata patched. `dotnet pack` verified clean. 704 tests green across net8.0/net9.0/net10.0.*
