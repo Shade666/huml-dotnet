@@ -7,16 +7,16 @@ When v0.3 ships, v0.1 will leave the support window and be removed from the libr
 
 ## Current Supported Versions
 
-| Version | Enum Value | Status |
-|---------|------------|--------|
-| v0.1 | `HumlSpecVersion.V0_1` | Supported (deprecated) |
-| v0.2 | `HumlSpecVersion.V0_2` | Current |
+| Version | Enum Value             | Status                 |
+| ------- | ---------------------- | ---------------------- |
+| v0.1    | `HumlSpecVersion.V0_1` | Supported (deprecated) |
+| v0.2    | `HumlSpecVersion.V0_2` | Current                |
 
 ## V0_1 Deprecation
 
 `HumlSpecVersion.V0_1` is marked `[Obsolete]`. Using it in code produces compiler warning **CS0618**:
 
-```
+```text
 warning CS0618: 'HumlSpecVersion.V0_1' is obsolete:
   'HumlSpecVersion.V0_1 is deprecated. HUML v0.1 will leave the support window
    when v0.3 ships. Migrate to HumlSpecVersion.V0_2.'

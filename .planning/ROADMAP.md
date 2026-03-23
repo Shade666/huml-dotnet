@@ -200,13 +200,13 @@ Plans:
 
 ### Phase 07.9: Lower MaxRecursionDepth default from 512 to 64 and tighten valid range upper bound (INSERTED)
 
-**Goal:** Change `MaxRecursionDepth` default from 512 to 64, matching `System.Text.Json` convention and .NET developer expectations. Config files never exceed ~15 levels of nesting; 512 allows adversarial input to recurse far deeper than necessary before the guard fires. Also tighten the valid range upper bound from 65536 to a more defensible ceiling (e.g. 1024). Update XML docs and `docs/options-reference.md` accordingly.
-**Requirements:** TBD
-**Depends on:** Phase 07.7
-**Plans:** 0 plans
+**Goal:** Change `MaxRecursionDepth` default from 512 to 64, matching `System.Text.Json` convention and .NET developer expectations. Config files never exceed ~15 levels of nesting; 512 allows adversarial input to recurse far deeper than necessary before the guard fires. Also tighten the valid range upper bound from 65536 to a more defensible ceiling (1024). Update XML docs and `docs/options-reference.md` accordingly.
+**Requirements:** DEPTH-01, DEPTH-02, DEPTH-03
+**Depends on:** Phase 07.8
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] TBD
+- [x] 07.9-01-PLAN.md — Lower MaxRecursionDepth default to 64, tighten upper bound to 1024, update tests and docs (DEPTH-01, DEPTH-02, DEPTH-03)
 
 ### Phase 8: NuGet Release Preparation
 **Goal**: The NuGet package is verified complete -- correct TFM coverage, working SourceLink, embedded XML docs, and a successful pre-release publish to NuGet.org via OIDC Trusted Publishing
@@ -235,8 +235,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 5. Parser                                                      | 2/2            | Complete    | 2026-03-21 |
 | 6. Attributes and Serializer/Deserializer                      | 3/3            | Complete    | 2026-03-21 |
 | 7. Static Entry Point and Shared Fixture Compliance            | 2/2            | Complete    | 2026-03-22 |
-| 07.8. HumlOptions.Default → AutoDetect, LatestSupported rename | 1/1 | Complete   | 2026-03-23 |
-| 07.9. Lower MaxRecursionDepth default to 64                    | 0/?            | Not started | -          |
+| 07.8. HumlOptions.Default -> AutoDetect, LatestSupported rename | 1/1 | Complete    | 2026-03-23 |
+| 07.9. Lower MaxRecursionDepth default to 64                    | 1/1 | Complete   | 2026-03-23 |
 | 8. NuGet Release Preparation                                   | 0/?            | Not started | -          |
 
 ## Backlog

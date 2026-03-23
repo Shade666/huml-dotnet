@@ -14,25 +14,25 @@ using Huml.Net.Parser;
 
 All AST nodes are `public sealed record` types in the `Huml.Net.Parser` namespace, all extending the abstract base `HumlNode`.
 
-| Type | Constructor | Role |
-|------|-------------|------|
-| `HumlDocument` | `HumlDocument(IReadOnlyList<HumlNode> Entries)` | Root of every parsed document |
-| `HumlMapping` | `HumlMapping(string Key, HumlNode Value)` | A single key-value pair |
-| `HumlScalar` | `HumlScalar(ScalarKind Kind, object? Value)` | A leaf value |
-| `HumlSequence` | `HumlSequence(IReadOnlyList<HumlNode> Items)` | An ordered list |
+| Type                | Constructor                                          | Role                          |
+| ------------------- | ---------------------------------------------------- | ----------------------------- |
+| `HumlDocument`      | `HumlDocument(IReadOnlyList<HumlNode> Entries)`      | Root of every parsed document |
+| `HumlMapping`       | `HumlMapping(string Key, HumlNode Value)`            | A single key-value pair       |
+| `HumlScalar`        | `HumlScalar(ScalarKind Kind, object? Value)`         | A leaf value                  |
+| `HumlSequence`      | `HumlSequence(IReadOnlyList<HumlNode> Items)`        | An ordered list               |
 | `HumlInlineMapping` | `HumlInlineMapping(IReadOnlyList<HumlNode> Entries)` | Inline or empty mapping block |
 
 ## ScalarKind Values
 
-| Kind | Runtime Type of `Value` | Example HUML |
-|------|------------------------|--------------|
-| `String` | `string` | `key: "hello"` |
-| `Integer` | `long` | `key: 42` |
-| `Float` | `double` | `key: 3.14` |
-| `Bool` | `bool` | `key: true` |
-| `Null` | `null` | `key: null` |
-| `NaN` | `string` (`"nan"`) | `key: nan` |
-| `Inf` | `string` (`"+inf"` or `"-inf"`) | `key: +inf` |
+| Kind      | Runtime Type of `Value`         | Example HUML   |
+| --------- | ------------------------------- | -------------- |
+| `String`  | `string`                        | `key: "hello"` |
+| `Integer` | `long`                          | `key: 42`      |
+| `Float`   | `double`                        | `key: 3.14`    |
+| `Bool`    | `bool`                          | `key: true`    |
+| `Null`    | `null`                          | `key: null`    |
+| `NaN`     | `string` (`"nan"`)              | `key: nan`     |
+| `Inf`     | `string` (`"+inf"` or `"-inf"`) | `key: +inf`    |
 
 Note: `NaN` and `Inf` scalars carry the raw token string in `Value` rather than `null`, so that sign information (`+inf` vs `-inf`) is preserved for downstream consumers.
 

@@ -10,20 +10,20 @@ using Huml.Net.Exceptions;
 
 Huml.Net throws four exception types, all in the namespace `Huml.Net.Exceptions`.
 
-| Exception | Thrown By | Key Properties |
-|-----------|-----------|----------------|
-| `HumlParseException` | `Parse`, `Deserialize` | `int Line` (1-based), `int Column` (0-based) |
-| `HumlDeserializeException` | `Deserialize` | `string? Key`, `int? Line` |
-| `HumlSerializeException` | `Serialize` | (none beyond `Message`) |
-| `HumlUnsupportedVersionException` | `Parse`, `Deserialize` (when header version is unknown) | `string DeclaredVersion` |
+| Exception                         | Thrown By                                               | Key Properties                               |
+| --------------------------------- | ------------------------------------------------------- | -------------------------------------------- |
+| `HumlParseException`              | `Parse`, `Deserialize`                                  | `int Line` (1-based), `int Column` (0-based) |
+| `HumlDeserializeException`        | `Deserialize`                                           | `string? Key`, `int? Line`                   |
+| `HumlSerializeException`          | `Serialize`                                             | (none beyond `Message`)                      |
+| `HumlUnsupportedVersionException` | `Parse`, `Deserialize` (when header version is unknown) | `string DeclaredVersion`                     |
 
 ## Operation-to-Exception Mapping
 
-| Operation | Can Throw |
-|-----------|-----------|
-| `Huml.Parse()` | `HumlParseException`, `HumlUnsupportedVersionException` |
+| Operation               | Can Throw                                                                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `Huml.Parse()`          | `HumlParseException`, `HumlUnsupportedVersionException`                                                                           |
 | `Huml.Deserialize<T>()` | `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage), `HumlUnsupportedVersionException` (version stage) |
-| `Huml.Serialize<T>()` | `HumlSerializeException` |
+| `Huml.Serialize<T>()`   | `HumlSerializeException`                                                                                                          |
 
 ## Exception Properties
 
