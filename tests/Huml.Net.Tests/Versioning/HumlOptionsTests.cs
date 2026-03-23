@@ -13,9 +13,9 @@ public class HumlOptionsTests
     }
 
     [Fact]
-    public void Default_VersionSource_is_Options()
+    public void Default_VersionSource_is_Header()
     {
-        HumlOptions.Default.VersionSource.Should().Be(VersionSource.Options);
+        HumlOptions.Default.VersionSource.Should().Be(VersionSource.Header);
     }
 
     [Fact]
@@ -40,6 +40,30 @@ public class HumlOptionsTests
     public void AutoDetect_UnknownVersionBehaviour_is_Throw()
     {
         HumlOptions.AutoDetect.UnknownVersionBehaviour.Should().Be(UnknownVersionBehaviour.Throw);
+    }
+
+    [Fact]
+    public void LatestSupported_SpecVersion_is_V0_2()
+    {
+        HumlOptions.LatestSupported.SpecVersion.Should().Be(HumlSpecVersion.V0_2);
+    }
+
+    [Fact]
+    public void LatestSupported_VersionSource_is_Options()
+    {
+        HumlOptions.LatestSupported.VersionSource.Should().Be(VersionSource.Options);
+    }
+
+    [Fact]
+    public void LatestSupported_UnknownVersionBehaviour_is_Throw()
+    {
+        HumlOptions.LatestSupported.UnknownVersionBehaviour.Should().Be(UnknownVersionBehaviour.Throw);
+    }
+
+    [Fact]
+    public void AutoDetect_is_same_instance_as_Default()
+    {
+        ReferenceEquals(HumlOptions.AutoDetect, HumlOptions.Default).Should().BeTrue();
     }
 
     [Fact]

@@ -68,7 +68,7 @@ public class SharedSuiteTests
     [MemberData(nameof(V02Fixtures))]
     public void V02_fixture_passes(string name, string input, bool expectError)
     {
-        var options = HumlOptions.Default; // V0_2
+        var options = HumlOptions.LatestSupported; // V0_2 pinned
 
         if (expectError)
         {

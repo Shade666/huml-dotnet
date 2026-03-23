@@ -104,11 +104,11 @@ public class VersionHeaderParsingTests
     [Fact]
     public void Header_unknown_version_with_Options_source_ignores_header()
     {
-        // HumlOptions.Default uses VersionSource.Options, so the %HUML v9.9.0 header
+        // HumlOptions.LatestSupported uses VersionSource.Options, so the %HUML v9.9.0 header
         // must be silently ignored and parsing succeeds with options.SpecVersion (v0.2).
         const string input = "%HUML v9.9.0\nkey: true\n";
 
-        var act = () => Huml.Parse(input, HumlOptions.Default);
+        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
         act.Should().NotThrow();
     }
 

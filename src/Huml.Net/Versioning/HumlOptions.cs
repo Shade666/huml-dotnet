@@ -4,10 +4,23 @@ namespace Huml.Net.Versioning;
 public sealed class HumlOptions
 {
     /// <summary>
-    /// Default options: explicit v0.2, version taken from <c>HumlOptions</c>,
-    /// unknown version behaviour is <see cref="UnknownVersionBehaviour.Throw"/>.
+    /// Options pinned to the latest supported spec version (<see cref="HumlSpecVersion.V0_2"/>)
+    /// with version taken from <see cref="VersionSource.Options"/>, ignoring any <c>%HUML</c>
+    /// header in the document. Use when you always want v0.2 rules regardless of document content.
     /// </summary>
-    public static readonly HumlOptions Default = new();
+    public static readonly HumlOptions LatestSupported = new();
+
+    /// <summary>
+    /// Default options: reads the <c>%HUML</c> header to determine spec version
+    /// (<see cref="VersionSource.Header"/>), falling back to
+    /// <see cref="HumlSpecVersion.V0_2"/> when no header is present.
+    /// Unknown version behaviour is <see cref="UnknownVersionBehaviour.Throw"/>.
+    /// Equivalent to <see cref="AutoDetect"/>.
+    /// </summary>
+    public static readonly HumlOptions Default = new()
+    {
+        VersionSource = VersionSource.Header,
+    };
 
     /// <summary>
     /// Auto-detect options: reads the <c>%HUML vX.Y</c> directive from the document header,
@@ -15,11 +28,9 @@ public sealed class HumlOptions
     /// <see cref="SpecVersionPolicy.Latest"/>, and dispatches <see cref="UnknownVersionBehaviour"/>
     /// (<c>Throw</c> / <c>UseLatest</c> / <c>UsePrevious</c>) when the version is unrecognised.
     /// Falls back to <see cref="HumlSpecVersion.V0_2"/> when no header is present.
+    /// Equivalent to <see cref="Default"/>.
     /// </summary>
-    public static readonly HumlOptions AutoDetect = new()
-    {
-        VersionSource = VersionSource.Header,
-    };
+    public static readonly HumlOptions AutoDetect = Default;
 
     /// <summary>The HUML spec version to use when parsing or serialising.</summary>
     public HumlSpecVersion SpecVersion { get; init; } = HumlSpecVersion.V0_2;
