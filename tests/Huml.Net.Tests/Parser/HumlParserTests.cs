@@ -380,11 +380,11 @@ public class HumlParserTests
     [Fact]
     public void Parse_DeeplyNestedDict_ExceedingDefaultLimit_ThrowsHumlParseException()
     {
-        // Build 513 levels of nested dicts (one more than the default limit of 512)
+        // Build 65 levels of nested dicts (one more than the default limit of 64)
         var sb = new StringBuilder();
-        for (int i = 0; i <= 512; i++)
+        for (int i = 0; i <= 64; i++)
             sb.Append(new string(' ', i * 2)).Append($"k{i}::\n");
-        sb.Append(new string(' ', 513 * 2)).Append("leaf: \"done\"");
+        sb.Append(new string(' ', 65 * 2)).Append("leaf: \"done\"");
         var input = sb.ToString();
 
         Action act = () => new HumlParser(input, HumlOptions.Default).Parse();
@@ -394,11 +394,11 @@ public class HumlParserTests
     [Fact]
     public void Parse_DeeplyNestedList_ExceedingDefaultLimit_ThrowsHumlParseException()
     {
-        // Build 513 levels of nested lists (one more than the default limit of 512)
+        // Build 65 levels of nested lists (one more than the default limit of 64)
         var sb = new StringBuilder();
-        for (int i = 0; i <= 512; i++)
+        for (int i = 0; i <= 64; i++)
             sb.Append(new string(' ', i * 2)).Append("- ::\n");
-        sb.Append(new string(' ', 513 * 2)).Append("- \"done\"");
+        sb.Append(new string(' ', 65 * 2)).Append("- \"done\"");
         var input = sb.ToString();
 
         Action act = () => new HumlParser(input, HumlOptions.Default).Parse();
@@ -434,9 +434,9 @@ public class HumlParserTests
     }
 
     [Fact]
-    public void Parse_DefaultMaxRecursionDepth_Is512()
+    public void Parse_DefaultMaxRecursionDepth_Is64()
     {
-        HumlOptions.Default.MaxRecursionDepth.Should().Be(512);
-        new HumlOptions().MaxRecursionDepth.Should().Be(512);
+        HumlOptions.Default.MaxRecursionDepth.Should().Be(64);
+        new HumlOptions().MaxRecursionDepth.Should().Be(64);
     }
 }

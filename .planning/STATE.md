@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: "coverage. Extend Phase 07.5 inline tests from NotThrow-only to full value-equality round-trips.**Requirements**: MIX-01, MIX-02, MIX-03, MIX-04, MIX-05**Depends on:** Phase 07.5**Plans:** 1/1 plans complete"
 status: unknown
-stopped_at: Completed 07.7-02-PLAN.md
-last_updated: "2026-03-23T08:26:47.848Z"
+stopped_at: Completed 07.8-01-PLAN.md
+last_updated: "2026-03-23T21:12:41.692Z"
 progress:
   total_phases: 18
-  completed_phases: 14
-  total_plans: 25
-  completed_plans: 25
+  completed_phases: 15
+  total_plans: 26
+  completed_plans: 26
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 07.7 — documentation-suite-for-first-public-nuget-release
+**Current focus:** Phase 07.8 — make-humloptions-default-use-autodetect-behaviour
 
 ## Current Position
 
-Phase: 999.1
-Plan: Not started
+Phase: 07.8 (make-humloptions-default-use-autodetect-behaviour) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Plan: Not started
 | Phase 07.6 P01 | 5 | 2 tasks | 1 files |
 | Phase 07.7 P01 | 3min | 2 tasks | 7 files |
 | Phase 07.7 P02 | 5min | 2 tasks | 1 files |
+| Phase 07.8 P01 | 3min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,7 @@ Recent decisions affecting current work:
 - [Phase 07.7]: CHANGELOG [0.1.0] date left as YYYY-MM-DD placeholder for Phase 8 tag creation
 - [Phase 07.7]: docs/ast-usage.md includes HumlInlineMapping section with pattern-match examples rather than deferring to XML doc
 - [Phase 07.7]: NuGet author changed to primeBeri for public release; Description expanded to pitch-level copy; docs/inline-serialisation.md verified accurate; API-05 SourceLink confirmed in Directory.Build.props
+- [Phase 07.8]: HumlOptions.Default reassigned to VersionSource.Header; LatestSupported added for pinned-v0.2 behaviour; AutoDetect is reference-equal alias to Default
 
 ### Roadmap Evolution
 
@@ -164,6 +166,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T08:23:28.143Z
-Stopped at: Completed 07.7-02-PLAN.md
+Last session: 2026-03-23T21:12:41.689Z
+Stopped at: Completed 07.8-01-PLAN.md
 Resume file: None

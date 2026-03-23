@@ -51,25 +51,25 @@ public sealed class HumlOptions
     /// </summary>
     public CollectionFormat CollectionFormat { get; init; } = CollectionFormat.Multiline;
 
-    private int _maxRecursionDepth = 512;
+    private int _maxRecursionDepth = 64;
 
     /// <summary>
     /// Maximum recursion depth allowed during parsing. Exceeding this limit throws
     /// <see cref="T:Huml.Net.Exceptions.HumlParseException"/> instead of risking an unrecoverable
-    /// <see cref="StackOverflowException"/>. Default is 512. Valid range: [1, 65536].
+    /// <see cref="StackOverflowException"/>. Default is 64. Valid range: [1, 1024].
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown if value is less than 1 or greater than 65536.
+    /// Thrown if value is less than 1 or greater than 1024.
     /// </exception>
     public int MaxRecursionDepth
     {
         get => _maxRecursionDepth;
         init
         {
-            if (value < 1 || value > 65536)
+            if (value < 1 || value > 1024)
 #pragma warning disable MA0015 // nameof convention — init accessor uses 'value' but property name is more informative
                 throw new ArgumentOutOfRangeException(nameof(MaxRecursionDepth), value,
-                    "MaxRecursionDepth must be between 1 and 65536 inclusive.");
+                    "MaxRecursionDepth must be between 1 and 1024 inclusive.");
 #pragma warning restore MA0015
             _maxRecursionDepth = value;
         }

@@ -188,6 +188,26 @@ Plans:
 - [x] 07.7-01-PLAN.md — README.md, CHANGELOG.md, and 5 new docs/ guides (API-04)
 - [x] 07.7-02-PLAN.md — Huml.Net.csproj metadata patch, inline-serialisation review, dotnet pack verification (API-04, API-05)
 
+### Phase 07.8: Make HumlOptions.Default use AutoDetect behaviour — rename current Default to LatestSupported (INSERTED)
+
+**Goal:** `HumlOptions.Default` should read the `%HUML` header and fall back to v0.2 when absent (`AutoDetect` behaviour), since ignoring the header by default silently misclassifies v0.1 documents. The current pinned-to-v0.2 behaviour is preserved as `HumlOptions.LatestSupported`. XML docs and `docs/options-reference.md` updated accordingly.
+**Requirements:** OPT-01, OPT-02, OPT-03, OPT-04, OPT-05
+**Depends on:** Phase 07.7
+**Plans:** 1/1 plans complete
+
+Plans:
+- [x] 07.8-01-PLAN.md — Reassign Default to header-aware, add LatestSupported, alias AutoDetect, update tests and docs (OPT-01, OPT-02, OPT-03, OPT-04, OPT-05)
+
+### Phase 07.9: Lower MaxRecursionDepth default from 512 to 64 and tighten valid range upper bound (INSERTED)
+
+**Goal:** Change `MaxRecursionDepth` default from 512 to 64, matching `System.Text.Json` convention and .NET developer expectations. Config files never exceed ~15 levels of nesting; 512 allows adversarial input to recurse far deeper than necessary before the guard fires. Also tighten the valid range upper bound from 65536 to a more defensible ceiling (e.g. 1024). Update XML docs and `docs/options-reference.md` accordingly.
+**Requirements:** TBD
+**Depends on:** Phase 07.7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD
+
 ### Phase 8: NuGet Release Preparation
 **Goal**: The NuGet package is verified complete -- correct TFM coverage, working SourceLink, embedded XML docs, and a successful pre-release publish to NuGet.org via OIDC Trusted Publishing
 **Depends on**: Phase 7
@@ -206,40 +226,24 @@ Plans:
 **Execution Order:**
 Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Project Scaffold and CI Foundations | 2/2 | Complete   | 2026-03-20 |
-| 2. Versioning Foundation | 1/1 | Complete   | 2026-03-20 |
-| 3. Lexer and Token Types | 2/2 | Complete   | 2026-03-21 |
-| 4. AST Node Hierarchy | 1/1 | Complete   | 2026-03-21 |
-| 5. Parser | 2/2 | Complete   | 2026-03-21 |
-| 6. Attributes and Serializer/Deserializer | 3/3 | Complete   | 2026-03-21 |
-| 7. Static Entry Point and Shared Fixture Compliance | 2/2 | Complete   | 2026-03-22 |
-| 8. NuGet Release Preparation | 0/? | Not started | - |
+| Phase                                                          | Plans Complete | Status      | Completed  |
+| -------------------------------------------------------------- | -------------- | ----------- | ---------- |
+| 1. Project Scaffold and CI Foundations                         | 2/2            | Complete    | 2026-03-20 |
+| 2. Versioning Foundation                                       | 1/1            | Complete    | 2026-03-20 |
+| 3. Lexer and Token Types                                       | 2/2            | Complete    | 2026-03-21 |
+| 4. AST Node Hierarchy                                          | 1/1            | Complete    | 2026-03-21 |
+| 5. Parser                                                      | 2/2            | Complete    | 2026-03-21 |
+| 6. Attributes and Serializer/Deserializer                      | 3/3            | Complete    | 2026-03-21 |
+| 7. Static Entry Point and Shared Fixture Compliance            | 2/2            | Complete    | 2026-03-22 |
+| 07.8. HumlOptions.Default → AutoDetect, LatestSupported rename | 1/1 | Complete   | 2026-03-23 |
+| 07.9. Lower MaxRecursionDepth default to 64                    | 0/?            | Not started | -          |
+| 8. NuGet Release Preparation                                   | 0/?            | Not started | -          |
 
 ## Backlog
 
-### Phase 999.1: Create comprehensive round-trip tests against documents/mixed fixture files (BACKLOG)
+### Phase 999.5: Version-preserving round-trip option for HumlSerializer (BACKLOG)
 
-**Goal:** Add serialisation and deserialisation tests that exercise `fixtures/v0.2/documents/mixed.huml` and `fixtures/v0.2/documents/mixed.json` as a kitchen-sink round-trip harness, plus equivalent v0.1 coverage when v0.1 document fixtures exist.
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
-
-### Phase 999.2: Inline serialisation support via HumlOptions and [HumlProperty] — spec compliance research first (BACKLOG)
-
-**Goal:** Add a `CollectionFormat` option to `HumlOptions` (global default: `Multiline`) and an `Inline` tri-state (`bool?`) to `[HumlProperty]` for per-property overrides, mirroring `System.Text.Json` conventions. Scalar-only collections use inline format when requested; complex-valued collections fall back to multiline silently. Includes a `docs/` markdown document covering usage, edge cases, and fallback behaviour. **Pre-condition:** research whether inline formats are intended for hand-written HUML only, or are first-class serialiser output per the spec authors' intentions — could affect whether this is implemented, deferred, or spec-tracked.
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
-
-### Phase 999.3: Fix HumlSerializer key-quoting for non-ASCII dictionary keys (BACKLOG)
-
-**Goal:** `HumlSerializer.EmitEntry` always emits keys bare (e.g., `name: "value"`). When a `Dictionary<string, T>` has non-ASCII keys, the output is invalid HUML — the bare-key rule restricts keys to `[a-zA-Z][a-zA-Z0-9_-]*`. The fix is to detect non-ASCII key characters in `EmitEntry` and emit them as quoted keys (`"key": "value"` syntax) when necessary. Include a test that round-trips a `Dictionary<string, string>` with Arabic/Chinese keys and asserts the serialised output is valid HUML that re-parses correctly.
+**Goal:** Add a serialiser mode that emits the same spec version that was detected during parsing, rather than always upgrading to the latest. Enables formatter and linter tools to round-trip documents transparently without silently upgrading v0.1 files to v0.2. Requires `HumlDocument` (or `HumlOptions`) to carry the detected version through the pipeline, and the serialiser to suppress v0.2-only syntax (e.g. backtick multilines) when targeting v0.1. Consider for next release after initial NuGet publish.
 **Requirements:** TBD
 **Plans:** 0 plans
 
