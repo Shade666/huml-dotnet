@@ -2,12 +2,12 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;net8.0;net9.0;net10.0</TargetFrameworks>
     <PackageId>Huml.Net</PackageId>
-    <Description>A .NET HUML parser, serialiser, and deserialiser.</Description>
-    <Authors>Shade666</Authors>
+    <Description>Full-featured HUML v0.1/v0.2 parser, serialiser, and deserialiser for .NET with a System.Text.Json-style API and zero runtime dependencies.</Description>
+    <Authors>primeBeri</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>huml;parser;serializer;deserializer;markup</PackageTags>
-    <PackageProjectUrl>https://github.com/Shade666/huml-dotnet</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Shade666/huml-dotnet</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/primeBeri/huml-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/primeBeri/huml-dotnet</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <MinVerTagPrefix>v</MinVerTagPrefix>

@@ -179,13 +179,14 @@ Plans:
 
 ### Phase 07.7: Documentation suite for first public NuGet release (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal:** Write and publish all documentation that ships with the first public NuGet release: production-quality README.md, CHANGELOG.md, docs/ guides covering the full API surface, and corrected NuGet metadata
+**Requirements**: API-04, API-05
 **Depends on:** Phase 07.6
-**Plans:** 0 plans
+**Plans:** 1/2 plans executed
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 07.7 to break down)
+- [x] 07.7-01-PLAN.md — README.md, CHANGELOG.md, and 5 new docs/ guides (API-04)
+- [ ] 07.7-02-PLAN.md — Huml.Net.csproj metadata patch, inline-serialisation review, dotnet pack verification (API-04, API-05)
 
 ### Phase 8: NuGet Release Preparation
 **Goal**: The NuGet package is verified complete -- correct TFM coverage, working SourceLink, embedded XML docs, and a successful pre-release publish to NuGet.org via OIDC Trusted Publishing
