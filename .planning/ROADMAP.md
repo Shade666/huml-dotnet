@@ -219,6 +219,66 @@ Plans:
 - [x] 07.10-01-PLAN.md — CONTRIBUTING.md and BACKLOG.md (DOC-01, DOC-02)
 - [x] 07.10-02-PLAN.md — docs/internals/ guides: pipeline.md, version-gates.md, extending.md (DOC-03, DOC-04, DOC-05)
 
+### Phase 07.11: Fix Serialize(object?, Type) ignores Type parameter (INSERTED)
+
+**Goal:** Implement type-directed dispatch in `HumlSerializer.Serialize(object?, Type, HumlOptions?)` so that the declared `Type` parameter governs property reflection rather than the runtime type. Fixes a silent API contract violation where polymorphic callers (serialising a derived instance via a base `Type`) receive the wrong property set. Mirrors the `System.Text.Json` contract exactly.
+**Requirements:** SER-TYPE-01, SER-TYPE-02
+**Depends on:** Phase 07.10
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD
+
+---
+
+### Phase 07.12: Document ReadOnlySpan deserialise allocation at public API boundary (INSERTED)
+
+**Goal:** Add `<remarks>` XML doc to `Huml.Deserialize<T>(ReadOnlySpan<char>, HumlOptions?)` (`Huml.cs`) clearly stating that the span is converted to a `string` internally and that genuine zero-copy is a V2 future enhancement. Sets correct consumer expectations; no behaviour change.
+**Requirements:** DOC-SPAN-01
+**Depends on:** Phase 07.11
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD
+
+---
+
+### Phase 07.13: Document HumlDocument dual role as root and nested mapping block (INSERTED)
+
+**Goal:** Add XML `<summary>` and `<remarks>` to `HumlDocument.cs` clarifying that the type represents both the document root AND nested multiline mapping blocks. Add a complementary remark to `HumlInlineMapping.cs` clarifying it is for inline `{k: v}` and empty `{}` notation only. Prevents future contributor confusion.
+**Requirements:** DOC-AST-01
+**Depends on:** Phase 07.12
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD
+
+---
+
+### Phase 07.14: Add property-lookup dictionary to PropertyDescriptor cache for O(1) deserialiser key lookup (INSERTED)
+
+**Goal:** Extend `PropertyDescriptor.BuildDescriptors` to build a `Dictionary<string, PropertyDescriptor>` keyed by `HumlKey` alongside the existing ordered `PropertyDescriptor[]`. Cache both together in `ConcurrentDictionary`. Update `HumlDeserializer` to use dictionary O(1) lookup instead of the current O(n) `foreach` loop. The array is preserved for the serialiser (declaration-order traversal).
+**Requirements:** PERF-DICT-01, PERF-DICT-02
+**Depends on:** Phase 07.13
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD
+
+---
+
+### Phase 07.15: Cache indent strings in HumlSerializer to eliminate per-call allocation (INSERTED)
+
+**Goal:** Replace the `Indent(int depth)` method in `HumlSerializer.cs` (currently `new string(' ', depth * 2)` on every invocation) with a pre-computed `static readonly string[]` of 65 entries (depth 0–64). Falls back to dynamic allocation only beyond depth 64. Eliminates O(n) identical string allocations for typical documents.
+**Requirements:** PERF-INDENT-01
+**Depends on:** Phase 07.14
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD
+
+---
+
 ### Phase 8: NuGet Release Preparation
 **Goal**: The NuGet package is verified complete -- correct TFM coverage, working SourceLink, embedded XML docs, and a successful pre-release publish to NuGet.org via OIDC Trusted Publishing
 **Depends on**: Phase 7
@@ -249,6 +309,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 07.8. HumlOptions.Default -> AutoDetect, LatestSupported rename | 1/1 | Complete    | 2026-03-23 |
 | 07.9. Lower MaxRecursionDepth default to 64                    | 1/1 | Complete    | 2026-03-23 |
 | 07.10. Contributor and internals documentation                 | 2/2 | Complete    | 2026-03-23 |
+| 07.11. Fix Serialize(object?,Type) ignores Type parameter      | 0/? | Not started | -          |
+| 07.12. Document ReadOnlySpan deserialise allocation            | 0/? | Not started | -          |
+| 07.13. Document HumlDocument dual role                         | 0/? | Not started | -          |
+| 07.14. O(1) property-lookup dictionary in PropertyDescriptor   | 0/? | Not started | -          |
+| 07.15. Cache indent strings in HumlSerializer                  | 0/? | Not started | -          |
 | 8. NuGet Release Preparation                                   | 0/?            | Not started | -          |
 
 ## Backlog
@@ -256,71 +321,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 ### Phase 999.5: Version-preserving round-trip option for HumlSerializer (BACKLOG)
 
 **Goal:** Add a serialiser mode that emits the same spec version that was detected during parsing, rather than always upgrading to the latest. Enables formatter and linter tools to round-trip documents transparently without silently upgrading v0.1 files to v0.2. Requires `HumlDocument` (or `HumlOptions`) to carry the detected version through the pipeline, and the serialiser to suppress v0.2-only syntax (e.g. backtick multilines) when targeting v0.1. Consider for next release after initial NuGet publish.
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
-
----
-
-### Phase 999.6: Fix Serialize(object?, Type) ignores Type parameter (BACKLOG)
-
-**Goal:** Implement type-directed dispatch in `HumlSerializer.Serialize(object?, Type, HumlOptions?)` so that the declared `Type` parameter governs property reflection rather than the runtime type. Fixes a silent API contract violation where polymorphic callers (serialising a derived instance via a base `Type`) receive the wrong output. Mirrors `System.Text.Json` behaviour.
-**Source:** ArchitectureReview_20260324.md §2.3, §9 Phase 1 Task 1.1
-**Version:** V1 | **Priority:** High | **Category:** API
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
-
----
-
-### Phase 999.7: Document ReadOnlySpan deserialise allocation at public API boundary (BACKLOG)
-
-**Goal:** Add `<remarks>` XML doc to `Huml.Deserialize<T>(ReadOnlySpan<char>, HumlOptions?)` (`Huml.cs:48`) clearly stating that the span is converted to a `string` internally and that genuine zero-copy is a future enhancement (v2). Sets correct consumer expectations without breaking the current API.
-**Source:** ArchitectureReview_20260324.md §2.3, §9 Phase 1 Task 1.2
-**Version:** V1 | **Priority:** Medium | **Category:** Documentation
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
-
----
-
-### Phase 999.8: Document HumlDocument dual role as root and nested mapping block (BACKLOG)
-
-**Goal:** Add XML `<summary>` and `<remarks>` to `HumlDocument.cs` clarifying that the type represents both the document root AND nested multiline mapping blocks. Add a complementary note to `HumlInlineMapping.cs` clarifying it is for inline `{k: v}` and empty `{}` notation only. Prevents future contributor confusion.
-**Source:** ArchitectureReview_20260324.md §2.2, §9 Phase 1 Task 1.3
-**Version:** V1 | **Priority:** Low | **Category:** Documentation
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
-
----
-
-### Phase 999.9: Add property-lookup dictionary to PropertyDescriptor cache for O(1) deserialiser lookup (BACKLOG)
-
-**Goal:** Extend `PropertyDescriptor.BuildDescriptors` to build a `Dictionary<string, PropertyDescriptor>` keyed by `HumlKey` alongside the existing ordered array. Cache both together. Update `HumlDeserializer` to use the dictionary for O(1) key lookup instead of the current O(n) `foreach` loop. The array is preserved for the serialiser (declaration-order traversal).
-**Source:** ArchitectureReview_20260324.md §2.3, §5.1, §9 Phase 2 Task 2.1
-**Version:** V1 | **Priority:** Low | **Category:** Performance
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
-
----
-
-### Phase 999.10: Cache indent strings in HumlSerializer to eliminate per-call allocation (BACKLOG)
-
-**Goal:** Replace the `Indent(int depth)` method in `HumlSerializer.cs` (currently `new string(' ', depth * 2)` on every call) with a pre-computed `static readonly string[]` of 65 entries. Falls back to dynamic allocation only beyond depth 64. Eliminates O(n) identical string allocations for typical documents.
-**Source:** ArchitectureReview_20260324.md §5.1, §9 Phase 2 Task 2.2
-**Version:** V1 | **Priority:** Low | **Category:** Performance
 **Requirements:** TBD
 **Plans:** 0 plans
 
@@ -386,19 +386,6 @@ Plans:
 **Goal:** Add a test that calls `Huml.Deserialize<T>` from 16 concurrent threads simultaneously, exercising the `ConcurrentDictionary.GetOrAdd` race in `PropertyDescriptor.BuildDescriptors`. Assert no exceptions and no data corruption. Complements the existing `ClearCache()` test isolation pattern.
 **Source:** ArchitectureReview_20260324.md §8.3, §9 Phase 4 Task 4.3
 **Version:** V2 | **Priority:** Low | **Category:** Testing
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd:review-backlog when ready)
-
----
-
-### Phase 999.16: Add CHANGELOG.md with version history derived from git tags (BACKLOG)
-
-**Goal:** Create `CHANGELOG.md` at the repository root following Keep a Changelog conventions. Populate initial entries from git tag history and commit messages. Add a note to `CONTRIBUTING.md` instructing contributors to update the changelog for user-facing changes. Provides human-readable version history for NuGet consumers who can't read git tags directly.
-**Source:** ArchitectureReview_20260324.md §8.2
-**Version:** V1 | **Priority:** Low | **Category:** Documentation
 **Requirements:** TBD
 **Plans:** 0 plans
 
