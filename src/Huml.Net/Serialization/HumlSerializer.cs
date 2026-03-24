@@ -43,14 +43,33 @@ internal static class HumlSerializer
 
     /// <summary>
     /// Typed overload — serializes <paramref name="value"/> using <paramref name="type"/> as
-    /// the static type. Used by the Phase 7 static entry point (<c>Huml.Serialize&lt;T&gt;</c>).
+    /// the declared type for property reflection. Used by the Phase 7 static entry point
+    /// (<c>Huml.Serialize&lt;T&gt;</c>). Nested POCOs still use their runtime type.
     /// </summary>
     internal static string Serialize(object? value, Type type, HumlOptions? options = null)
-        => Serialize(value, options);
+    {
+        options ??= HumlOptions.Default;
+        var sb = new StringBuilder();
+        sb.Append('%');
+        sb.Append("HUML ");
+        sb.Append(VersionString(options.SpecVersion));
+        sb.Append('\n');
+
+        if (value is null)
+        {
+            sb.Append("null\n");
+        }
+        else
+        {
+            SerializeValue(sb, value, depth: 0, options, declaredType: type);
+        }
+
+        return sb.ToString();
+    }
 
     // ── Core serialization logic ──────────────────────────────────────────────
 
-    private static void SerializeValue(StringBuilder sb, object? value, int depth, HumlOptions options)
+    private static void SerializeValue(StringBuilder sb, object? value, int depth, HumlOptions options, Type? declaredType = null)
     {
         if (value is null)
         {
@@ -138,8 +157,8 @@ internal static class HumlSerializer
                 "similar non-data types are not supported by HumlSerializer.");
         }
 
-        // POCO — reflect using PropertyDescriptor
-        SerializeMappingBody(sb, value, depth, options);
+        // POCO — reflect using PropertyDescriptor (pass declaredType for top-level type-directed dispatch)
+        SerializeMappingBody(sb, value, depth, options, declaredType);
     }
 
     // ── Mapping (POCO / dictionary-as-mapping) ────────────────────────────────
@@ -148,9 +167,9 @@ internal static class HumlSerializer
     /// Emits mapping entries at <paramref name="depth"/> for a POCO.
     /// Each property is emitted as either <c>key: scalar\n</c> or <c>key::\n  ...</c>.
     /// </summary>
-    private static void SerializeMappingBody(StringBuilder sb, object obj, int depth, HumlOptions options)
+    private static void SerializeMappingBody(StringBuilder sb, object obj, int depth, HumlOptions options, Type? declaredType = null)
     {
-        var descriptors = PropertyDescriptor.GetDescriptors(obj.GetType());
+        var descriptors = PropertyDescriptor.GetDescriptors(declaredType ?? obj.GetType());
         var indent = Indent(depth);
 
         foreach (var desc in descriptors)
