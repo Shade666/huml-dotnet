@@ -224,10 +224,10 @@ Plans:
 **Goal:** Implement type-directed dispatch in `HumlSerializer.Serialize(object?, Type, HumlOptions?)` so that the declared `Type` parameter governs property reflection rather than the runtime type. Fixes a silent API contract violation where polymorphic callers (serialising a derived instance via a base `Type`) receive the wrong property set. Mirrors the `System.Text.Json` contract exactly.
 **Requirements:** SER-TYPE-01, SER-TYPE-02
 **Depends on:** Phase 07.10
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] TBD
+- [ ] 07.11-01-PLAN.md — TDD fix: thread declared Type through SerializeMappingBody for polymorphic serialisation (SER-TYPE-01, SER-TYPE-02)
 
 ---
 
@@ -236,10 +236,11 @@ Plans:
 **Goal:** Add `<remarks>` XML doc to `Huml.Deserialize<T>(ReadOnlySpan<char>, HumlOptions?)` (`Huml.cs`) clearly stating that the span is converted to a `string` internally and that genuine zero-copy is a V2 future enhancement. Sets correct consumer expectations; no behaviour change.
 **Requirements:** DOC-SPAN-01
 **Depends on:** Phase 07.11
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] TBD
+- [x] 07.12-01-PLAN.md — Verify and refine ReadOnlySpan remarks XML doc (DOC-SPAN-01)
+
 
 ---
 
@@ -305,12 +306,12 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. AST Node Hierarchy                                          | 1/1            | Complete    | 2026-03-21 |
 | 5. Parser                                                      | 2/2            | Complete    | 2026-03-21 |
 | 6. Attributes and Serializer/Deserializer                      | 3/3            | Complete    | 2026-03-21 |
-| 7. Static Entry Point and Shared Fixture Compliance            | 2/2            | Complete    | 2026-03-22 |
+| 7. Static Entry Point and Shared Fixture Compliance            | 2/2 | Complete   | 2026-03-24 |
 | 07.8. HumlOptions.Default -> AutoDetect, LatestSupported rename | 1/1 | Complete    | 2026-03-23 |
 | 07.9. Lower MaxRecursionDepth default to 64                    | 1/1 | Complete    | 2026-03-23 |
 | 07.10. Contributor and internals documentation                 | 2/2 | Complete    | 2026-03-23 |
-| 07.11. Fix Serialize(object?,Type) ignores Type parameter      | 0/? | Not started | -          |
-| 07.12. Document ReadOnlySpan deserialise allocation            | 0/? | Not started | -          |
+| 07.11. Fix Serialize(object?,Type) ignores Type parameter      | 0/? | Complete    | 2026-03-25 |
+| 07.12. Document ReadOnlySpan deserialise allocation            | 1/1 | Complete   | 2026-03-31 |
 | 07.13. Document HumlDocument dual role                         | 0/? | Not started | -          |
 | 07.14. O(1) property-lookup dictionary in PropertyDescriptor   | 0/? | Not started | -          |
 | 07.15. Cache indent strings in HumlSerializer                  | 0/? | Not started | -          |

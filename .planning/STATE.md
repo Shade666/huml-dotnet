@@ -3,13 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: "coverage. Extend Phase 07.5 inline tests from NotThrow-only to full value-equality round-trips.**Requirements**: MIX-01, MIX-02, MIX-03, MIX-04, MIX-05**Depends on:** Phase 07.5**Plans:** 1/1 plans complete"
 status: unknown
-stopped_at: Completed 07.10-02-PLAN.md
-last_updated: "2026-03-23T23:01:35.619Z"
+stopped_at: Completed 07.12-01-PLAN.md
+last_updated: "2026-03-31T07:55:30.049Z"
+last_activity: 2026-03-31
 progress:
-  total_phases: 19
-  completed_phases: 17
-  total_plans: 29
-  completed_plans: 29
+  total_phases: 30
+  completed_phases: 19
+  total_plans: 31
+  completed_plans: 31
 ---
 
 # Project State
@@ -19,12 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 07.10 — complete-missing-contributor-and-developer-internals-documentation
+**Current focus:** Phase 07.12 — document-readonlyspan-deserialise-allocation-in-public-api
 
 ## Current Position
 
-Phase: 999.5
-Plan: Not started
+Phase: 07.12 (document-readonlyspan-deserialise-allocation-in-public-api) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -75,6 +76,8 @@ Plan: Not started
 | Phase 07.9 P01 | 2min | 2 tasks | 5 files |
 | Phase 07.10 P01 | 2min | 2 tasks | 2 files |
 | Phase 07.10 P02 | 3 | 2 tasks | 3 files |
+| Phase 07.11 P01 | 2min | 2 tasks | 2 files |
+| Phase 07.12 P01 | 3min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -152,6 +155,8 @@ Recent decisions affecting current work:
 - [Phase 07.10]: BACKLOG.md starts empty; Phase 999.5 internal item not exposed to public contributors
 - [Phase 07.10]: File paths referencing src/Huml.Net/Serialization/ use actual directory name (American spelling); all prose uses British English
 - [Phase 07.10]: docs/internals/ directory established as contributor-facing internals guide home with pipeline.md, version-gates.md, extending.md
+- [Phase 07.11]: Serialize(object?,Type) overload expanded from one-liner to full implementation, threading declaredType to SerializeMappingBody; declaredType NOT propagated through recursive calls so nested POCOs use runtime type (System.Text.Json contract)
+- [Phase 07.12]: DOC-SPAN-01: remarks block on ReadOnlySpan<char> Deserialize names ToString() allocation, states heap not avoided today, explains lexer-string constraint, references v2 zero-copy enhancement
 
 ### Roadmap Evolution
 
@@ -174,8 +179,15 @@ None yet.
 - Phase 6 (Ser/Deser): `init`-only constructor-binding design decision not yet made (throw vs constructor fallback); decide at Phase 6 planning time
 - Phase 7 (Fixture Compliance): `huml-lang/tests` fixture file format (valid vs invalid subdirectory layout, expectation format) must be inspected from submodule content before writing `SharedSuiteTests.cs`
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260324-9sp | Populate BACKLOG.md with architecture review findings classified as V1 or V2 | 2026-03-24 | ebe595b | [260324-9sp-populate-backlog-md-with-architecture-re](./quick/260324-9sp-populate-backlog-md-with-architecture-re/) |
+
 ## Session Continuity
 
-Last session: 2026-03-23T22:57:40.390Z
-Stopped at: Completed 07.10-02-PLAN.md
+Last activity: 2026-03-31
+Last session: 2026-03-31T07:55:30.045Z
+Stopped at: Completed 07.12-01-PLAN.md
 Resume file: None
