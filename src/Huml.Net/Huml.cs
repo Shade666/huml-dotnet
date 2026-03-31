@@ -51,8 +51,15 @@ public static class Huml
     /// overload delegates here via <c>AsSpan()</c>.
     /// </summary>
     /// <remarks>
-    /// The span is converted to a managed <see cref="string"/> internally before lexing.
-    /// A true zero-copy parse path (using a <c>ref struct</c> lexer) is tracked as a v2 enhancement.
+    /// <para>
+    /// The span is materialised to a managed <see cref="string"/> via <c>ToString()</c> internally,
+    /// because the current lexer accepts only <see cref="string"/> input. This means accepting
+    /// <see cref="ReadOnlySpan{T}"/> at the API boundary does not avoid a heap allocation today.
+    /// </para>
+    /// <para>
+    /// A true zero-copy parse path using a <c>ref struct</c> lexer that operates directly on
+    /// <see cref="ReadOnlySpan{T}"/> is planned as a v2 enhancement.
+    /// </para>
     /// </remarks>
     /// <typeparam name="T">The target type.</typeparam>
     /// <param name="huml">The HUML document as a character span.</param>
