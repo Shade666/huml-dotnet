@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.1
 milestone_name: "coverage. Extend Phase 07.5 inline tests from NotThrow-only to full value-equality round-trips.**Requirements**: MIX-01, MIX-02, MIX-03, MIX-04, MIX-05**Depends on:** Phase 07.5**Plans:** 1/1 plans complete"
 status: unknown
-stopped_at: Completed 07.14-01-PLAN.md
-last_updated: "2026-04-03T21:16:35.659Z"
+stopped_at: Completed 07.15-01-PLAN.md
+last_updated: "2026-04-03T22:13:33.628Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 30
-  completed_phases: 21
-  total_plans: 33
-  completed_plans: 33
+  completed_phases: 22
+  total_plans: 34
+  completed_plans: 34
 ---
 
 # Project State
@@ -20,11 +20,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang/tests` test suite, with zero external runtime dependencies and a `System.Text.Json`-style API that .NET developers already know.
-**Current focus:** Phase 07.14 — add-property-lookup-dictionary-to-propertydescriptor-cache
+**Current focus:** Phase 07.15 — cache-indent-strings-in-humlserializer-to-eliminate-allocations
 
 ## Current Position
 
-Phase: 07.14 (add-property-lookup-dictionary-to-propertydescriptor-cache) — EXECUTING
+Phase: 07.15 (cache-indent-strings-in-humlserializer-to-eliminate-allocations) — EXECUTING
 Plan: 1 of 1
 
 ## Performance Metrics
@@ -80,6 +80,7 @@ Plan: 1 of 1
 | Phase 07.12 P01 | 3min | 1 tasks | 1 files |
 | Phase 07.13 P01 | 1min | 1 tasks | 2 files |
 | Phase 07.14 P01 | 7min | 2 tasks | 3 files |
+| Phase 07.15 P01 | 2min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,7 @@ Recent decisions affecting current work:
 - [Phase 07.13]: HumlDocument <summary> revised from 'root document only' to explicitly cover both document root and nested :: vector blocks; HumlInlineMapping <remarks> added to remove Phase 07.2 inaccuracy
 - [Phase 07.14]: PropertyDescriptorCache private sealed record holds both Ordered (PropertyDescriptor[]) and ByKey (Dictionary<string,PropertyDescriptor>) — single ConcurrentDictionary entry, ClearCache clears both atomically
 - [Phase 07.14]: GetDescriptors returns .Ordered for serialiser (unchanged contract); GetLookup returns .ByKey for O(1) deserialiser dispatch — StringComparer.Ordinal matches replaced string.Equals semantics
+- [Phase 07.15]: IndentCache covers indices 0-64 (65 entries) matching MaxRecursionDepth default of 64; (uint)depth cast handles negative depth safely; BeLessOrEqualTo not in AwesomeAssertions so BeLessThan(alloc1+512) used with noise margin
 
 ### Roadmap Evolution
 
@@ -193,6 +195,6 @@ None yet.
 ## Session Continuity
 
 Last activity: 2026-04-03
-Last session: 2026-04-03T21:16:35.652Z
-Stopped at: Completed 07.14-01-PLAN.md
+Last session: 2026-04-03T22:13:33.621Z
+Stopped at: Completed 07.15-01-PLAN.md
 Resume file: None

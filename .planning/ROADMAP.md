@@ -270,13 +270,13 @@ Plans:
 
 ### Phase 07.15: Cache indent strings in HumlSerializer to eliminate per-call allocation (INSERTED)
 
-**Goal:** Replace the `Indent(int depth)` method in `HumlSerializer.cs` (currently `new string(' ', depth * 2)` on every invocation) with a pre-computed `static readonly string[]` of 65 entries (depth 0–64). Falls back to dynamic allocation only beyond depth 64. Eliminates O(n) identical string allocations for typical documents.
+**Goal:** Replace the `Indent(int depth)` method in `HumlSerializer.cs` (currently `new string(' ', depth * 2)` on every invocation) with a pre-computed `static readonly string[]` of 65 entries (depth 0-64). Falls back to dynamic allocation only beyond depth 64. Eliminates O(n) identical string allocations for typical documents.
 **Requirements:** PERF-INDENT-01
 **Depends on:** Phase 07.14
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] TBD
+- [x] 07.15-01-PLAN.md -- IndentCache static array, updated Indent() method, allocation tests (PERF-INDENT-01)
 
 ---
 
@@ -313,8 +313,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 07.11. Fix Serialize(object?,Type) ignores Type parameter      | 0/? | Complete    | 2026-03-25 |
 | 07.12. Document ReadOnlySpan deserialise allocation            | 1/1 | Complete   | 2026-04-03 |
 | 07.13. Document HumlDocument dual role                         | 1/1 | Complete   | 2026-04-03 |
-| 07.14. O(1) property-lookup dictionary in PropertyDescriptor   | 1/1 | Complete   | 2026-04-03 |
-| 07.15. Cache indent strings in HumlSerializer                  | 0/? | Not started | -          |
+| 07.14. O(1) property-lookup dictionary in PropertyDescriptor   | 1/1 | Complete    | 2026-04-03 |
+| 07.15. Cache indent strings in HumlSerializer                  | 1/1 | Complete   | 2026-04-03 |
 | 8. NuGet Release Preparation                                   | 0/?            | Not started | -          |
 
 ## Backlog
