@@ -314,7 +314,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 07.12. Document ReadOnlySpan deserialise allocation            | 1/1 | Complete   | 2026-04-03 |
 | 07.13. Document HumlDocument dual role                         | 1/1 | Complete   | 2026-04-03 |
 | 07.14. O(1) property-lookup dictionary in PropertyDescriptor   | 1/1 | Complete    | 2026-04-03 |
-| 07.15. Cache indent strings in HumlSerializer                  | 1/1 | Complete   | 2026-04-03 |
+| 07.15. Cache indent strings in HumlSerializer                  | 1/1 | Complete    | 2026-04-03 |
 | 8. NuGet Release Preparation                                   | 0/?            | Not started | -          |
 
 ## Backlog

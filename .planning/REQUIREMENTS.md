@@ -56,6 +56,8 @@ Requirements for initial release. Each maps to a roadmap phase.
 - [x] **SER-KEY-05**: `Dictionary<string, T>` with non-ASCII keys round-trips through `Serialize`/`Deserialize` with full key and value equality
 - [x] **SER-KEY-06**: `HumlSerializer` continues to emit bare keys (no quotes) for keys that satisfy the bare-key grammar — no regression on valid ASCII keys
 - [x] **SER-KEY-07**: Non-ASCII keys used in vector indicator paths (nested dicts, sequences, POCOs) are emitted with `"key"::` syntax
+- [x] **SER-TYPE-01**: `Serialize(object?, Type, HumlOptions?)` uses the `Type` parameter for property reflection — a derived instance serialised via a declared base `Type` emits only the base type's properties
+- [x] **SER-TYPE-02**: Derived-only properties are omitted when a declared base `Type` is passed to `Serialize(object?, Type, HumlOptions?)`; nested POCOs continue to use their runtime type for property reflection
 
 ### Public API & Packaging
 
@@ -157,12 +159,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SER-KEY-05 | Phase 7.4 | Complete |
 | SER-KEY-06 | Phase 7.4 | Complete |
 | SER-KEY-07 | Phase 7.4 | Complete |
+| SER-TYPE-01 | Phase 07.11 | Complete |
+| SER-TYPE-02 | Phase 07.11 | Complete |
 
 **Coverage:**
-- v1 requirements: 38 total
-- Mapped to phases: 38
+- v1 requirements: 40 total
+- Mapped to phases: 40
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-20*
-*Last updated: 2026-03-22 — SER-KEY-01..07 added after Phase 7.4 gap closure*
+*Last updated: 2026-03-25 — SER-TYPE-01..02 added after Phase 07.11 gap closure*

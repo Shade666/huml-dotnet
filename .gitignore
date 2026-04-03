@@ -60,3 +60,6 @@ nunit-*.xml
 
 #Huml Scratchpad
 HumlScratchpad/
+
+# Architecture review reports (local analysis artefacts)
+.Analysis/

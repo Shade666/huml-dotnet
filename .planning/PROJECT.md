@@ -48,6 +48,9 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 - [x] `HumlOptions.Default` is header-aware (`VersionSource.Header`, falls back to v0.2); `HumlOptions.LatestSupported` is pinned v0.2 (`VersionSource.Options`); `HumlOptions.AutoDetect` is a reference-equal alias for `Default` — Validated in Phase 07.8: Make HumlOptions.Default Use AutoDetect Behaviour
 - [x] `MaxRecursionDepth` default lowered from 512 to 64 (matches `System.Text.Json` convention); valid range tightened to `[1, 1024]`; regression test guards old ceiling (65536 now throws) — Validated in Phase 07.9: Lower MaxRecursionDepth Default and Tighten Range
 - [x] `CONTRIBUTING.md` (9-section contributor onboarding: `--recurse-submodules`, AwesomeAssertions, TreatWarningsAsErrors, AI contributions welcome, links to `docs/internals/`), `BACKLOG.md` (triage workflow + empty table), and three `docs/internals/` guides (pipeline overview, version gates, extending the library) — Validated in Phase 07.10: Complete Missing Contributor and Developer Internals Documentation
+- [x] `Serialize(object?, Type, HumlOptions?)` uses declared `Type` for property reflection — polymorphic callers get only base-type properties emitted; nested POCOs continue using runtime type (SER-TYPE-01, SER-TYPE-02) — Validated in Phase 07.11: Fix Serialize Object Type Ignores Type Parameter
+- [x] `HumlDocument` XML docs clarify dual role: document root AND nested multiline mapping blocks (via `::` vector indicator); `HumlInlineMapping` XML docs corrected to inline `{k: v}` / empty `{}` scope only; bi-directional `<see cref>` cross-references added — Validated in Phase 07.13: Document HumlDocument Dual Role
+- [x] `PropertyDescriptorCache` record bundles `Ordered: PropertyDescriptor[]` + `ByKey: Dictionary<string, PropertyDescriptor>` built in a single pass; `DeserializeMappingEntries` uses O(1) `TryGetValue` instead of O(n) `foreach` linear scan — Validated in Phase 07.14: Add Property Lookup Dictionary to PropertyDescriptor Cache
 
 ### Active
 
@@ -90,4 +93,4 @@ Full HUML spec compliance (v0.1 + v0.2), validated against the shared `huml-lang
 | `SpecVersionPolicy` constants as code | `HumlUnsupportedVersionException` references them directly — error message stays accurate without manual updates | — Pending |
 
 ---
-*Last updated: 2026-03-23 — Phase 07.10 complete: `CONTRIBUTING.md`, `BACKLOG.md`, and three `docs/internals/` guides (pipeline, version-gates, extending) added. All contributor-facing documentation in place for first public NuGet release. 711 tests green across net8.0/net9.0/net10.0.*
+*Last updated: 2026-04-03 — Phase 07.14 complete: `PropertyDescriptorCache` introduces O(1) dictionary lookup in `DeserializeMappingEntries`, replacing O(n) linear scan. 718 tests green across net8.0/net9.0/net10.0.*
