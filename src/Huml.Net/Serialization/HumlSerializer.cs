@@ -484,5 +484,18 @@ internal static class HumlSerializer
         version == HumlSpecVersion.V0_1 ? "v0.1.0" : "v0.2.0";
 #pragma warning restore CS0618
 
-    private static string Indent(int depth) => new(' ', depth * 2);
+    private static readonly string[] IndentCache = BuildIndentCache(64);
+
+    private static string[] BuildIndentCache(int maxDepth)
+    {
+        var cache = new string[maxDepth + 1];
+        for (int i = 0; i <= maxDepth; i++)
+            cache[i] = new string(' ', i * 2);
+        return cache;
+    }
+
+    private static string Indent(int depth) =>
+        (uint)depth < (uint)IndentCache.Length
+            ? IndentCache[depth]
+            : new string(' ', depth * 2);
 }

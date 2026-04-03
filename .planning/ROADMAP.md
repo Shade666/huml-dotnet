@@ -261,10 +261,10 @@ Plans:
 **Goal:** Extend `PropertyDescriptor.BuildDescriptors` to build a `Dictionary<string, PropertyDescriptor>` keyed by `HumlKey` alongside the existing ordered `PropertyDescriptor[]`. Cache both together in `ConcurrentDictionary`. Update `HumlDeserializer` to use dictionary O(1) lookup instead of the current O(n) `foreach` loop. The array is preserved for the serialiser (declaration-order traversal).
 **Requirements:** PERF-DICT-01, PERF-DICT-02
 **Depends on:** Phase 07.13
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] TBD
+- [x] 07.14-01-PLAN.md -- PropertyDescriptorCache record, GetLookup method, and DeserializeMappingEntries O(1) lookup (PERF-DICT-01, PERF-DICT-02)
 
 ---
 
@@ -313,7 +313,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 07.11. Fix Serialize(object?,Type) ignores Type parameter      | 0/? | Complete    | 2026-03-25 |
 | 07.12. Document ReadOnlySpan deserialise allocation            | 1/1 | Complete   | 2026-04-03 |
 | 07.13. Document HumlDocument dual role                         | 1/1 | Complete   | 2026-04-03 |
-| 07.14. O(1) property-lookup dictionary in PropertyDescriptor   | 0/? | Not started | -          |
+| 07.14. O(1) property-lookup dictionary in PropertyDescriptor   | 1/1 | Complete   | 2026-04-03 |
 | 07.15. Cache indent strings in HumlSerializer                  | 0/? | Not started | -          |
 | 8. NuGet Release Preparation                                   | 0/?            | Not started | -          |
 
