@@ -99,8 +99,8 @@ internal static class HumlDeserializer
                 $"Type '{targetType.Name}' has no accessible parameterless constructor.");
         }
 
-        // Get property descriptors for the target type
-        var descriptors = PropertyDescriptor.GetDescriptors(targetType);
+        // Get property lookup dictionary for the target type (O(1) key access)
+        var lookup = PropertyDescriptor.GetLookup(targetType);
 
         // Map each HUML mapping entry to a property
         foreach (var entry in entries)
@@ -108,16 +108,8 @@ internal static class HumlDeserializer
             if (entry is not HumlMapping mapping)
                 continue;
 
-            // Find matching descriptor by HUML key (case-sensitive)
-            PropertyDescriptor? descriptor = null;
-            foreach (var d in descriptors)
-            {
-                if (string.Equals(d.HumlKey, mapping.Key, StringComparison.Ordinal))
-                {
-                    descriptor = d;
-                    break;
-                }
-            }
+            // Find matching descriptor by HUML key (case-sensitive, O(1))
+            lookup.TryGetValue(mapping.Key, out PropertyDescriptor? descriptor);
 
             // Unknown key — skip silently (forward compatibility)
             if (descriptor is null)
