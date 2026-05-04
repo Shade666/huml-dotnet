@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Huml.Net.Exceptions;
 using Huml.Net.Parser;
@@ -22,6 +23,8 @@ internal static class HumlDeserializer
     /// <param name="options">Parsing options; defaults to <see cref="HumlOptions.Default"/> if null.</param>
     /// <returns>A populated instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="HumlDeserializeException">On any mapping, coercion, or constructor failure.</exception>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    [RequiresDynamicCode("Reflection-based HUML deserialisation may emit dynamic code.")]
     internal static T Deserialize<T>(string huml, HumlOptions? options = null)
     {
         var opts = options ?? HumlOptions.Default;
@@ -34,6 +37,8 @@ internal static class HumlDeserializer
     /// The span is converted to a <see cref="string"/> via <c>ToString()</c> before lexing;
     /// a true zero-copy path is a v2 enhancement.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    [RequiresDynamicCode("Reflection-based HUML deserialisation may emit dynamic code.")]
     internal static T Deserialize<T>(ReadOnlySpan<char> huml, HumlOptions? options = null)
     {
         var opts = options ?? HumlOptions.Default;
@@ -45,6 +50,8 @@ internal static class HumlDeserializer
     /// Deserialises HUML text into an object of the given <paramref name="targetType"/>.
     /// Untyped overload for use by the Phase 7 public API entry point.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    [RequiresDynamicCode("Reflection-based HUML deserialisation may emit dynamic code.")]
     internal static object? Deserialize(string huml, Type targetType, HumlOptions? options = null)
     {
         var opts = options ?? HumlOptions.Default;
@@ -63,6 +70,8 @@ internal static class HumlDeserializer
     /// <param name="options">Parsing options; defaults to <see cref="HumlOptions.Default"/> if null.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="existing"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">Thrown when <typeparamref name="T"/> is a value type (struct).</exception>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    [RequiresDynamicCode("Reflection-based HUML deserialisation may emit dynamic code.")]
     internal static void Populate<T>(ReadOnlySpan<char> huml, T existing, HumlOptions? options = null)
     {
         // Guard: value types cannot be populated in-place — C# passes structs by copy.
@@ -87,6 +96,7 @@ internal static class HumlDeserializer
     /// properties. Does not construct a new instance; uses the
     /// caller-supplied <paramref name="existing"/> instance directly.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
     private static void PopulateMappingEntries(
         IReadOnlyList<HumlNode> entries, object existing, Type targetType, HumlOptions options)
     {
@@ -171,6 +181,7 @@ internal static class HumlDeserializer
     /// <summary>
     /// Dispatches an AST node to the appropriate deserialisation handler based on node type.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
     private static object? DeserializeNode(HumlNode node, Type targetType, HumlOptions options)
     {
         // Converter dispatch — type-level [HumlConverter] and HumlOptions.Converters.
@@ -206,6 +217,7 @@ internal static class HumlDeserializer
     /// settable properties. Shared by <see cref="HumlDocument"/> and <see cref="HumlInlineMapping"/>
     /// dispatch paths.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
     private static object? DeserializeMappingEntries(IReadOnlyList<HumlNode> entries, Type targetType, HumlOptions options)
     {
         // Dispatch to dictionary path if targetType is Dictionary<string, T>
@@ -302,6 +314,7 @@ internal static class HumlDeserializer
     /// Deserialises a <see cref="HumlSequence"/> into an array, <see cref="List{T}"/>,
     /// or <see cref="IEnumerable{T}"/> based on <paramref name="targetType"/>.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
     private static object DeserializeSequence(HumlSequence seq, Type targetType, HumlOptions options)
     {
         // a. Array dispatch
@@ -369,6 +382,7 @@ internal static class HumlDeserializer
     /// Accepts <see cref="IReadOnlyList{HumlNode}"/> so it can be called from both
     /// <see cref="HumlDocument"/> and <see cref="HumlInlineMapping"/> dispatch paths.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
     private static object DeserializeDictionary(IReadOnlyList<HumlNode> entries, Type targetType, HumlOptions options)
     {
         var valueType = targetType.GetGenericArguments()[1];
@@ -396,6 +410,7 @@ internal static class HumlDeserializer
     /// Pass <c>null</c> for <paramref name="key"/> when there is no enclosing mapping key
     /// (e.g. a root-level scalar document); the resulting exception omits the key prefix.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
     private static object? CoerceScalar(HumlScalar scalar, Type targetType, string? key, int line, int column, HumlOptions options)
     {
         // Unwrap Nullable<T> to its underlying type for comparison

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Huml.Net.Serialization;
@@ -24,6 +25,7 @@ internal static class EnumNameCache
     /// or identity. Throws <see cref="Exceptions.HumlSerializeException"/> for undefined numeric
     /// values (CR-01) and for unnamed <see cref="FlagsAttribute"/> combinations.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based enum name cache construction.")]
     internal static string GetName(Type enumType, object value, HumlNamingPolicy? policy)
     {
         var entry = GetOrBuild(enumType, policy);
@@ -51,6 +53,7 @@ internal static class EnumNameCache
     /// When this method returns <c>false</c>, the value of <paramref name="result"/> is undefined
     /// and must not be used by the caller.
     /// </remarks>
+    [RequiresUnreferencedCode("Reflection-based enum name cache construction.")]
     internal static bool TryParse(Type enumType, string humlName, HumlNamingPolicy? policy, out object result)
     {
         var entry = GetOrBuild(enumType, policy);
@@ -69,9 +72,11 @@ internal static class EnumNameCache
 
     // ── Private implementation ────────────────────────────────────────────────
 
+    [RequiresUnreferencedCode("Reflection-based enum name cache construction.")]
     private static EnumNameEntry GetOrBuild(Type enumType, HumlNamingPolicy? policy)
         => Cache.GetOrAdd((enumType, policy), static key => Build(key.Item1, key.Item2));
 
+    [RequiresUnreferencedCode("Reflection-based enum name cache construction.")]
     private static EnumNameEntry Build(Type enumType, HumlNamingPolicy? policy)
     {
         var toHuml = new Dictionary<object, string>();

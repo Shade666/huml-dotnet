@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Huml.Net.Versioning;
 
@@ -33,6 +34,7 @@ public sealed class HumlSerializerContext
     /// doing so causes infinite recursion. Use <see cref="AppendRaw"/> for the converter's
     /// own output type.
     /// </remarks>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     public void AppendSerializedValue(object? value)
         => HumlSerializer.SerializeValueInternal(_sb, value, _depth, Options);
 

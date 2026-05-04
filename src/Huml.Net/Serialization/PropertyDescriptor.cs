@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Huml.Net.Serialization;
@@ -40,6 +41,7 @@ internal sealed record PropertyDescriptor(
     /// Returns the cached array of <see cref="PropertyDescriptor"/> entries for <paramref name="type"/>.
     /// Properties are ordered base-class-first, then by declaration order within each type.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
     internal static PropertyDescriptor[] GetDescriptors(Type type, HumlNamingPolicy? policy = null) =>
         Cache.GetOrAdd((type, policy), static key => BuildDescriptors(key.Item1, key.Item2)).Ordered;
 
@@ -48,6 +50,7 @@ internal sealed record PropertyDescriptor(
     /// <paramref name="type"/>, keyed by <see cref="HumlKey"/> with ordinal comparison.
     /// Used by the deserialiser for O(1) key lookup.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
     internal static Dictionary<string, PropertyDescriptor> GetLookup(Type type, HumlNamingPolicy? policy = null) =>
         Cache.GetOrAdd((type, policy), static key => BuildDescriptors(key.Item1, key.Item2)).ByKey;
 
@@ -58,6 +61,7 @@ internal sealed record PropertyDescriptor(
 
     // ── Private implementation ────────────────────────────────────────────────
 
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
     private static PropertyDescriptorCache BuildDescriptors(Type type, HumlNamingPolicy? policy)
     {
         // Walk the inheritance chain from root to derived, collecting types in order.
@@ -147,6 +151,7 @@ internal sealed record PropertyDescriptor(
     /// Detection is based on the <c>IsExternalInit</c> required custom modifier on the setter's
     /// return parameter — the same mechanism the C# compiler uses.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
     private static bool DetectInitOnly(PropertyInfo property)
     {
         var setMethod = property.GetSetMethod(nonPublic: false);

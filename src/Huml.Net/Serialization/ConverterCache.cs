@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Huml.Net.Versioning;
@@ -26,6 +27,7 @@ internal static class ConverterCache
     /// Property-level converters are already resolved in PropertyDescriptor.Converter and must
     /// be checked by callers before invoking this method.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based converter resolution.")]
     internal static HumlConverter? TryGet(Type targetType, HumlOptions options)
     {
         int optionsKey = RuntimeHelpers.GetHashCode(options);
@@ -51,6 +53,7 @@ internal static class ConverterCache
         InstanceCache.Clear();
     }
 
+    [RequiresUnreferencedCode("Reflection-based converter resolution.")]
     private static HumlConverter GetOrCreate(Type converterType)
         => InstanceCache.GetOrAdd(converterType, static t =>
         {

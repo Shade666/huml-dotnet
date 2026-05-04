@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Huml.Net.Exceptions;
 using Huml.Net.Parser;
 using Huml.Net.Versioning;
@@ -13,12 +14,22 @@ namespace Huml.Net;
 /// </summary>
 public static class Huml
 {
+    private const string RequiresUnreferencedCodeMessage =
+        "HUML serialisation and deserialisation require types that cannot be statically " +
+        "analysed. Use a future HumlTypeInfo overload for NativeAOT applications.";
+
+    private const string RequiresDynamicCodeMessage =
+        "HUML serialisation and deserialisation may require runtime code generation. " +
+        "Use a future HumlTypeInfo overload for NativeAOT applications.";
+
     /// <summary>Serialises <paramref name="value"/> to a HUML string.</summary>
     /// <typeparam name="T">The type of the value to serialise.</typeparam>
     /// <param name="value">The value to serialise.</param>
     /// <param name="options">Serialisation options; defaults to <see cref="HumlOptions.Default"/>.</param>
     /// <returns>A HUML-formatted string.</returns>
     /// <exception cref="HumlSerializeException">Thrown when serialisation fails.</exception>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static string Serialize<T>(T value, HumlOptions? options = null)
         => Serialization.HumlSerializer.Serialize(value, options);
 
@@ -28,6 +39,8 @@ public static class Huml
     /// <param name="options">Serialisation options; defaults to <see cref="HumlOptions.Default"/>.</param>
     /// <returns>A HUML-formatted string.</returns>
     /// <exception cref="HumlSerializeException">Thrown when serialisation fails.</exception>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static string Serialize(object? value, Type type, HumlOptions? options = null)
         => Serialization.HumlSerializer.Serialize(value, type, options);
 
@@ -42,6 +55,8 @@ public static class Huml
     /// <returns>A populated instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
     /// <exception cref="HumlDeserializeException">Thrown when mapping to <typeparamref name="T"/> fails.</exception>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static T Deserialize<T>(string huml, HumlOptions? options = null)
         => Deserialize<T>(huml.AsSpan(), options);
 
@@ -67,6 +82,8 @@ public static class Huml
     /// <returns>A populated instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
     /// <exception cref="HumlDeserializeException">Thrown when mapping to <typeparamref name="T"/> fails.</exception>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static T Deserialize<T>(ReadOnlySpan<char> huml, HumlOptions? options = null)
         => Serialization.HumlDeserializer.Deserialize<T>(huml, options);
 
@@ -77,6 +94,8 @@ public static class Huml
     /// <returns>A populated object, or <c>null</c> if the HUML value is null.</returns>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
     /// <exception cref="HumlDeserializeException">Thrown when mapping to <paramref name="targetType"/> fails.</exception>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static object? Deserialize(string huml, Type targetType, HumlOptions? options = null)
         => Serialization.HumlDeserializer.Deserialize(huml, targetType, options);
 
@@ -96,6 +115,8 @@ public static class Huml
     /// <exception cref="ArgumentException">Thrown when <typeparamref name="T"/> is a value type (struct).</exception>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
     /// <exception cref="HumlDeserializeException">Thrown when mapping to <typeparamref name="T"/> fails.</exception>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static void Populate<T>(string huml, T existing, HumlOptions? options = null)
     {
         // NOTE: ArgumentNullException.ThrowIfNull is not available on netstandard2.1.
@@ -121,6 +142,8 @@ public static class Huml
     /// <exception cref="ArgumentException">Thrown when <typeparamref name="T"/> is a value type (struct).</exception>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
     /// <exception cref="HumlDeserializeException">Thrown when mapping to <typeparamref name="T"/> fails.</exception>
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static void Populate<T>(ReadOnlySpan<char> huml, T existing, HumlOptions? options = null)
         => Serialization.HumlDeserializer.Populate<T>(huml, existing, options);
 

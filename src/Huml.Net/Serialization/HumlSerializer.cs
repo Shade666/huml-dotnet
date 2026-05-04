@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Huml.Net.Exceptions;
@@ -25,6 +26,8 @@ internal static class HumlSerializer
     /// <param name="value">The object to serialize. May be <c>null</c>.</param>
     /// <param name="options">Serialization options. Defaults to <see cref="HumlOptions.Default"/>.</param>
     /// <returns>The HUML text representation.</returns>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
+    [RequiresDynamicCode("Reflection-based HUML serialisation may emit dynamic code.")]
     internal static string Serialize(object? value, HumlOptions? options = null)
     {
         options ??= HumlOptions.Default;
@@ -51,6 +54,8 @@ internal static class HumlSerializer
     /// the declared type for property reflection. Used by the Phase 7 static entry point
     /// (<c>Huml.Serialize&lt;T&gt;</c>). Nested POCOs still use their runtime type.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
+    [RequiresDynamicCode("Reflection-based HUML serialisation may emit dynamic code.")]
     internal static string Serialize(object? value, Type type, HumlOptions? options = null)
     {
         options ??= HumlOptions.Default;
@@ -74,6 +79,7 @@ internal static class HumlSerializer
 
     // ── Core serialization logic ──────────────────────────────────────────────
 
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void SerializeValue(StringBuilder sb, object? value, int depth, HumlOptions options, Type? declaredType = null)
         => SerializeValueInternal(sb, value, depth, options, declaredType);
 
@@ -81,6 +87,7 @@ internal static class HumlSerializer
     /// Core serialization dispatch. Called by <see cref="SerializeValue"/> and by
     /// <see cref="HumlSerializerContext.AppendSerializedValue"/>.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     internal static void SerializeValueInternal(StringBuilder sb, object? value, int depth, HumlOptions options, Type? declaredType = null)
     {
         if (value is null)
@@ -215,6 +222,7 @@ internal static class HumlSerializer
     /// Emits mapping entries at <paramref name="depth"/> for a POCO.
     /// Each property is emitted as either <c>key: scalar\n</c> or <c>key::\n  ...</c>.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void SerializeMappingBody(StringBuilder sb, object obj, int depth, HumlOptions options, Type? declaredType = null)
     {
         var descriptors = PropertyDescriptor.GetDescriptors(declaredType ?? obj.GetType(), options.PropertyNamingPolicy);
@@ -240,6 +248,7 @@ internal static class HumlSerializer
     /// When <paramref name="converterOverride"/> is non-null it is invoked at highest priority
     /// (property-level converter wins over type-level and options-level).
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void EmitEntry(
         StringBuilder sb,
         string indent,
@@ -356,6 +365,7 @@ internal static class HumlSerializer
     /// Emits a scalar-only sequence in inline format: <c>key:: v1, v2, v3\n</c>.
     /// Caller must verify all items are scalar before calling.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void EmitInlineSequence(
         StringBuilder sb, string indent, string key, List<object?> items, int depth, HumlOptions options)
     {
@@ -374,6 +384,7 @@ internal static class HumlSerializer
     /// Emits a scalar-valued dictionary in inline format: <c>key:: k1: v1, k2: v2\n</c>.
     /// Caller must verify all values are scalar before calling.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void EmitInlineDictionary(
         StringBuilder sb, string indent, string key, IDictionary dict, HumlOptions options)
     {
@@ -397,6 +408,7 @@ internal static class HumlSerializer
     /// Returns <c>true</c> when every value in <paramref name="dict"/> is a scalar
     /// (eligible for inline dictionary format).
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static bool AllDictionaryValuesAreScalar(IDictionary dict, HumlOptions options)
     {
         foreach (DictionaryEntry e in dict)
@@ -410,6 +422,7 @@ internal static class HumlSerializer
     /// Emits items of an <see cref="IEnumerable"/> as sequence entries at <paramref name="depth"/>.
     /// This is the single shared implementation for all sequence serialisation paths.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void EmitSequenceItems(
         StringBuilder sb, IEnumerable items, int depth, HumlOptions options)
     {
@@ -451,6 +464,7 @@ internal static class HumlSerializer
     /// Dictionary entries do not inherit per-property inline overrides; they always use
     /// multiline unless a per-entry override is explicitly supplied.
     /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void SerializeDictionaryBody(
         StringBuilder sb,
         IDictionary dict,
@@ -470,6 +484,7 @@ internal static class HumlSerializer
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /// <summary>Returns <c>true</c> if <paramref name="value"/> should be emitted inline after <c>: </c>.</summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static bool IsScalarValue(object? value, HumlOptions? options = null)
     {
         if (value is null) return true;
