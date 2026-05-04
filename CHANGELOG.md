@@ -10,7 +10,15 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
-(no changes yet)
+### Added
+- **AOT / trim safety annotations:** All reflection-using public API methods (`Serialize<T>`,
+  `Serialize(object?,Type)`, `Deserialize<T>(string)`, `Deserialize<T>(ReadOnlySpan<char>)`,
+  `Deserialize(string,Type)`, `Populate<T>(string)`, `Populate<T>(ReadOnlySpan<char>)`) now
+  carry `[RequiresUnreferencedCode]` and `[RequiresDynamicCode]`. Consumers publishing with
+  `PublishTrimmed=true` or NativeAOT now receive compile-time warnings rather than silent
+  broken binaries. `Huml.Parse` is unannotated — it performs no reflection on user types.
+  `<IsTrimmable>true</IsTrimmable>` added to `Huml.Net.csproj` for net8.0/9.0/net10.0
+  (conditioned on net6.0+ compatibility).
 
 ## [0.2.0-alpha.1] - 2026-05-03
 
