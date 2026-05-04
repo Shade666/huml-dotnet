@@ -36,4 +36,17 @@ accepted items that are tracked for implementation across the project.
 | API           | Add `Huml.Populate<T>(string, T existing, options?)` for config-overlay deserialisation into an existing object instance (Phase 999.22) | V2 | Medium | Planned |
 | API           | Add `HumlOptions.DefaultIgnoreCondition` / `[HumlIgnoreDefaults]` for type-level default-omit without per-property `OmitIfDefault` (Phase 999.23) | V2 | Low    | Planned |
 | API           | Add `HumlOptions.ValidateDuplicateKeysOnWrite` to catch dictionary key collisions during serialisation (Phase 999.24) | V2 | Low    | Planned |
-| API           | Add `IReadOnlySet<T>` deserialisation support to collection dispatch (Phase 999.25) | V2 | Low    | Planned |
+| API           | Add `IReadOnlySet<T>` deserialisation support to collection dispatch (Phase 999.25) | V2 | Low    | Done    |
+| API           | Constructor parameter binding and `init`-only setter support — allow `HumlDeserializer` to bind records, parameterised ctors, and `init`-only properties (Phase 999.26) | V2 | High | Planned |
+| API           | Required-property enforcement via `[HumlRequired]` attribute and C# `required` modifier; throws on missing keys (Phase 999.27) | V2 | High | Planned |
+| API           | Extension data via `[HumlExtensionData]` — capture unknown keys into a `Dictionary<string, HumlNode>` property for forward-compatible config consumption (Phase 999.28) | V2 | Medium | Planned |
+| API           | Polymorphic (de)serialisation with `[HumlDerivedType]` discriminator — dispatch base-class/interface properties via configurable `$type` key (Phase 999.29) | V3 | Medium | Planned |
+| Tooling       | AOT / trim safety annotations — add `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]`, `[DynamicallyAccessedMembers]` to reflection-using public API; add `<IsTrimmable>true</IsTrimmable>` (Phase 999.30) | V2 | High | Planned |
+| API           | Source-generator seam — define `IHumlTypeInfoResolver` / `HumlTypeInfo<T>` and `HumlOptions.TypeInfoResolver` for future AOT plug-in without breaking changes (Phase 999.31) | V2 | Medium | Planned |
+| Performance   | Source-generator implementation — Roslyn incremental generator emitting compiled `HumlTypeInfo<T>`, shipped as `Huml.Net.SourceGeneration` NuGet package; requires Phase 999.31 (Phase 999.32) | V3 | Medium | Planned |
+| API           | Number handling modes — `HumlOptions.NumberHandling` flags enum supporting `AllowReadingFromString`, `WriteAsString`, `AllowNamedFloatingPointLiterals` (Phase 999.33) | V3 | Low | Planned |
+| API           | Missing-member handling — `HumlOptions.UnmappedMemberHandling` (`Skip` default, `Disallow`) for strict rejection of unknown HUML keys (Phase 999.34) | V3 | Low | Planned |
+| API           | Per-member naming-policy override attribute — `[HumlNamingPolicy(typeof(…))]` for member-level convention override independent of `HumlOptions.PropertyNamingPolicy` (Phase 999.35) | V3 | Low | Planned |
+| API           | `HumlOptions.Strict` preset — bundles all strict/validation toggles into one factory; requires Phase 999.24/27/34 (Phase 999.36) | V3 | Low | Planned |
+| API           | Native `DateOnly` / `TimeOnly` round-trip — built-in ISO-8601 handling matching STJ .NET 10 defaults; confirm `DateTime`/`DateTimeOffset`/`TimeSpan` coverage (Phase 999.37) | V2 | Medium | Planned |
+| API           | Add `SortedSet<T>` deserialisation support — materialise as `SortedSet<T>` with default comparer; separate branch from the `HashSet<T>` path added in Phase 16; no conditional compile required (`SortedSet<T>` exists on netstandard2.1) (Phase 999.38) | V2 | Low | Planned |

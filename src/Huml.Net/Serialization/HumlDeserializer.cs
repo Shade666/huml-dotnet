@@ -312,7 +312,12 @@ internal static class HumlDeserializer
 
     /// <summary>
     /// Deserialises a <see cref="HumlSequence"/> into an array, <see cref="List{T}"/>,
+    /// <see cref="System.Collections.Generic.HashSet{T}"/>,
+    /// <see cref="System.Collections.Generic.ISet{T}"/>,
+    /// <c>IReadOnlySet{T}</c> (NET5_0_OR_GREATER only — absent from netstandard2.1),
     /// or <see cref="IEnumerable{T}"/> based on <paramref name="targetType"/>.
+    /// All set types materialise as <see cref="System.Collections.Generic.HashSet{T}"/>;
+    /// duplicate input elements are silently deduplicated by natural <c>HashSet</c> semantics.
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
     private static object DeserializeSequence(HumlSequence seq, Type targetType, HumlOptions options)
@@ -338,6 +343,32 @@ internal static class HumlDeserializer
             foreach (var item in seq.Items)
                 list.Add(DeserializeNode(item, elementType, options));
             return list;
+        }
+
+        // b.5. IReadOnlySet<T> / ISet<T> / HashSet<T> dispatch (materialise as HashSet<T>)
+        if (targetType.IsGenericType)
+        {
+            var typeDef = targetType.GetGenericTypeDefinition();
+            bool isSetType = typeDef == typeof(HashSet<>)
+                          || typeDef == typeof(ISet<>)
+#if NET5_0_OR_GREATER
+                          || typeDef == typeof(IReadOnlySet<>)
+#endif
+                          ;
+
+            if (isSetType)
+            {
+                var elementType = targetType.GetGenericArguments()[0];
+                var hashSetType = typeof(HashSet<>).MakeGenericType(elementType);
+                var set = Activator.CreateInstance(hashSetType)!;
+                var addMethod = hashSetType.GetMethod("Add")!;
+                foreach (var item in seq.Items)
+                {
+                    var element = DeserializeNode(item, elementType, options);
+                    addMethod.Invoke(set, new object?[] { element });
+                }
+                return set;
+            }
         }
 
         // c. IEnumerable<T> dispatch (materialise as List<T>)

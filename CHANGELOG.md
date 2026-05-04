@@ -11,6 +11,7 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 ## [Unreleased]
 
 ### Added
+- `HumlDeserializer` now supports `HashSet<T>`, `ISet<T>`, and (on .NET 5+) `IReadOnlySet<T>` as deserialisation targets for HUML sequences. All three materialise as `HashSet<T>`; duplicate input elements are silently deduplicated.
 - **AOT / trim safety annotations:** All reflection-using public API methods (`Serialize<T>`,
   `Serialize(object?,Type)`, `Deserialize<T>(string)`, `Deserialize<T>(ReadOnlySpan<char>)`,
   `Deserialize(string,Type)`, `Populate<T>(string)`, `Populate<T>(ReadOnlySpan<char>)`) now
@@ -19,6 +20,9 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
   broken binaries. `Huml.Parse` is unannotated — it performs no reflection on user types.
   `<IsTrimmable>true</IsTrimmable>` added to `Huml.Net.csproj` for net8.0/9.0/net10.0
   (conditioned on net6.0+ compatibility).
+
+### Fixed
+- Deserialising a HUML sequence into `ISet<T>` or `IReadOnlySet<T>` previously returned `List<T>` (via the `IEnumerable<T>` fallback), causing a runtime assignment failure. The new set dispatch branch (`b.5`) materialises these correctly as `HashSet<T>`.
 
 ## [0.2.0-alpha.1] - 2026-05-03
 
