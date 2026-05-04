@@ -189,6 +189,45 @@ internal static class HumlSerializer
             }
         }
 
+        // Date/time types — emit as quoted ISO-8601 / canonical strings
+        if (value is DateTime dt)
+        {
+            sb.Append('"');
+            AppendEscapedString(sb, dt.ToString("O", CultureInfo.InvariantCulture));
+            sb.Append('"');
+            return;
+        }
+        if (value is DateTimeOffset dateTimeOffset)
+        {
+            sb.Append('"');
+            AppendEscapedString(sb, dateTimeOffset.ToString("O", CultureInfo.InvariantCulture));
+            sb.Append('"');
+            return;
+        }
+        if (value is TimeSpan ts)
+        {
+            sb.Append('"');
+            AppendEscapedString(sb, ts.ToString("c", CultureInfo.InvariantCulture));
+            sb.Append('"');
+            return;
+        }
+#if NET6_0_OR_GREATER
+        if (value is DateOnly dateOnly)
+        {
+            sb.Append('"');
+            AppendEscapedString(sb, dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            sb.Append('"');
+            return;
+        }
+        if (value is TimeOnly timeOnly)
+        {
+            sb.Append('"');
+            AppendEscapedString(sb, timeOnly.ToString("HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture));
+            sb.Append('"');
+            return;
+        }
+#endif
+
         // IDictionary<string, *> — must precede IEnumerable
         if (value is IDictionary dict)
         {
@@ -493,6 +532,11 @@ internal static class HumlSerializer
         if (IsIntegerType(value)) return true;
         if (value is double or float or decimal) return true;
         if (value.GetType().IsEnum) return true;
+
+        if (value is DateTime or DateTimeOffset or TimeSpan) return true;
+#if NET6_0_OR_GREATER
+        if (value is DateOnly or TimeOnly) return true;
+#endif
 
         // Converter-handled types are treated as scalar (inline after key: )
         if (options != null && ConverterCache.TryGet(value.GetType(), options) != null) return true;

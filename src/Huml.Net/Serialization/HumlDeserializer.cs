@@ -493,9 +493,31 @@ internal static class HumlDeserializer
                     return Convert.ChangeType(scalar.Value, underlying, CultureInfo.InvariantCulture);
 
                 case ScalarKind.String:
+                {
                     if (underlying == typeof(string))
                         return (string?)scalar.Value;
+
+                    var raw = scalar.Value as string ?? string.Empty;
+
+                    if (underlying == typeof(DateTime))
+                        return DateTime.ParseExact(raw, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+                    if (underlying == typeof(DateTimeOffset))
+                        return DateTimeOffset.ParseExact(raw, "O", CultureInfo.InvariantCulture, DateTimeStyles.None);
+
+                    if (underlying == typeof(TimeSpan))
+                        return TimeSpan.ParseExact(raw, "c", CultureInfo.InvariantCulture);
+
+#if NET6_0_OR_GREATER
+                    if (underlying == typeof(DateOnly))
+                        return DateOnly.ParseExact(raw, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+                    if (underlying == typeof(TimeOnly))
+                        return TimeOnly.Parse(raw, CultureInfo.InvariantCulture);
+#endif
+
                     return Convert.ChangeType(scalar.Value, underlying, CultureInfo.InvariantCulture);
+                }
 
                 case ScalarKind.Integer:
                     // Parser produces long; convert to target numeric type
