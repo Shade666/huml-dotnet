@@ -15,6 +15,11 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- IsTrimmable is only meaningful for net6.0+ — netstandard2.1 has no trimmer support.
+         This condition evaluates to true for net8.0, net9.0, net10.0 and false for netstandard2.1. -->
+    <IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</IsTrimmable>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
