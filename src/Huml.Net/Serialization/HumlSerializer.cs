@@ -18,6 +18,17 @@ internal static class HumlSerializer
     [ThreadStatic]
     private static HashSet<Type>? _activeConverterTypes;
 
+    // ── StringBuilder pool (Phase 18) ─────────────────────────────────────────
+    // _pooledSb is reused across Serialize calls on the same thread to eliminate
+    // per-call StringBuilder + char[] allocation. _serializationActive guards
+    // re-entry from converters so the pool is never shared concurrently.
+
+    [ThreadStatic]
+    private static StringBuilder? _pooledSb;
+
+    [ThreadStatic]
+    private static bool _serializationActive;
+
     // ── Public entry points ───────────────────────────────────────────────────
 
     /// <summary>
@@ -31,22 +42,46 @@ internal static class HumlSerializer
     internal static string Serialize(object? value, HumlOptions? options = null)
     {
         options ??= HumlOptions.Default;
-        var sb = new StringBuilder();
-        sb.Append('%');
-        sb.Append("HUML ");
-        sb.Append(VersionString(options.SpecVersion));
-        sb.Append('\n');
 
-        if (value is null)
+        var usePool = !_serializationActive;
+        StringBuilder sb;
+        if (usePool)
         {
-            sb.Append("null\n");
+            _serializationActive = true;
+            _pooledSb ??= new StringBuilder();
+            sb = _pooledSb;
         }
         else
         {
-            SerializeValue(sb, value, depth: 0, options);
+            sb = new StringBuilder();
         }
 
-        return sb.ToString();
+        try
+        {
+            sb.Append('%');
+            sb.Append("HUML ");
+            sb.Append(VersionString(options.SpecVersion));
+            sb.Append('\n');
+
+            if (value is null)
+            {
+                sb.Append("null\n");
+            }
+            else
+            {
+                SerializeValue(sb, value, depth: 0, options);
+            }
+
+            return sb.ToString();
+        }
+        finally
+        {
+            if (usePool)
+            {
+                sb.Clear();
+                _serializationActive = false;
+            }
+        }
     }
 
     /// <summary>
@@ -59,22 +94,46 @@ internal static class HumlSerializer
     internal static string Serialize(object? value, Type type, HumlOptions? options = null)
     {
         options ??= HumlOptions.Default;
-        var sb = new StringBuilder();
-        sb.Append('%');
-        sb.Append("HUML ");
-        sb.Append(VersionString(options.SpecVersion));
-        sb.Append('\n');
 
-        if (value is null)
+        var usePool = !_serializationActive;
+        StringBuilder sb;
+        if (usePool)
         {
-            sb.Append("null\n");
+            _serializationActive = true;
+            _pooledSb ??= new StringBuilder();
+            sb = _pooledSb;
         }
         else
         {
-            SerializeValue(sb, value, depth: 0, options, declaredType: type);
+            sb = new StringBuilder();
         }
 
-        return sb.ToString();
+        try
+        {
+            sb.Append('%');
+            sb.Append("HUML ");
+            sb.Append(VersionString(options.SpecVersion));
+            sb.Append('\n');
+
+            if (value is null)
+            {
+                sb.Append("null\n");
+            }
+            else
+            {
+                SerializeValue(sb, value, depth: 0, options, declaredType: type);
+            }
+
+            return sb.ToString();
+        }
+        finally
+        {
+            if (usePool)
+            {
+                sb.Clear();
+                _serializationActive = false;
+            }
+        }
     }
 
     // ── Core serialization logic ──────────────────────────────────────────────
