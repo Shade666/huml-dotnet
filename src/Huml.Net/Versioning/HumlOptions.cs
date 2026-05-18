@@ -68,6 +68,26 @@ public sealed class HumlOptions
     public HumlNamingPolicy? PropertyNamingPolicy { get; init; }
 
     /// <summary>
+    /// Gets or sets the global condition under which properties are omitted from serialisation output.
+    /// Defaults to <see cref="HumlIgnoreCondition.Never"/>, preserving all existing serialisation behaviour.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This option applies globally to every property during serialisation.
+    /// The full precedence chain (highest to lowest) is:
+    /// per-property <c>[HumlProperty(OmitIfDefault = true)]</c> →
+    /// class-level <c>[HumlIgnoreDefaults]</c> →
+    /// <c>DefaultIgnoreCondition</c>.
+    /// If any higher-priority rule fires, this option is not evaluated for that property.
+    /// </para>
+    /// <para>
+    /// No changes are required from existing consumers — all code using the default
+    /// <see cref="HumlIgnoreCondition.Never"/> value behaves identically to previous releases.
+    /// </para>
+    /// </remarks>
+    public HumlIgnoreCondition DefaultIgnoreCondition { get; init; } = HumlIgnoreCondition.Never;
+
+    /// <summary>
     /// A list of <see cref="Serialization.HumlConverter"/> instances consulted during serialisation and
     /// deserialisation when no property-level or type-level <see cref="Serialization.HumlConverterAttribute"/>
     /// is present. The first converter whose <see cref="Serialization.HumlConverter.CanConvert"/> returns
