@@ -111,6 +111,11 @@ internal sealed record PropertyDescriptor(
                 if (prop.GetCustomAttribute<HumlIgnoreAttribute>() != null)
                     continue;
 
+                // Exclude [HumlExtensionData] properties — handled separately in the extension scan below.
+                // They must not appear in Ordered[] or ByKey.
+                if (prop.GetCustomAttribute<HumlExtensionDataAttribute>() != null)
+                    continue;
+
                 // Resolve [HumlProperty] name and OmitIfDefault
                 var humlProp = prop.GetCustomAttribute<HumlPropertyAttribute>();
                 string humlKey = (humlProp?.Name is { Length: > 0 } explicitName)
