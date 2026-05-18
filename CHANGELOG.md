@@ -14,6 +14,14 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 - **`StringBuilder` pooling in `HumlSerializer`:** Both `Serialize` overloads now reuse a `[ThreadStatic]` `StringBuilder` across calls on the same thread, eliminating one `StringBuilder` allocation and one backing `char[]` growth per `Huml.Serialize` call on hot paths. A second `[ThreadStatic]` sentinel (`_serializationActive`) ensures re-entry from a `HumlConverter.Write` that calls `Huml.Serialize` internally falls back to a fresh `StringBuilder` rather than corrupting the pooled instance. No public API or emitted HUML format change.
 
 ### Added
+- **Extension data (`[HumlExtensionData]`):** A new `[HumlExtensionData]` attribute designates
+  a single `Dictionary<string, HumlNode>` or `Dictionary<string, object?>` property as the
+  overflow bucket for HUML keys that do not match any declared property during deserialisation.
+  Captured keys are re-emitted during serialisation after all declared properties, in insertion
+  order, preserving round-trip fidelity for unknown or forward-compat keys. Mirrors STJ's
+  `[JsonExtensionData]` pattern. Declaring more than one `[HumlExtensionData]` property on a
+  type, or using an unsupported property type, throws `InvalidOperationException` at first use.
+  `Huml.Populate<T>` also participates in extension-data capture.
 - **Version-preserving round-trip (`HumlDocument.DetectedVersion`):** `HumlDocument` now exposes
   `public HumlSpecVersion? DetectedVersion { get; init; }`. The property is populated by
   `HumlParser` from the `%HUML` header token — always reflecting the header-declared version
