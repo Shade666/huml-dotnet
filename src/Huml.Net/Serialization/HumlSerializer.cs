@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Huml.Net.Exceptions;
+using Huml.Net.Parser;
 using Huml.Net.Versioning;
 
 namespace Huml.Net.Serialization;
@@ -366,6 +367,24 @@ internal static class HumlSerializer
 
             EmitEntry(sb, indent, desc.HumlKey, propValue, depth, options, desc.Inline, desc.Converter);
         }
+
+        // Emit extension-data entries after all declared properties (EXT-04).
+        var extDesc = PropertyDescriptor.GetExtensionDataDescriptor(
+            declaredType ?? obj.GetType(), options.PropertyNamingPolicy);
+        if (extDesc != null)
+        {
+            var extVal = extDesc.Property.GetValue(obj);
+            if (extVal is Dictionary<string, HumlNode> nodeDict && nodeDict.Count > 0)
+            {
+                foreach (var kvp in nodeDict)
+                    EmitHumlNode(sb, indent, kvp.Key, kvp.Value, depth, options);
+            }
+            else if (extVal is Dictionary<string, object?> objDict && objDict.Count > 0)
+            {
+                foreach (var kvp in objDict)
+                    EmitEntry(sb, indent, kvp.Key, kvp.Value, depth, options);
+            }
+        }
     }
 
     /// <summary>
@@ -533,6 +552,116 @@ internal static class HumlSerializer
             SerializeValue(sb, entry.Value, 0, options);
         }
         sb.Append('\n');
+    }
+
+    /// <summary>
+    /// Emits a <see cref="HumlNode"/> AST value as a HUML mapping entry.
+    /// Used by the extension-data serialisation path for
+    /// <c>Dictionary&lt;string, HumlNode&gt;</c> properties.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="HumlInlineMapping"/> entries are re-emitted as multiline blocks
+    /// (semantically lossless; inline-vs-multiline distinction is a formatting concern only).
+    /// </remarks>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
+    private static void EmitHumlNode(
+        StringBuilder sb,
+        string indent,
+        string key,
+        HumlNode node,
+        int depth,
+        HumlOptions options)
+    {
+        if (node is HumlScalar scalar)
+        {
+            sb.Append(indent);
+            AppendKey(sb, key);
+            sb.Append(": ");
+            switch (scalar.Kind)
+            {
+                case ScalarKind.Null: sb.Append("null"); break;
+                case ScalarKind.NaN:  sb.Append("nan");  break;
+                case ScalarKind.Inf:  sb.Append(scalar.Value as string ?? "inf"); break;
+                default:
+                    // Bool, String, Integer, Float — Value is the correct CLR type; route through
+                    // SerializeValue for consistent string/number/bool formatting.
+                    SerializeValue(sb, scalar.Value, depth + 1, options);
+                    break;
+            }
+            sb.Append('\n');
+            return;
+        }
+
+        if (node is HumlDocument doc)
+        {
+            sb.Append(indent);
+            AppendKey(sb, key);
+            if (doc.Entries.Count == 0) { sb.Append(":: {}\n"); return; }
+            sb.Append("::\n");
+            var childIndent = Indent(depth + 1);
+            foreach (var entry in doc.Entries)
+            {
+                if (entry is HumlMapping m)
+                    EmitHumlNode(sb, childIndent, m.Key, m.Value, depth + 1, options);
+            }
+            return;
+        }
+
+        if (node is HumlInlineMapping inlineMap)
+        {
+            // Inline mappings are re-emitted as multiline blocks (semantically lossless, v1 behaviour).
+            sb.Append(indent);
+            AppendKey(sb, key);
+            if (inlineMap.Entries.Count == 0) { sb.Append(":: {}\n"); return; }
+            sb.Append("::\n");
+            var childIndent = Indent(depth + 1);
+            foreach (var entry in inlineMap.Entries)
+            {
+                if (entry is HumlMapping m)
+                    EmitHumlNode(sb, childIndent, m.Key, m.Value, depth + 1, options);
+            }
+            return;
+        }
+
+        if (node is HumlSequence seq)
+        {
+            sb.Append(indent);
+            AppendKey(sb, key);
+            if (seq.Items.Count == 0) { sb.Append(":: []\n"); return; }
+            sb.Append("::\n");
+            var itemIndent = Indent(depth + 1);
+            foreach (var item in seq.Items)
+            {
+                sb.Append(itemIndent);
+                sb.Append("- ");
+                if (item is HumlScalar s)
+                {
+                    switch (s.Kind)
+                    {
+                        case ScalarKind.Null: sb.Append("null"); break;
+                        case ScalarKind.NaN:  sb.Append("nan");  break;
+                        case ScalarKind.Inf:  sb.Append(s.Value as string ?? "inf"); break;
+                        default: SerializeValue(sb, s.Value, depth + 2, options); break;
+                    }
+                    sb.Append('\n');
+                }
+                else
+                {
+                    sb.Append('\n');
+                    if (item is HumlDocument childDoc)
+                    {
+                        var grandIndent = Indent(depth + 2);
+                        foreach (var entry in childDoc.Entries)
+                        {
+                            if (entry is HumlMapping m)
+                                EmitHumlNode(sb, grandIndent, m.Key, m.Value, depth + 2, options);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        // Defensive: unknown future node types are silently skipped.
     }
 
     /// <summary>
