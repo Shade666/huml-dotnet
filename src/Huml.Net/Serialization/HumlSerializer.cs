@@ -330,9 +330,32 @@ internal static class HumlSerializer
         {
             var propValue = desc.Property.GetValue(obj);
 
-            // OmitIfDefault: skip if value equals the type's default (cached in descriptor)
+            // Precedence chain (highest to lowest, per D-09):
+            // 1. Per-property [HumlProperty(OmitIfDefault = true)]
             if (desc.OmitIfDefault && Equals(propValue, desc.DefaultValue))
                 continue;
+
+            // 2. Class-level [HumlIgnoreDefaults] — WhenWritingDefault semantics
+            if (desc.ClassIgnoresDefaults && Equals(propValue, desc.DefaultValue))
+                continue;
+
+            // 3. Global HumlOptions.DefaultIgnoreCondition
+            if (options.DefaultIgnoreCondition != HumlIgnoreCondition.Never)
+            {
+                bool shouldOmit = options.DefaultIgnoreCondition switch
+                {
+                    HumlIgnoreCondition.Always             => true,
+                    HumlIgnoreCondition.WhenWritingDefault => Equals(propValue, desc.DefaultValue),
+                    HumlIgnoreCondition.WhenWritingNull    => propValue is null,
+                    // Defensive fallback for future composite flags (e.g. WhenWritingEmpty = 4).
+                    // HasFlag is safe for int-backed enums and is compiler-inlined.
+                    _ => (options.DefaultIgnoreCondition.HasFlag(HumlIgnoreCondition.WhenWritingDefault)
+                              && Equals(propValue, desc.DefaultValue))
+                         || (options.DefaultIgnoreCondition.HasFlag(HumlIgnoreCondition.WhenWritingNull)
+                              && propValue is null),
+                };
+                if (shouldOmit) continue;
+            }
 
             EmitEntry(sb, indent, desc.HumlKey, propValue, depth, options, desc.Inline, desc.Converter);
         }
