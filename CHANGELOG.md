@@ -14,6 +14,16 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 - **`StringBuilder` pooling in `HumlSerializer`:** Both `Serialize` overloads now reuse a `[ThreadStatic]` `StringBuilder` across calls on the same thread, eliminating one `StringBuilder` allocation and one backing `char[]` growth per `Huml.Serialize` call on hot paths. A second `[ThreadStatic]` sentinel (`_serializationActive`) ensures re-entry from a `HumlConverter.Write` that calls `Huml.Serialize` internally falls back to a fresh `StringBuilder` rather than corrupting the pooled instance. No public API or emitted HUML format change.
 
 ### Added
+
+- **Constructor parameter binding** (`[HumlConstructor]` attribute, CTOR-01..CTOR-12): `HumlDeserializer`
+  now supports types with parameterised constructors (records, `required`-field classes). Constructor
+  selection follows STJ priority — `[HumlConstructor]` annotation → single non-parameterless public
+  constructor → parameterless fallback → `HumlDeserializeException` on ambiguity. Parameters are
+  matched to HUML keys case-insensitively and naming-policy-aware; missing required parameters throw
+  `HumlDeserializeException`; optional parameters (`HasDefaultValue`) use their declared defaults.
+- **Init-only property deserialisation** (CTOR-07, CTOR-12): Properties declared with `{ get; init; }`
+  are now settable via `PropertyInfo.SetValue` after construction. The previous `HumlDeserializeException`
+  for init-only properties is removed. This applies to both `Huml.Deserialize<T>` and `Huml.Populate<T>`.
 - **Extension data (`[HumlExtensionData]`):** A new `[HumlExtensionData]` attribute designates
   a single `Dictionary<string, HumlNode>` or `Dictionary<string, object?>` property as the
   overflow bucket for HUML keys that do not match any declared property during deserialisation.
@@ -40,6 +50,9 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
   `<IsTrimmable>true</IsTrimmable>` added to `Huml.Net.csproj` for net8.0/9.0/net10.0
   (conditioned on net6.0+ compatibility).
 - **Duplicate-key write validation:** `HumlOptions.ValidateDuplicateKeysOnWrite` (default `false`) causes `HumlSerializer` to throw `HumlSerializeException` when a dictionary contains two entries that produce the same key string (compared using `StringComparer.Ordinal`) during serialisation. The check fires per dictionary call frame, so nested dictionaries have independent key spaces. Keys differing only in casing are not treated as duplicates. Opt-in; default `false` preserves all existing behaviour.
+- **Required-property enforcement (`[HumlRequired]`):** `[HumlRequired]` attribute (`AttributeTargets.Property`) and the C# `required` modifier are now detected and enforced during `Huml.Deserialize<T>`. When one or more required members are absent from the HUML input, a single `HumlDeserializeException` is thrown listing all missing keys: `"Missing required member(s) on type 'X': 'Key1', 'Key2'."`. Keys are listed in property declaration order. `Huml.Populate<T>` intentionally excludes required checks (overlay/partial-update semantics). Mirrors STJ's `[JsonRequired]` / C# `required` enforcement.
+- C# `required` property modifier is now detected and honoured equivalently to `[HumlRequired]` during deserialisation.
+- `RequiredMemberAttribute` compile-time shim added for `netstandard2.1` / pre-.NET-7 targets, enabling use of `required` modifier semantics in the detection path.
 
 ### Fixed
 - Deserialising a HUML sequence into `ISet<T>` or `IReadOnlySet<T>` previously returned `List<T>` (via the `IEnumerable<T>` fallback), causing a runtime assignment failure. The new set dispatch branch (`b.5`) materialises these correctly as `HashSet<T>`.
