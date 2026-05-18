@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Huml.Net.Parser;
 
 namespace Huml.Net.Serialization;
 
@@ -35,7 +36,8 @@ internal sealed record PropertyDescriptor(
     /// </summary>
     private sealed record PropertyDescriptorCache(
         PropertyDescriptor[] Ordered,
-        Dictionary<string, PropertyDescriptor> ByKey);
+        Dictionary<string, PropertyDescriptor> ByKey,
+        PropertyDescriptor? ExtensionDataDescriptor);
 
     private static readonly ConcurrentDictionary<(Type, HumlNamingPolicy?), PropertyDescriptorCache> Cache = new();
 
@@ -57,6 +59,15 @@ internal sealed record PropertyDescriptor(
     [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
     internal static Dictionary<string, PropertyDescriptor> GetLookup(Type type, HumlNamingPolicy? policy = null) =>
         Cache.GetOrAdd((type, policy), static key => BuildDescriptors(key.Item1, key.Item2)).ByKey;
+
+    /// <summary>
+    /// Returns the cached <see cref="PropertyDescriptor"/> for the property marked with
+    /// <see cref="HumlExtensionDataAttribute"/> on <paramref name="type"/>, or <c>null</c>
+    /// if no such property exists.
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
+    internal static PropertyDescriptor? GetExtensionDataDescriptor(Type type, HumlNamingPolicy? policy = null) =>
+        Cache.GetOrAdd((type, policy), static key => BuildDescriptors(key.Item1, key.Item2)).ExtensionDataDescriptor;
 
     /// <summary>
     /// Clears the descriptor cache. Intended for use in test isolation only.
@@ -157,7 +168,66 @@ internal sealed record PropertyDescriptor(
         foreach (var d in ordered)
             byKey[d.HumlKey] = d;
 
-        return new PropertyDescriptorCache(ordered, byKey);
+        // Scan for [HumlExtensionData] — must be exactly one; type must be a supported concrete dict.
+        PropertyDescriptor? extensionDataDescriptor = null;
+        string? firstExtPropName = null;
+
+        foreach (var t in typeChain)
+        {
+            var extProps = t.GetProperties(
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            Array.Sort(extProps, (a, b) => a.MetadataToken.CompareTo(b.MetadataToken));
+
+            foreach (var prop in extProps)
+            {
+                if (prop.GetCustomAttribute<HumlExtensionDataAttribute>() == null)
+                    continue;
+
+                // Validate supported type (exact closed-generic equality).
+                var pt = prop.PropertyType;
+                bool isNodeDict   = pt == typeof(Dictionary<string, HumlNode>);
+                bool isObjectDict = pt == typeof(Dictionary<string, object?>);
+                if (!isNodeDict && !isObjectDict)
+                    throw new InvalidOperationException(
+                        $"[HumlExtensionData] on '{type.Name}.{prop.Name}': property type must be " +
+                        $"Dictionary<string, HumlNode> or Dictionary<string, object?> — " +
+                        $"'{pt.Name}' is not supported.");
+
+                // Validate init-only — SetValue after construction would throw FieldAccessException.
+                if (DetectInitOnly(prop))
+                    throw new InvalidOperationException(
+                        $"[HumlExtensionData] on '{type.Name}.{prop.Name}' has an init-only setter. " +
+                        "Extension data properties must have a regular (non-init) setter.");
+
+                // Validate no public setter missing entirely.
+                if (prop.GetSetMethod(nonPublic: false) == null)
+                    throw new InvalidOperationException(
+                        $"[HumlExtensionData] on '{type.Name}.{prop.Name}' has no public setter. " +
+                        "Extension data properties require a public, non-init setter.");
+
+                // Validate uniqueness — at most one [HumlExtensionData] per type hierarchy.
+                if (extensionDataDescriptor != null)
+                    throw new InvalidOperationException(
+                        $"Type '{type.Name}' declares [HumlExtensionData] on both " +
+                        $"'{firstExtPropName}' and '{prop.Name}'. " +
+                        "Only one [HumlExtensionData] property is permitted per type.");
+
+                // Build descriptor for the extension-data slot.
+                // NOT added to result — must not appear in Ordered[] or ByKey.
+                extensionDataDescriptor = new PropertyDescriptor(
+                    HumlKey: prop.Name,
+                    Property: prop,
+                    OmitIfDefault: false,
+                    ClassIgnoresDefaults: false,
+                    IsInitOnly: false,
+                    DefaultValue: null,
+                    Inline: null,
+                    Converter: null);
+                firstExtPropName = prop.Name;
+            }
+        }
+
+        return new PropertyDescriptorCache(ordered, byKey, extensionDataDescriptor);
     }
 
     /// <summary>
