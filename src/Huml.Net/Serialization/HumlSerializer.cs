@@ -181,6 +181,13 @@ internal static class HumlSerializer
         // string first — must precede IEnumerable since string is enumerable
         if (value is string str)
         {
+            // v0.1 spec: backtick multiline string syntax (```...```) is not supported.
+            // When targeting v0.1, any backtick emission path must fall back to AppendEscapedString.
+            // This serialiser has no backtick emission path today; this comment is a correctness
+            // guard for any future maintainer who introduces one:
+            //   if (options.SpecVersion >= HumlSpecVersion.V0_2) { /* emit backtick */ }
+            //   else { AppendEscapedString(sb, str); }
+            // Until then, AppendEscapedString is always used, satisfying both v0.1 and v0.2.
             sb.Append('"');
             AppendEscapedString(sb, str);
             sb.Append('"');

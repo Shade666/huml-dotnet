@@ -76,9 +76,14 @@ internal sealed class HumlParser
         // Consume optional %HUML version directive at the start of the document.
         // The directive is always emitted by HumlSerializer; parsers must accept it.
         // When VersionSource.Header is active, parse the version string and apply it.
+        HumlSpecVersion? detectedVersion = null;
+
         if (Peek().Type == TokenType.Version)
         {
             var versionToken = Advance();
+            // Always record what the header declares, regardless of VersionSource.
+            // TryParseSpecVersion returns null for unrecognised version strings.
+            detectedVersion = TryParseSpecVersion(versionToken.Value!);
             if (_options.VersionSource == VersionSource.Header)
                 ApplyVersionFromHeader(versionToken.Value!);
         }
@@ -99,7 +104,12 @@ internal sealed class HumlParser
             {
                 var scalar = TokenToScalar(Advance());
                 AssertRootEnd();
-                return new HumlDocument(new HumlNode[] { scalar }) { Line = tk.Line, Column = tk.Column };
+                return new HumlDocument(new HumlNode[] { scalar })
+                {
+                    Line = tk.Line,
+                    Column = tk.Column,
+                    DetectedVersion = detectedVersion,
+                };
             }
 
             case RootType.EmptyList:
@@ -109,7 +119,12 @@ internal sealed class HumlParser
                 return new HumlDocument(new HumlNode[]
                 {
                     new HumlSequence(Array.Empty<HumlNode>()) { Line = emptyToken.Line, Column = emptyToken.Column }
-                }) { Line = emptyToken.Line, Column = emptyToken.Column };
+                })
+                {
+                    Line = emptyToken.Line,
+                    Column = emptyToken.Column,
+                    DetectedVersion = detectedVersion,
+                };
             }
 
             case RootType.EmptyDict:
@@ -119,35 +134,55 @@ internal sealed class HumlParser
                 return new HumlDocument(new HumlNode[]
                 {
                     new HumlInlineMapping(Array.Empty<HumlNode>()) { Line = emptyToken.Line, Column = emptyToken.Column }
-                }) { Line = emptyToken.Line, Column = emptyToken.Column };
+                })
+                {
+                    Line = emptyToken.Line,
+                    Column = emptyToken.Column,
+                    DetectedVersion = detectedVersion,
+                };
             }
 
             case RootType.InlineList:
             {
                 var seq = ParseInlineList();
                 AssertRootEnd();
-                return new HumlDocument(new HumlNode[] { seq }) { Line = tk.Line, Column = tk.Column };
+                return new HumlDocument(new HumlNode[] { seq })
+                {
+                    Line = tk.Line,
+                    Column = tk.Column,
+                    DetectedVersion = detectedVersion,
+                };
             }
 
             case RootType.InlineDict:
             {
                 var inlineMapping = ParseInlineDict();
                 AssertRootEnd();
-                return new HumlDocument(inlineMapping.Entries) { Line = tk.Line, Column = tk.Column }; // root inline dict entries become top-level entries
+                return new HumlDocument(inlineMapping.Entries) // root inline dict entries become top-level entries
+                {
+                    Line = tk.Line,
+                    Column = tk.Column,
+                    DetectedVersion = detectedVersion,
+                };
             }
 
             case RootType.MultilineList:
             {
                 var seq = ParseMultilineList(0, tk.Line, tk.Column);
                 AssertRootEnd();
-                return new HumlDocument(new HumlNode[] { seq }) { Line = tk.Line, Column = tk.Column };
+                return new HumlDocument(new HumlNode[] { seq })
+                {
+                    Line = tk.Line,
+                    Column = tk.Column,
+                    DetectedVersion = detectedVersion,
+                };
             }
 
             case RootType.MultilineDict:
             {
                 var doc = ParseMultilineDict(0, tk.Line, tk.Column);
                 AssertRootEnd();
-                return doc;
+                return doc with { DetectedVersion = detectedVersion };
             }
 
             default:

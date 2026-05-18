@@ -1,3 +1,5 @@
+using Huml.Net.Versioning;
+
 namespace Huml.Net.Parser;
 
 /// <summary>
@@ -10,4 +12,20 @@ namespace Huml.Net.Parser;
 /// <see cref="HumlInlineMapping"/> node instead.
 /// </remarks>
 /// <param name="Entries">The mapping entries or list items in this block.</param>
-public sealed record HumlDocument(IReadOnlyList<HumlNode> Entries) : HumlNode;
+public sealed record HumlDocument(IReadOnlyList<HumlNode> Entries) : HumlNode
+{
+    /// <summary>
+    /// The HUML spec version detected from the <c>%HUML</c> header in the source document,
+    /// or <c>null</c> when no header was present or the document was constructed directly in code.
+    /// </summary>
+    /// <remarks>
+    /// Populated by <see cref="HumlParser"/> during parsing. Use this property to preserve
+    /// the original spec version when round-tripping:
+    /// <code>
+    /// var doc = Huml.Parse(input);
+    /// var output = Huml.Serialize(dto,
+    ///     new HumlOptions { SpecVersion = doc.DetectedVersion ?? HumlSpecVersion.V0_2 });
+    /// </code>
+    /// </remarks>
+    public HumlSpecVersion? DetectedVersion { get; init; }
+}
