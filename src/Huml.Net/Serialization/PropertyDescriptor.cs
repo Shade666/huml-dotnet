@@ -12,11 +12,15 @@ namespace Huml.Net.Serialization;
 /// (declaration order). Properties decorated with <see cref="HumlIgnoreAttribute"/> are excluded.
 /// <see cref="HumlPropertyAttribute"/> name overrides and <c>OmitIfDefault</c> flags are resolved once at
 /// build time and cached.
+/// <c>ClassIgnoresDefaults</c> is <c>true</c> when the declaring type carries
+/// <c>[HumlIgnoreDefaults]</c> (directly or via inheritance); it is resolved once per
+/// declaring type during <c>BuildDescriptors</c> and cached alongside all other metadata.
 /// </remarks>
 internal sealed record PropertyDescriptor(
     string HumlKey,
     PropertyInfo Property,
     bool OmitIfDefault,
+    bool ClassIgnoresDefaults,   // cached from [HumlIgnoreDefaults] on declaring type
     bool IsInitOnly,
     object? DefaultValue,
     bool? Inline,
@@ -77,6 +81,12 @@ internal sealed record PropertyDescriptor(
 
         foreach (var t in typeChain)
         {
+            // Scan [HumlIgnoreDefaults] once per declaring type (inherit:true so a type decorated
+            // at a derived level propagates correctly when t IS the decorated type).
+            // Per D-07: scan t, not type — prevents base-type properties from incorrectly
+            // inheriting an attribute placed only on the derived type.
+            bool classIgnoresDefaults = t.GetCustomAttribute<HumlIgnoreDefaultsAttribute>(inherit: true) != null;
+
             // DeclaredOnly: each type contributes its own properties only.
             // Sort by MetadataToken to get declaration order within this type.
             var props = t.GetProperties(
@@ -106,8 +116,10 @@ internal sealed record PropertyDescriptor(
                 // Detect init-only setter via IsExternalInit custom modifier
                 bool isInitOnly = DetectInitOnly(prop);
 
-                object? defaultValue = omitIfDefault
-                    ? (prop.PropertyType.IsValueType ? Activator.CreateInstance(prop.PropertyType) : null)
+                // Always compute DefaultValue so ClassIgnoresDefaults and DefaultIgnoreCondition
+                // can check it at emit time without a second reflection call (per D-06).
+                object? defaultValue = prop.PropertyType.IsValueType
+                    ? Activator.CreateInstance(prop.PropertyType)
                     : null;
 
                 // Resolve property-level [HumlConverter] attribute
@@ -131,7 +143,9 @@ internal sealed record PropertyDescriptor(
                             $"Converter type '{converterAttr.ConverterType.Name}' does not derive from HumlConverter.");
                 }
 
-                result.Add(new PropertyDescriptor(humlKey, prop, omitIfDefault, isInitOnly, defaultValue, inline, converter));
+                result.Add(new PropertyDescriptor(
+                    humlKey, prop, omitIfDefault, classIgnoresDefaults,
+                    isInitOnly, defaultValue, inline, converter));
             }
         }
 
