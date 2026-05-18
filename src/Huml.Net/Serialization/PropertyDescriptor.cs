@@ -23,6 +23,7 @@ internal sealed record PropertyDescriptor(
     bool OmitIfDefault,
     bool ClassIgnoresDefaults,   // cached from [HumlIgnoreDefaults] on declaring type
     bool IsInitOnly,
+    bool IsRequired,             // true when [HumlRequired] or C# required modifier is detected
     object? DefaultValue,
     bool? Inline,
     HumlConverter? Converter)   // property-level [HumlConverter] resolved at cache-build time
@@ -37,7 +38,9 @@ internal sealed record PropertyDescriptor(
     private sealed record PropertyDescriptorCache(
         PropertyDescriptor[] Ordered,
         Dictionary<string, PropertyDescriptor> ByKey,
-        PropertyDescriptor? ExtensionDataDescriptor);
+        PropertyDescriptor? ExtensionDataDescriptor,
+        ConstructorInfo? SelectedConstructor,     // null = parameterless ctor path (D-09)
+        bool HasAmbiguousConstructors);           // set true when ambiguous — throw at deserialise time, not here
 
     private static readonly ConcurrentDictionary<(Type, HumlNamingPolicy?), PropertyDescriptorCache> Cache = new();
 
@@ -49,7 +52,7 @@ internal sealed record PropertyDescriptor(
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
     internal static PropertyDescriptor[] GetDescriptors(Type type, HumlNamingPolicy? policy = null) =>
-        Cache.GetOrAdd((type, policy), static key => BuildDescriptors(key.Item1, key.Item2)).Ordered;
+        GetCache(type, policy).Ordered;
 
     /// <summary>
     /// Returns the cached dictionary of <see cref="PropertyDescriptor"/> entries for
@@ -58,7 +61,7 @@ internal sealed record PropertyDescriptor(
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
     internal static Dictionary<string, PropertyDescriptor> GetLookup(Type type, HumlNamingPolicy? policy = null) =>
-        Cache.GetOrAdd((type, policy), static key => BuildDescriptors(key.Item1, key.Item2)).ByKey;
+        GetCache(type, policy).ByKey;
 
     /// <summary>
     /// Returns the cached <see cref="PropertyDescriptor"/> for the property marked with
@@ -67,12 +70,34 @@ internal sealed record PropertyDescriptor(
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
     internal static PropertyDescriptor? GetExtensionDataDescriptor(Type type, HumlNamingPolicy? policy = null) =>
-        Cache.GetOrAdd((type, policy), static key => BuildDescriptors(key.Item1, key.Item2)).ExtensionDataDescriptor;
+        GetCache(type, policy).ExtensionDataDescriptor;
+
+    /// <summary>
+    /// Returns the constructor selected for HUML deserialisation of <paramref name="type"/>,
+    /// or <c>null</c> if the parameterless constructor path is used.
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
+    internal static ConstructorInfo? GetSelectedConstructor(Type type, HumlNamingPolicy? policy = null) =>
+        GetCache(type, policy).SelectedConstructor;
+
+    /// <summary>
+    /// Returns <c>true</c> when <paramref name="type"/> has multiple public non-parameterless
+    /// constructors and no <see cref="HumlConstructorAttribute"/> disambiguates them, or when
+    /// multiple constructors carry <see cref="HumlConstructorAttribute"/>. The deserialiser
+    /// raises <see cref="Exceptions.HumlDeserializeException"/> in this case.
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
+    internal static bool GetHasAmbiguousConstructors(Type type, HumlNamingPolicy? policy = null) =>
+        GetCache(type, policy).HasAmbiguousConstructors;
 
     /// <summary>
     /// Clears the descriptor cache. Intended for use in test isolation only.
     /// </summary>
     internal static void ClearCache() => Cache.Clear();
+
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
+    private static PropertyDescriptorCache GetCache(Type type, HumlNamingPolicy? policy) =>
+        Cache.GetOrAdd((type, policy), static key => BuildDescriptors(key.Item1, key.Item2));
 
     // ── Private implementation ────────────────────────────────────────────────
 
@@ -132,6 +157,9 @@ internal sealed record PropertyDescriptor(
                 // Detect init-only setter via IsExternalInit custom modifier
                 bool isInitOnly = DetectInitOnly(prop);
 
+                // Detect required property — [HumlRequired] attribute or C# required modifier
+                bool isRequired = DetectRequired(prop);
+
                 // Always compute DefaultValue so ClassIgnoresDefaults and DefaultIgnoreCondition
                 // can check it at emit time without a second reflection call (per D-06).
                 object? defaultValue = prop.PropertyType.IsValueType
@@ -161,7 +189,7 @@ internal sealed record PropertyDescriptor(
 
                 result.Add(new PropertyDescriptor(
                     humlKey, prop, omitIfDefault, classIgnoresDefaults,
-                    isInitOnly, defaultValue, inline, converter));
+                    isInitOnly, isRequired, defaultValue, inline, converter));
             }
         }
 
@@ -225,6 +253,7 @@ internal sealed record PropertyDescriptor(
                     OmitIfDefault: false,
                     ClassIgnoresDefaults: false,
                     IsInitOnly: false,
+                    IsRequired: false,
                     DefaultValue: null,
                     Inline: null,
                     Converter: null);
@@ -232,7 +261,43 @@ internal sealed record PropertyDescriptor(
             }
         }
 
-        return new PropertyDescriptorCache(ordered, byKey, extensionDataDescriptor);
+        // Constructor selection — D-02 priority order (stored for deserialise path; not used by serialiser).
+        // IMPORTANT: never throw here; BuildDescriptors runs for serialize + populate too. Set
+        // HasAmbiguousConstructors = true and leave SelectedConstructor = null; the deserialiser checks and throws.
+        var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance); // D-03: public only
+
+        var annotated = new List<ConstructorInfo>();
+        foreach (var c in ctors)
+            if (c.GetCustomAttribute<HumlConstructorAttribute>() != null)
+                annotated.Add(c);
+
+        ConstructorInfo? selectedConstructor = null;
+        bool hasAmbiguousConstructors = false;
+
+        if (annotated.Count > 1)
+        {
+            hasAmbiguousConstructors = true; // multiple [HumlConstructor] — error at deserialise time
+        }
+        else if (annotated.Count == 1)
+        {
+            selectedConstructor = annotated[0]; // D-02 priority 1
+        }
+        else
+        {
+            // D-02 priority 2: single non-parameterless public constructor
+            var nonParameterless = new List<ConstructorInfo>();
+            foreach (var c in ctors)
+                if (c.GetParameters().Length > 0)
+                    nonParameterless.Add(c);
+
+            if (nonParameterless.Count == 1)
+                selectedConstructor = nonParameterless[0];
+            else if (nonParameterless.Count > 1)
+                hasAmbiguousConstructors = true;
+            // else: no non-parameterless ctors — parameterless path, selectedConstructor stays null
+        }
+
+        return new PropertyDescriptorCache(ordered, byKey, extensionDataDescriptor, selectedConstructor, hasAmbiguousConstructors);
     }
 
     /// <summary>
@@ -253,6 +318,29 @@ internal sealed record PropertyDescriptor(
             if (string.Equals(m.FullName, "System.Runtime.CompilerServices.IsExternalInit", StringComparison.Ordinal))
                 return true;
         }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> if <paramref name="property"/> is marked as required via the
+    /// <see cref="HumlRequiredAttribute"/> attribute or the C# <c>required</c> modifier
+    /// (detected via <c>RequiredMemberAttribute</c>, BCL on .NET 7+, shimmed for older TFMs).
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based property metadata construction.")]
+    private static bool DetectRequired(PropertyInfo property)
+    {
+        // [HumlRequired] attribute check
+        if (property.GetCustomAttribute<HumlRequiredAttribute>() != null)
+            return true;
+
+        // C# required modifier — RequiredMemberAttribute (BCL in .NET 7+; shimmed for older TFMs).
+        // FullName string-match avoids compile-time coupling to the shim vs BCL type.
+        foreach (var attr in property.GetCustomAttributes(inherit: false))
+            if (string.Equals(attr.GetType().FullName,
+                "System.Runtime.CompilerServices.RequiredMemberAttribute",
+                StringComparison.Ordinal))
+                return true;
 
         return false;
     }
