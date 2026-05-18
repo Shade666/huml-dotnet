@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using Huml.Net.Exceptions;
 using Huml.Net.Parser;
 using Huml.Net.Versioning;
@@ -139,14 +140,6 @@ internal static class HumlDeserializer
                 continue;
             }
 
-            // Init-only properties cannot be set after construction (POP-09)
-            if (descriptor.IsInitOnly)
-                throw new HumlDeserializeException(
-                    $"Property '{descriptor.Property.Name}' on type '{targetType.Name}' is init-only and cannot be deserialised.",
-                    mapping.Key,
-                    line: mapping.Line,
-                    column: mapping.Column);
-
             // Read-only (no setter) — skip silently (POP-10)
             if (descriptor.Property.SetMethod is null)
                 continue;
@@ -243,18 +236,45 @@ internal static class HumlDeserializer
         if (IsStringKeyedDictionary(targetType))
             return DeserializeDictionary(entries, targetType, options);
 
-        // Create instance via parameterless constructor
-        object instance;
-        try
+        // Phase 23: raise ambiguous-constructor error at deserialise time (not BuildDescriptors —
+        // BuildDescriptors runs for serialize/populate too, so we defer the throw here).
+        if (PropertyDescriptor.GetHasAmbiguousConstructors(targetType, options.PropertyNamingPolicy))
         {
-            instance = Activator.CreateInstance(targetType)
-                ?? throw new HumlDeserializeException(
-                    $"Type '{targetType.Name}' has no accessible parameterless constructor.");
+            var ctors = targetType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+            int annotatedCount = 0;
+            foreach (var c in ctors)
+                if (c.GetCustomAttribute<HumlConstructorAttribute>() != null)
+                    annotatedCount++;
+
+            throw annotatedCount > 1
+                ? new HumlDeserializeException(
+                    $"Type '{targetType.Name}' has multiple [HumlConstructor]-annotated constructors — only one is allowed.")
+                : new HumlDeserializeException(
+                    $"Type '{targetType.Name}' has multiple non-parameterless constructors — annotate one with [HumlConstructor].");
         }
-        catch (MissingMethodException)
+
+        object instance;
+        HashSet<string>? alreadyBound = null;
+        var boundKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var selectedCtor = PropertyDescriptor.GetSelectedConstructor(targetType, options.PropertyNamingPolicy);
+
+        if (selectedCtor != null)
         {
-            throw new HumlDeserializeException(
-                $"Type '{targetType.Name}' has no accessible parameterless constructor.");
+            (instance, alreadyBound) = InvokeConstructor(selectedCtor, entries, targetType, options);
+        }
+        else
+        {
+            try
+            {
+                instance = Activator.CreateInstance(targetType)
+                    ?? throw new HumlDeserializeException(
+                        $"Type '{targetType.Name}' has no accessible parameterless constructor.");
+            }
+            catch (MissingMethodException)
+            {
+                throw new HumlDeserializeException(
+                    $"Type '{targetType.Name}' has no accessible parameterless constructor.");
+            }
         }
 
         // Get property lookup dictionary for the target type (O(1) key access)
@@ -292,13 +312,9 @@ internal static class HumlDeserializer
                 continue;
             }
 
-            // Init-only properties cannot be set after construction
-            if (descriptor.IsInitOnly)
-                throw new HumlDeserializeException(
-                    $"Property '{descriptor.Property.Name}' on type '{targetType.Name}' is init-only and cannot be deserialised.",
-                    mapping.Key,
-                    line: mapping.Line,
-                    column: mapping.Column);
+            // Skip keys already supplied as constructor arguments (D-07/D-08).
+            if (alreadyBound != null && alreadyBound.Contains(mapping.Key))
+                continue;
 
             // Read-only (no setter) — skip silently
             if (descriptor.Property.SetMethod is null)
@@ -341,9 +357,96 @@ internal static class HumlDeserializer
 
             // Set property value via reflection
             descriptor.Property.SetValue(instance, deserializedValue);
+            boundKeys.Add(descriptor.HumlKey);
         }
 
+        // Required-property check (D-06): collect ALL missing required keys, throw once.
+        // Uses GetDescriptors (declaration order) so the error message is deterministic.
+        // Does not run for Populate<T> — PopulateMappingEntries is a separate method (D-09).
+        var descriptors = PropertyDescriptor.GetDescriptors(targetType, options.PropertyNamingPolicy);
+        List<string>? missing = null;
+        foreach (var desc in descriptors)
+        {
+            if (!desc.IsRequired) continue;
+            // alreadyBound uses OrdinalIgnoreCase (set in InvokeConstructor) — plain Contains is correct.
+            bool wasBound = (alreadyBound != null && alreadyBound.Contains(desc.HumlKey))
+                         || boundKeys.Contains(desc.HumlKey);
+            if (!wasBound)
+                (missing ??= new List<string>()).Add(desc.HumlKey);
+        }
+        if (missing != null)
+            throw new HumlDeserializeException(
+                $"Missing required member(s) on type '{targetType.Name}': " +
+                $"{string.Join(", ", missing.Select(k => $"'{k}'"))}.");
+
         return instance;
+    }
+
+    // ── Constructor invocation ────────────────────────────────────────────────
+
+    /// <summary>
+    /// Invokes <paramref name="ctor"/> with arguments bound from <paramref name="entries"/>,
+    /// returning the constructed instance and the set of HUML keys consumed as constructor args.
+    /// The caller's post-construction loop must skip keys in the returned set.
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    private static (object Instance, HashSet<string> AlreadyBound) InvokeConstructor(
+        ConstructorInfo ctor, IReadOnlyList<HumlNode> entries, Type targetType, HumlOptions options)
+    {
+        var ctorParams = ctor.GetParameters();
+        var args = new object?[ctorParams.Length];
+        var alreadyBound = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 0; i < ctorParams.Length; i++)
+        {
+            var param = ctorParams[i];
+            HumlMapping? matched = null;
+
+            // Pass 1: case-insensitive exact name match — exact match always wins (D-04, Pitfall 3)
+            foreach (var entry in entries)
+            {
+                if (entry is not HumlMapping m) continue;
+                if (string.Equals(m.Key, param.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    matched = m;
+                    break;
+                }
+            }
+
+            // Pass 2: naming-policy-derived match — only if pass 1 found nothing and policy is set
+            if (matched == null && options.PropertyNamingPolicy != null)
+            {
+                var policyKey = options.PropertyNamingPolicy.ConvertName(param.Name!);
+                foreach (var entry in entries)
+                {
+                    if (entry is not HumlMapping m) continue;
+                    if (string.Equals(m.Key, policyKey, StringComparison.Ordinal))
+                    {
+                        matched = m;
+                        break;
+                    }
+                }
+            }
+
+            if (matched != null)
+            {
+                args[i] = DeserializeNode(matched.Value, param.ParameterType, options);
+                alreadyBound.Add(matched.Key); // store HUML key (not param.Name) — Pitfall 4
+            }
+            else if (param.HasDefaultValue) // gate on HasDefaultValue, NOT null check — Pitfall 1
+            {
+                args[i] = param.DefaultValue;
+            }
+            else
+            {
+                throw new HumlDeserializeException(
+                    $"Type '{targetType.Name}' constructor requires parameter '{param.Name}' " +
+                    $"(type '{param.ParameterType.Name}') — no matching HUML key found.");
+            }
+        }
+
+        var instance = ctor.Invoke(args);
+        return (instance, alreadyBound);
     }
 
     // ── Sequence deserialization ──────────────────────────────────────────────
