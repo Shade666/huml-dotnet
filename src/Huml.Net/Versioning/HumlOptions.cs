@@ -88,6 +88,40 @@ public sealed class HumlOptions
     public HumlIgnoreCondition DefaultIgnoreCondition { get; init; } = HumlIgnoreCondition.Never;
 
     /// <summary>
+    /// When <c>true</c>, <see cref="T:Huml.Net.Serialization.HumlSerializer"/> throws
+    /// <see cref="T:Huml.Net.Exceptions.HumlSerializeException"/> if two entries in the same
+    /// dictionary produce the same key string (compared using
+    /// <see cref="System.StringComparer.Ordinal"/>) during serialisation.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The check fires on the key as emitted — the string produced by calling
+    /// <c>ToString()</c> on each dictionary key object. Two entries whose keys are distinct
+    /// objects but return the same string from <c>ToString()</c> will collide.
+    /// </para>
+    /// <para>
+    /// Keys are compared using <see cref="System.StringComparer.Ordinal"/>, matching the
+    /// deserialiser's key-lookup comparer. Keys that differ only in casing
+    /// (e.g. <c>"Foo"</c> vs <c>"foo"</c>) are treated as distinct.
+    /// </para>
+    /// <para>
+    /// Each nested dictionary has its own independent seen-key set; a key present in an
+    /// outer dictionary does not collide with a key of the same name in a nested dictionary.
+    /// </para>
+    /// <para>
+    /// Note: this check covers the multiline dictionary path (<c>SerializeDictionaryBody</c>)
+    /// only. Inline dictionaries emitted via <c>CollectionFormat.Inline</c> are not checked.
+    /// </para>
+    /// <para>
+    /// Defaults to <c>false</c> to preserve existing behaviour. Set to <c>true</c> in strict
+    /// serialisation pipelines to catch write/read asymmetry early: the HUML deserialiser
+    /// already rejects duplicate keys at parse time, so silently emitting them creates
+    /// documents that cannot be round-tripped.
+    /// </para>
+    /// </remarks>
+    public bool ValidateDuplicateKeysOnWrite { get; init; }
+
+    /// <summary>
     /// A list of <see cref="Serialization.HumlConverter"/> instances consulted during serialisation and
     /// deserialisation when no property-level or type-level <see cref="Serialization.HumlConverterAttribute"/>
     /// is present. The first converter whose <see cref="Serialization.HumlConverter.CanConvert"/> returns
