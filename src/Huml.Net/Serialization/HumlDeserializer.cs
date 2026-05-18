@@ -107,6 +107,9 @@ internal static class HumlDeserializer
         // Get property lookup dictionary for the target type (O(1) key access).
         var lookup = PropertyDescriptor.GetLookup(targetType, options.PropertyNamingPolicy);
 
+        // Hoist extension-data descriptor lookup outside the loop (avoids per-key ConcurrentDictionary hit).
+        var extDesc = PropertyDescriptor.GetExtensionDataDescriptor(targetType, options.PropertyNamingPolicy);
+
         // Map each HUML mapping entry to a property on the existing instance.
         foreach (var entry in entries)
         {
@@ -118,7 +121,23 @@ internal static class HumlDeserializer
 
             // Unknown key — skip silently (forward compatibility, POP-04)
             if (descriptor is null)
+            {
+                // Extension data capture: route unmapped keys to the [HumlExtensionData] property if present.
+                if (extDesc != null)
+                {
+                    var extDictObj = extDesc.Property.GetValue(existing);
+                    if (extDictObj is null)
+                    {
+                        extDictObj = Activator.CreateInstance(extDesc.Property.PropertyType)!;
+                        extDesc.Property.SetValue(existing, extDictObj);
+                    }
+                    if (extDictObj is Dictionary<string, HumlNode> nd)
+                        nd[mapping.Key] = mapping.Value;
+                    else if (extDictObj is Dictionary<string, object?> od)
+                        od[mapping.Key] = CoerceExtensionValue(mapping.Value, options);
+                }
                 continue;
+            }
 
             // Init-only properties cannot be set after construction (POP-09)
             if (descriptor.IsInitOnly)
@@ -241,6 +260,9 @@ internal static class HumlDeserializer
         // Get property lookup dictionary for the target type (O(1) key access)
         var lookup = PropertyDescriptor.GetLookup(targetType, options.PropertyNamingPolicy);
 
+        // Hoist extension-data descriptor lookup outside the loop (avoids per-key ConcurrentDictionary hit).
+        var extDesc = PropertyDescriptor.GetExtensionDataDescriptor(targetType, options.PropertyNamingPolicy);
+
         // Map each HUML mapping entry to a property
         foreach (var entry in entries)
         {
@@ -252,7 +274,23 @@ internal static class HumlDeserializer
 
             // Unknown key — skip silently (forward compatibility)
             if (descriptor is null)
+            {
+                // Extension data capture: route unmapped keys to the [HumlExtensionData] property if present.
+                if (extDesc != null)
+                {
+                    var extDictObj = extDesc.Property.GetValue(instance);
+                    if (extDictObj is null)
+                    {
+                        extDictObj = Activator.CreateInstance(extDesc.Property.PropertyType)!;
+                        extDesc.Property.SetValue(instance, extDictObj);
+                    }
+                    if (extDictObj is Dictionary<string, HumlNode> nd)
+                        nd[mapping.Key] = mapping.Value;
+                    else if (extDictObj is Dictionary<string, object?> od)
+                        od[mapping.Key] = CoerceExtensionValue(mapping.Value, options);
+                }
                 continue;
+            }
 
             // Init-only properties cannot be set after construction
             if (descriptor.IsInitOnly)
@@ -580,6 +618,57 @@ internal static class HumlDeserializer
                 $"Cannot convert {scalar.Kind} to '{targetType.Name}': {ex.Message}",
                 key, line, column);
         }
+    }
+
+    // ── Extension value coercion ──────────────────────────────────────────────
+
+    /// <summary>
+    /// Materialises a <see cref="HumlNode"/> to a natural CLR value for storage in a
+    /// <c>Dictionary&lt;string, object?&gt;</c> extension-data property.
+    /// <list type="bullet">
+    /// <item><see cref="HumlScalar"/> → <c>Value</c> directly (already the right CLR type).</item>
+    /// <item><see cref="HumlDocument"/> → <c>Dictionary&lt;string, object?&gt;</c> (recursive).</item>
+    /// <item><see cref="HumlInlineMapping"/> → <c>Dictionary&lt;string, object?&gt;</c> (recursive).</item>
+    /// <item><see cref="HumlSequence"/> → <c>List&lt;object?&gt;</c> (recursive).</item>
+    /// </list>
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    private static object? CoerceExtensionValue(HumlNode node, HumlOptions options)
+    {
+        if (node is HumlScalar scalar)
+            return scalar.Value;
+
+        if (node is HumlDocument doc)
+        {
+            var dict = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var entry in doc.Entries)
+            {
+                if (entry is HumlMapping m)
+                    dict[m.Key] = CoerceExtensionValue(m.Value, options);
+            }
+            return dict;
+        }
+
+        if (node is HumlInlineMapping inline)
+        {
+            var dict = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var entry in inline.Entries)
+            {
+                if (entry is HumlMapping m)
+                    dict[m.Key] = CoerceExtensionValue(m.Value, options);
+            }
+            return dict;
+        }
+
+        if (node is HumlSequence seq)
+        {
+            var list = new List<object?>(seq.Items.Count);
+            foreach (var item in seq.Items)
+                list.Add(CoerceExtensionValue(item, options));
+            return list;
+        }
+
+        return null; // defensive — future node types
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
