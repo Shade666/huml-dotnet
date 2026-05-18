@@ -509,6 +509,9 @@ internal static class HumlSerializer
     private static void EmitInlineDictionary(
         StringBuilder sb, string indent, string key, IDictionary dict, HumlOptions options)
     {
+        // NOTE: ValidateDuplicateKeysOnWrite is not checked here. This path is only reachable
+        // when CollectionFormat.Inline is set and all dictionary values are scalar. Duplicate-key
+        // detection for inline dictionaries is deferred to a future phase.
         sb.Append(indent);
         AppendKey(sb, key);
         sb.Append(":: ");
@@ -593,10 +596,21 @@ internal static class HumlSerializer
         HumlOptions options)
     {
         var indent = Indent(depth);
+        HashSet<string>? seenKeys = options.ValidateDuplicateKeysOnWrite
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : null;
+
         foreach (DictionaryEntry entry in dict)
         {
             var key = entry.Key?.ToString() ?? "null";
             var value = entry.Value;
+
+            if (seenKeys != null && !seenKeys.Add(key))
+                throw new HumlSerializeException(
+                    $"Duplicate key '{key}' encountered during serialisation of Dictionary. " +
+                    "Set ValidateDuplicateKeysOnWrite = false to permit duplicates, or remove " +
+                    "the duplicate before serialising.");
+
             // Dictionary entries are always emitted multiline — inline is a POCO-property-level concern
             EmitEntry(sb, indent, key, value, depth, options, inlineOverride: false);
         }
