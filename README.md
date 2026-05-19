@@ -98,32 +98,104 @@ Huml.Populate("""
 // defaults.MaxConnections is now 50 (overwritten)
 ```
 
+### Example 6: Constructor binding
+
+```csharp
+using Huml.Net;
+using Huml.Net.Serialization;
+
+public record ServerConfig(
+    [HumlProperty("host")] string Host,
+    [HumlProperty("port")] int Port);
+
+var config = Huml.Deserialize<ServerConfig>("""
+    %HUML v0.2.0
+    host: "db.example.com"
+    port: 5432
+    """);
+// config.Host == "db.example.com", config.Port == 5432
+```
+
+### Example 7: Required properties
+
+```csharp
+using Huml.Net;
+using Huml.Net.Serialization;
+
+public class ApiConfig
+{
+    [HumlRequired]
+    public string ApiKey { get; set; } = string.Empty;
+
+    public int TimeoutMs { get; set; } = 5000;
+}
+
+// Throws HumlDeserializeException: "Missing required member(s) on type 'ApiConfig': 'ApiKey'."
+var cfg = Huml.Deserialize<ApiConfig>("""
+    %HUML v0.2.0
+    TimeoutMs: 3000
+    """);
+```
+
 ## Features
 
-- Full HUML v0.1 and v0.2 spec compliance (validated against `huml-lang/tests` fixture suite)
-- `System.Text.Json`-style static `Huml` facade
-- Reflection-based serialisation with declaration-order property emission
-- `[HumlProperty]` and `[HumlIgnore]` attributes
-- Inline and multiline collection format control
-- **Naming policy:** `HumlNamingPolicy.KebabCase`, `SnakeCase`, `CamelCase`, `PascalCase` via `HumlOptions.PropertyNamingPolicy`
-- **Enum support:** `HumlEnumValueAttribute` for custom member names; round-trips through quoted strings
-- **Custom converters:** `HumlConverter<T>` abstract base, `[HumlConverter]` attribute, and `HumlOptions.Converters`
-- **Populate:** `Huml.Populate<T>()` overlays a HUML document onto an existing object instance
-- **AST source positions:** `Line` and `Column` on all AST nodes; `HumlDeserializeException` reports the source position
+**Spec compliance**
+- Full HUML v0.1 and v0.2 spec compliance, validated against the `huml-lang/tests` fixture suite
+- `System.Text.Json`-style static `Huml` facade (`Serialize`, `Deserialize`, `Parse`, `Populate`)
+
+**Serialisation**
+- Reflection-based serialisation with declaration-order property emission (base-class first)
+- Inline and multiline collection format control via `[HumlProperty(Inline = …)]` and `HumlOptions.CollectionFormat`
+- Native date/time round-trip: `DateTime`, `DateTimeOffset`, `TimeSpan`; `DateOnly` and `TimeOnly` on .NET 6+
+- `StringBuilder` pooling via `[ThreadStatic]` — eliminates per-call allocations on hot paths
+- Duplicate-key write validation via `HumlOptions.ValidateDuplicateKeysOnWrite`
+
+**Deserialisation**
+- Constructor parameter binding — `[HumlConstructor]` attribute, single-constructor inference, parameterless fallback
+- `init`-only property support — `{ get; init; }` properties settable during deserialisation
+- Required-property enforcement — `[HumlRequired]` attribute and C# `required` modifier; throws on missing keys
+- Extension data — `[HumlExtensionData]` captures unknown keys into a `Dictionary<string, HumlNode>` overflow bucket
+- Collection dispatch: `T[]`, `List<T>`, `IEnumerable<T>`, `HashSet<T>`, `ISet<T>`, `IReadOnlySet<T>`, `Dictionary<string,T>`
+- `Huml.Populate<T>()` overlays a HUML document onto an existing object instance
+
+**Attributes**
+- `[HumlProperty]` — key name override and `OmitIfDefault`
+- `[HumlIgnore]` — exclude a property from serialisation and deserialisation
+- `[HumlIgnoreDefaults]` — suppress CLR-default values at type level; `HumlOptions.DefaultIgnoreCondition` as global fallback
+- `[HumlConverter]` — per-property or per-type custom serialiser/deserialiser
+
+**Options**
+- Naming policy: `HumlNamingPolicy.KebabCase`, `SnakeCase`, `CamelCase`, `PascalCase`
+- Enum support: `HumlEnumValueAttribute` for custom member names; round-trips through quoted strings
+- Custom converters: `HumlConverter<T>` abstract base and `HumlOptions.Converters` list
+
+**Performance**
+- Zero-copy span deserialisation — `Lexer` and `HumlParser` are `ref struct` types; no intermediate string allocation
+- AOT / trim safety: `[RequiresUnreferencedCode]`, `[RequiresDynamicCode]` on all reflection-using public APIs; `<IsTrimmable>true</IsTrimmable>` on net6.0+
+
+**Type system**
+- Source-generator seam: `IHumlTypeInfoResolver` / `HumlTypeInfo<T>` plug-in point; `HumlOptions.TypeInfoResolver`
+- AST source positions: `Line` and `Column` on all AST nodes; `HumlDeserializeException` reports the source position
+- `HumlDocument.DetectedVersion` for version-preserving round-trip
+
+**Library**
 - Zero external runtime dependencies
-- Multi-TFM: netstandard2.1, .NET 8, .NET 9, .NET 10
+- Multi-TFM: `netstandard2.1`, `.NET 8`, `.NET 9`, `.NET 10`
 
 ## HumlOptions
 
-| Property                  | Type                      | Default     | Description                                                                                                                |
-| ------------------------- | ------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `SpecVersion`             | `HumlSpecVersion`         | `V0_2`      | Which spec version to use when `VersionSource` is `Options`                                                                |
-| `VersionSource`           | `VersionSource`           | `Options`   | `Options` = use `SpecVersion` property; `Header` = read `%HUML` directive from document                                    |
-| `UnknownVersionBehaviour` | `UnknownVersionBehaviour` | `Throw`     | What happens when a `%HUML` header declares an unrecognised version                                                        |
-| `CollectionFormat`        | `CollectionFormat`        | `Multiline` | Global default for collection serialisation format; per-property override via `[HumlProperty(Inline = InlineMode.Inline)]` |
-| `MaxRecursionDepth`       | `int`                     | `64`        | Max nesting depth before `HumlParseException` is thrown                                                                    |
-| `PropertyNamingPolicy` | `HumlNamingPolicy?`       | `null`      | Converts .NET property names to HUML keys. `null` = use property name as-is. Built-ins: `KebabCase`, `SnakeCase`, `CamelCase`, `PascalCase` |
-| `Converters`           | `IList<HumlConverter>`    | `[]`        | Custom converters consulted during serialisation and deserialisation. First matching `CanConvert` wins.                                      |
+| Property                        | Type                      | Default     | Description |
+| ------------------------------- | ------------------------- | ----------- | ----------- |
+| `SpecVersion`                   | `HumlSpecVersion`         | `V0_2`      | Which spec version to use when `VersionSource` is `Options` |
+| `VersionSource`                 | `VersionSource`           | `Options`   | `Options` = use `SpecVersion`; `Header` = read `%HUML` directive from document |
+| `UnknownVersionBehaviour`       | `UnknownVersionBehaviour` | `Throw`     | What happens when a `%HUML` header declares an unrecognised version |
+| `CollectionFormat`              | `CollectionFormat`        | `Multiline` | Global default for collection serialisation format; per-property override via `[HumlProperty(Inline = …)]` |
+| `MaxRecursionDepth`             | `int`                     | `64`        | Max nesting depth before `HumlParseException` is thrown |
+| `PropertyNamingPolicy`          | `HumlNamingPolicy?`       | `null`      | Converts .NET property names to HUML keys. Built-ins: `KebabCase`, `SnakeCase`, `CamelCase`, `PascalCase` |
+| `Converters`                    | `IList<HumlConverter>`    | `[]`        | Custom converters; first `CanConvert` match wins. Property/type `[HumlConverter]` takes precedence |
+| `DefaultIgnoreCondition`        | `HumlIgnoreCondition`     | `Never`     | Global default for when to omit properties. `Never` = emit all; `WhenWritingNull` / `WhenWritingDefault` = suppress null or default values. Per-property `OmitIfDefault` and class-level `[HumlIgnoreDefaults]` take precedence |
+| `ValidateDuplicateKeysOnWrite`  | `bool`                    | `false`     | When `true`, throws `HumlSerializeException` if a dictionary produces duplicate keys (ordinal comparison). Opt-in; default preserves existing behaviour |
+| `TypeInfoResolver`              | `IHumlTypeInfoResolver?`  | `null`      | Plug-in point for a source-generated type info resolver. Returning `null` from `GetTypeInfo` falls through to the built-in reflection path |
 
 ## Compatibility
 
@@ -147,6 +219,11 @@ Huml.Populate("""
 - [Enum Serialisation](docs/enum-serialisation.md)
 - [Custom Converters](docs/custom-converters.md)
 - [Populate](docs/populate.md)
+- [Constructor Binding](docs/constructor-binding.md)
+- [Extension Data](docs/extension-data.md)
+- [Date and Time](docs/date-time.md)
+- [Required Properties](docs/required-properties.md)
+- [AOT and Trimming](docs/aot-trimming.md)
 
 ## Links
 
