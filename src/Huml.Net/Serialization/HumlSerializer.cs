@@ -331,7 +331,12 @@ internal static class HumlSerializer
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void SerializeMappingBody(StringBuilder sb, object obj, int depth, HumlOptions options, Type? declaredType = null)
     {
-        var descriptors = PropertyDescriptor.GetDescriptors(declaredType ?? obj.GetType(), options.PropertyNamingPolicy);
+        // SGS seam: custom resolver hook. Currently a no-op — HumlTypeInfo<T> carries no
+        // property metadata yet. The call site is wired so future phases can activate it.
+        var targetType = declaredType ?? obj.GetType();
+        _ = options.TypeInfoResolver?.GetTypeInfo(targetType, options);
+
+        var descriptors = PropertyDescriptor.GetDescriptors(targetType, options.PropertyNamingPolicy);
         var indent = Indent(depth);
 
         foreach (var desc in descriptors)

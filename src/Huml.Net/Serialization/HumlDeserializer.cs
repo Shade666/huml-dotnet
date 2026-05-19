@@ -277,6 +277,10 @@ internal static class HumlDeserializer
             }
         }
 
+        // SGS seam: custom resolver hook. Currently a no-op — HumlTypeInfo<T> carries no
+        // property metadata yet. The call site is wired so future phases can activate it.
+        _ = options.TypeInfoResolver?.GetTypeInfo(targetType, options);
+
         // Get property lookup dictionary for the target type (O(1) key access)
         var lookup = PropertyDescriptor.GetLookup(targetType, options.PropertyNamingPolicy);
 

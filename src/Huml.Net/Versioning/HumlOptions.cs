@@ -134,6 +134,20 @@ public sealed class HumlOptions
     /// </remarks>
     public IList<Serialization.HumlConverter> Converters { get; init; } = new List<Serialization.HumlConverter>();
 
+    /// <summary>
+    /// An optional resolver that provides pre-computed type metadata for HUML (de)serialisation,
+    /// bypassing reflection for registered types. Return <see langword="null"/> to use the default
+    /// reflection path.
+    /// </summary>
+    /// <remarks>
+    /// Set this property on a <see cref="HumlOptions"/> instance to register a custom
+    /// <see cref="Serialization.IHumlTypeInfoResolver"/>. When the resolver returns
+    /// <see langword="null"/> for a type, the built-in reflection path is used as a fallback.
+    /// In the current release the resolver result is not yet consumed by the deserialiser or
+    /// serialiser — this property wires the call site for future source-generator support.
+    /// </remarks>
+    public Serialization.IHumlTypeInfoResolver? TypeInfoResolver { get; init; }
+
     private int _maxRecursionDepth = 64;
 
     /// <summary>
