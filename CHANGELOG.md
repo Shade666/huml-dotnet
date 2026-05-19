@@ -10,6 +10,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+(no changes yet)
+
+## [0.2.0-alpha.2] - 2026-05-19
+
 ### Performance
 - **Ref struct Lexer/Parser — zero-copy span deserialisation:** `Lexer` and `HumlParser` are now
   `ref struct` types that accept `ReadOnlySpan<char>` directly. `Huml.Deserialize<T>(ReadOnlySpan<char>)`
@@ -86,6 +90,7 @@ Initial alpha release.
 - **Public API:** `System.Text.Json`-style static `Huml` facade with `Serialize`, `Deserialize`, and `Parse` overloads.
 - **CI/NuGet:** GitHub Actions pipeline with SourceLink, MinVer, and OIDC Trusted Publishing.
 
-[Unreleased]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.1...HEAD
+[Unreleased]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.2...HEAD
+[0.2.0-alpha.2]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.1...v0.2.0-alpha.2
 [0.2.0-alpha.1]: https://github.com/primeBeri/huml-dotnet/compare/v0.1.0-alpha.1...v0.2.0-alpha.1
 [0.1.0-alpha.1]: https://github.com/primeBeri/huml-dotnet/releases/tag/v0.1.0-alpha.1
