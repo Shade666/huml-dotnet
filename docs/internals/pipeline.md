@@ -7,9 +7,9 @@ before modifying internal code.
 ## Pipeline Diagram
 
 ```
-Input string
-    └─► Lexer          (Lexer/Lexer.cs)         — pull-based tokeniser
-         └─► HumlParser (Parser/HumlParser.cs)   — recursive-descent, produces AST
+Input string / ReadOnlySpan<char>
+    └─► Lexer          (Lexer/Lexer.cs)         — pull-based ref struct tokeniser
+         └─► HumlParser (Parser/HumlParser.cs)   — recursive-descent ref struct, produces AST
               └─► HumlDocument (AST root)
                    ├─► HumlDeserializer           — AST → .NET objects
                    └─► HumlSerializer             — .NET objects → HUML text
@@ -20,7 +20,7 @@ are `internal sealed` — consumers never interact with them directly.
 
 ## Lexer
 
-**Class:** `internal sealed class Lexer`
+**Class:** `internal ref struct Lexer`
 **File:** `src/Huml.Net/Lexer/Lexer.cs`
 
 The Lexer is pull-based: the caller calls `NextToken()` each time it needs the next token. The
@@ -29,8 +29,10 @@ lookahead.
 
 Key implementation details:
 
-- **Single-pass** over the input `string`. CRLF sequences are normalised to LF in the constructor
-  so the rest of the implementation only handles `\n`.
+- **Single-pass** over a `ReadOnlySpan<char>`. CRLF sequences (`\r\n`) and bare
+  carriage returns (`\r`) are normalised inline during lexing — the `PeekCurrentChar()`
+  method returns `\n` for both, so the rest of the implementation only handles `\n`.
+  No upfront `string.Replace` pass is performed; the input span is consumed directly.
 - **Position tracking:** `_line`, `_col`, and `_lineIndent` fields are updated on each character
   advance. These feed into `HumlParseException` line/column diagnostics.
 - **`EffectiveSpecVersion` property:** Initialised from `HumlOptions.SpecVersion`. After the
@@ -41,11 +43,14 @@ Key implementation details:
   and triple-quoted string parsing, numeric literal parsing, version directive scanning, and the
   main token-type dispatch in `NextToken()`.
 
-**Entry point:** `new Lexer(source, options)` constructor, then repeated `NextToken()` calls.
+**Entry point:** `new Lexer(source, options)` stack-allocated ref struct constructor,
+then repeated `NextToken()` calls. Because `Lexer` is a `ref struct`, it cannot be
+stored on the heap or captured in closures — it lives entirely on the call stack for
+the duration of a parse.
 
 ## Parser
 
-**Class:** `internal sealed class HumlParser`
+**Class:** `internal ref struct HumlParser`
 **File:** `src/Huml.Net/Parser/HumlParser.cs`
 
 The Parser is a recursive-descent parser with a single token of lookahead. The `_lookahead` field
@@ -118,8 +123,11 @@ Key implementation details:
 - **Converter dispatch:** Before built-in type dispatch, `DeserializeNode()` checks for a property-level `[HumlConverter]` attribute, then a type-level `[HumlConverter]` attribute, then `HumlOptions.Converters`. The first matching converter's `Read(HumlNode)` method is called.
 - **Collection dispatch:** Handles `T[]`, `List<T>`, `IEnumerable<T>`, and `Dictionary<string,T>`.
 - **Populate path:** `Huml.Populate<T>()` reuses `PopulateMappingEntries()` — the same property-assignment logic as `Deserialize<T>()` but targeting an existing instance rather than a freshly constructed one. Only properties present in the HUML document are assigned.
-- **`init`-only properties:** Detected via the `IsInitOnly` flag on `PropertyDescriptor`. A
-  `HumlDeserializeException` is thrown immediately if an `init`-only setter is encountered.
+- **`init`-only properties:** Detected via the `IsInitOnly` flag on `PropertyDescriptor`.
+  `PropertyInfo.SetValue` is used to assign the value after the object is constructed —
+  `init` semantics are enforced by the C# compiler at compile time, but CLR reflection
+  can write to init-only backing fields after construction. `Huml.Populate<T>()` also
+  writes init-only properties on the supplied instance.
 
 ## Where Things Live
 

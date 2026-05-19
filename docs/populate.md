@@ -85,8 +85,12 @@ Huml.Populate("""
 
 ## Notes
 
-- `init`-only properties on the existing instance cannot be assigned. Attempting to map a HUML key
-  to an `init`-only property throws `HumlDeserializeException` — the same behaviour as `Deserialize<T>`.
+- `init`-only properties on the existing instance are settable. Huml.Net uses
+  reflection to write to `init`-only backing fields after construction, matching the same
+  behaviour as `Deserialize<T>`.
+- If the target type has a `[HumlExtensionData]` property, unknown HUML keys encountered
+  during population are captured into that property — the same overflow behaviour as
+  `Deserialize<T>`.
 - `Populate` does not clear existing collection contents before appending. If the property holds a
   `List<T>` and the HUML document contains a sequence for that key, the list is **replaced** (not
   appended to).

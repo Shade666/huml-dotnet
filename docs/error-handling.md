@@ -22,7 +22,7 @@ Huml.Net throws four exception types, all in the namespace `Huml.Net.Exceptions`
 | Operation               | Can Throw                                                                                                                         |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `Huml.Parse()`          | `HumlParseException`, `HumlUnsupportedVersionException`                                                                           |
-| `Huml.Deserialize<T>()` | `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage), `HumlUnsupportedVersionException` (version stage) |
+| `Huml.Deserialize<T>()` | `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage, or missing `[HumlRequired]` / C# `required` members), `HumlUnsupportedVersionException` (version stage) |
 | `Huml.Populate<T>()`    | `ArgumentNullException` (null `huml` string or null existing instance), `ArgumentException` (T is a value type), `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage), `HumlUnsupportedVersionException` (version stage) |
 | `Huml.Serialize<T>()`   | `HumlSerializeException`                                                                                                          |
 
@@ -80,10 +80,14 @@ catch (HumlDeserializeException ex)
 }
 ```
 
-## init-Only Properties
+## Notes
 
-`HumlDeserializeException` is thrown when the target type contains `init`-only properties, because Huml.Net uses post-construction property assignment, not constructor binding.
-
-Unlike `System.Text.Json`, which supports `init`-only setters via object initializer binding, Huml.Net's deserialiser sets properties after constructing an instance with `Activator.CreateInstance`. Properties with `init`-only setters cannot be assigned this way and cause an immediate `HumlDeserializeException`.
-
-**Workaround:** replace `init` setters with `set` setters on properties you want to deserialise.
+- `HumlDeserializeException` for missing required members lists **all** absent keys in a
+  single throw: `"Missing required member(s) on type 'X': 'Key1', 'Key2'."` Keys are listed
+  in property declaration order. See [Required Properties](required-properties.md) for details.
+- `HumlSerializeException` is thrown by `Huml.Serialize` when
+  `HumlOptions.ValidateDuplicateKeysOnWrite = true` and a dictionary produces two entries
+  with the same ordinal key.
+- `init`-only properties are now settable during deserialisation via reflection. The previous
+  `HumlDeserializeException` for `init`-only setters has been removed as of 0.2.0-alpha.2.
+  See [Constructor Binding](constructor-binding.md) for details.

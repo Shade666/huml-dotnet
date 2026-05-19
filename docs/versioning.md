@@ -49,23 +49,23 @@ the package version always match the spec version, making it immediately clear w
 given release supports.
 
 | Package version series | HUML spec targeted |
-| ----------------------- | ------------------ |
-| `0.2.x`                 | HUML v0.2          |
-| `0.3.x`                 | HUML v0.3          |
+| ---------------------- | ------------------ |
+| `0.2.x`                | HUML v0.2          |
+| `0.3.x`                | HUML v0.3          |
 
 ### Release tiers within a series
 
 Each spec-version series follows this progression:
 
-| Version pattern    | Meaning                                                              |
-| ------------------ | -------------------------------------------------------------------- |
-| `0.2.0-alpha.1`    | Early pre-release — API may still change                             |
-| `0.2.0-alpha.2`    | Subsequent alpha iteration                                           |
-| `0.2.0-beta.1`     | Feature-complete; stabilising — only bug fixes accepted              |
-| `0.2.0-rc.1`       | Release candidate — only critical fixes accepted                     |
-| `0.2.0`            | Stable release                                                       |
-| `0.2.1`            | Patch: bug fixes or non-breaking library additions (not spec-driven) |
-| `0.3.0-alpha.1`    | First pre-release targeting HUML v0.3                                |
+| Version pattern | Meaning                                                              |
+| --------------- | -------------------------------------------------------------------- |
+| `0.2.0-alpha.1` | Early pre-release — API may still change                             |
+| `0.2.0-alpha.2` | Subsequent alpha iteration                                           |
+| `0.2.0-beta.1`  | Feature-complete; stabilising — only bug fixes accepted              |
+| `0.2.0-rc.1`    | Release candidate — only critical fixes accepted                     |
+| `0.2.0`         | Stable release                                                       |
+| `0.2.1`         | Patch: bug fixes or non-breaking library additions (not spec-driven) |
+| `0.3.0-alpha.1` | First pre-release targeting HUML v0.3                                |
 
 Pre-release identifiers use hyphens as required by SemVer 2.0 (e.g. `0.2.0-alpha.1`, never
 `0.2.0_alpha.1`).
@@ -86,3 +86,33 @@ A new `0.x.0` series is required only when the targeted HUML spec version change
 The `0.1.0-alpha.1` release (Milestone 1, published 2026-05-01) pre-dates this policy and used
 an arbitrary version number. From `0.2.0` onward all releases follow the spec-mirrored scheme
 described above.
+
+## Version-Preserving Round-Trip
+
+`HumlDocument.DetectedVersion` exposes the spec version declared in the `%HUML` header of a
+parsed document:
+
+```csharp
+using Huml.Net;
+
+var doc = Huml.Parse("""
+    %HUML v0.1.0
+    Key: "value"
+    """);
+
+// doc.DetectedVersion == HumlSpecVersion.V0_1
+```
+
+The property is always set from the `%HUML` header token — independent of `HumlOptions.VersionSource`.
+It is `null` when no header is present or when a `HumlDocument` is constructed directly in code.
+
+Use `DetectedVersion` to preserve the original spec version when round-tripping a document:
+
+```csharp
+var doc  = Huml.Parse(humlText);
+var opts = new HumlOptions { SpecVersion = doc.DetectedVersion ?? HumlSpecVersion.V0_2 };
+
+// Round-trip: deserialise with the detected version, then re-serialise with the same version
+var dto    = Huml.Deserialize<MyDto>(humlText, opts);
+var output = Huml.Serialize(dto, opts);
+```

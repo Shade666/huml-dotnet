@@ -88,7 +88,7 @@ When referencing `HumlSpecVersion.V0_1` in implementation or tests, suppress `CS
 - **Properties are emitted in declaration order**, base-class-first, then by `MetadataToken` within each type. This is cached in `PropertyDescriptor` (a `ConcurrentDictionary<Type, PropertyDescriptor[]>`).
 - `[HumlIgnore]` excludes a property entirely.
 - `[HumlProperty(name, OmitIfDefault = true)]` overrides the key name and/or suppresses default-valued properties.
-- `init`-only setters are detected via `IsExternalInit` custom modifier and rejected during deserialisation.
+- `init`-only setters are detected via `IsExternalInit` custom modifier. Since Phase 23, `init`-only properties are settable via reflection — `HumlDeserializeException` is no longer thrown for `init`-only properties.
 - Scalars use `key: value` syntax; complex values (collections, POCOs) use the `key::` vector indicator.
 - Serialiser always emits a `%HUML vX.Y.Z` version directive as the first line.
 

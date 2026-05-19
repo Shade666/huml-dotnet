@@ -15,14 +15,17 @@ All properties use `init`-only setters, making instances immutable after constru
 | `MaxRecursionDepth`       | `int`                     | `64`        | `1`–`1024`                          | Max nesting depth before `HumlParseException` is thrown                                                                    |
 | `PropertyNamingPolicy` | `HumlNamingPolicy?`    | `null`  | `null` or any `HumlNamingPolicy` instance | Converts .NET property names to HUML keys during serialisation and deserialisation. `null` = property name used as-is. Built-ins: `HumlNamingPolicy.KebabCase`, `SnakeCase`, `CamelCase`, `PascalCase`. A `[HumlProperty]` name override always takes precedence. |
 | `Converters`           | `IList<HumlConverter>` | `[]`    | any list of `HumlConverter` instances     | Custom converters consulted during serialisation and deserialisation when no `[HumlConverter]` attribute is present. First converter whose `CanConvert` returns `true` wins. Do not modify this list after passing options to any `Huml.*` method.                    |
+| `DefaultIgnoreCondition`       | `HumlIgnoreCondition`     | `Never`     | `Never`, `WhenWritingNull`, `WhenWritingDefault`, `Always` | Global default for when to omit properties during serialisation. Precedence (highest first): per-property `OmitIfDefault` → class-level `[HumlIgnoreDefaults]` → `DefaultIgnoreCondition`. `Never` preserves all existing behaviour. |
+| `ValidateDuplicateKeysOnWrite` | `bool`                    | `false`     | `true`, `false`                                             | When `true`, throws `HumlSerializeException` if a dictionary produces duplicate keys (ordinal comparison) during serialisation. Check fires per dictionary call frame. Inline dictionaries are not checked. |
+| `TypeInfoResolver`             | `IHumlTypeInfoResolver?`  | `null`      | any `IHumlTypeInfoResolver` implementation or `null`        | Plug-in point for a source-generated type info resolver. When `GetTypeInfo` returns non-null, its metadata is used instead of reflection. Returning `null` falls through to the built-in reflection path with zero overhead. Required for future `Huml.Net.SourceGeneration` package. |
 
 ## Convenience Instances
 
-| Instance                      | SpecVersion | VersionSource | UnknownVersionBehaviour | CollectionFormat | MaxRecursionDepth | PropertyNamingPolicy | Converters |
-| ----------------------------- | ----------- | ------------- | ----------------------- | ---------------- | ----------------- | -------------------- | ---------- |
-| `HumlOptions.Default`         | V0_2        | Header        | Throw                   | Multiline        | 64                | null                 | []         |
-| `HumlOptions.LatestSupported` | V0_2        | Options       | Throw                   | Multiline        | 64                | null                 | []         |
-| `HumlOptions.AutoDetect`      | V0_2        | Header        | Throw                   | Multiline        | 64                | null                 | []         |
+| Instance                      | SpecVersion | VersionSource | UnknownVersionBehaviour | CollectionFormat | MaxRecursionDepth | PropertyNamingPolicy | Converters | DefaultIgnoreCondition | ValidateDuplicateKeysOnWrite | TypeInfoResolver |
+| ----------------------------- | ----------- | ------------- | ----------------------- | ---------------- | ----------------- | -------------------- | ---------- | ---------------------- | ---------------------------- | ---------------- |
+| `HumlOptions.Default`         | V0_2        | Header        | Throw                   | Multiline        | 64                | null                 | []         | Never                  | false                        | null             |
+| `HumlOptions.LatestSupported` | V0_2        | Options       | Throw                   | Multiline        | 64                | null                 | []         | Never                  | false                        | null             |
+| `HumlOptions.AutoDetect`      | V0_2        | Header        | Throw                   | Multiline        | 64                | null                 | []         | Never                  | false                        | null             |
 
 `HumlOptions.Default` reads the `%HUML vX.Y.Z` header from the document to determine the spec version.
 If no header is present, it falls back to `V0_2`. `HumlOptions.AutoDetect` is a reference-equal alias for `Default`.
@@ -57,3 +60,11 @@ var result3 = Huml.Deserialize<MyDto>(humlText, HumlOptions.LatestSupported);
 - `CollectionFormat.Inline` is silently ignored for collection properties that contain non-scalar items — those always emit in multiline format.
 - `PropertyNamingPolicy` applies only to .NET property names — it does not affect `Dictionary<string, T>` string keys or `[HumlProperty]` explicit names.
 - The `Converters` list is checked in order; the first converter whose `CanConvert(type)` returns `true` is used. A property-level or type-level `[HumlConverter]` attribute always takes precedence over `Converters`.
+- `DefaultIgnoreCondition` applies only to serialisation — it has no effect during deserialisation.
+  Per-property `OmitIfDefault = true` on `[HumlProperty]` and type-level `[HumlIgnoreDefaults]`
+  both take precedence over `DefaultIgnoreCondition`.
+- `ValidateDuplicateKeysOnWrite` uses `StringComparer.Ordinal` — keys differing only in casing
+  are not treated as duplicates. Inline dictionaries are not validated in this release.
+- `TypeInfoResolver` is a low-level seam for source-generator integration. Consumer code should
+  not implement `IHumlTypeInfoResolver` directly; wait for the `Huml.Net.SourceGeneration`
+  package to use this facility safely.
