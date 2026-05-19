@@ -11,6 +11,12 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 ## [Unreleased]
 
 ### Performance
+- **Ref struct Lexer/Parser — zero-copy span deserialisation:** `Lexer` and `HumlParser` are now
+  `ref struct` types that accept `ReadOnlySpan<char>` directly. `Huml.Deserialize<T>(ReadOnlySpan<char>)`
+  no longer allocates an intermediate `string` copy of the input buffer. The `string` entry paths
+  call `.AsSpan()` and use the same single code path. Additionally, the upfront `\r\n`/`\r`
+  normalisation (two `string.Replace` calls) is replaced with inline character-level normalisation
+  in the lexer, eliminating two more intermediate string allocations on both string and span paths.
 - **`StringBuilder` pooling in `HumlSerializer`:** Both `Serialize` overloads now reuse a `[ThreadStatic]` `StringBuilder` across calls on the same thread, eliminating one `StringBuilder` allocation and one backing `char[]` growth per `Huml.Serialize` call on hot paths. A second `[ThreadStatic]` sentinel (`_serializationActive`) ensures re-entry from a `HumlConverter.Write` that calls `Huml.Serialize` internally falls back to a fresh `StringBuilder` rather than corrupting the pooled instance. No public API or emitted HUML format change.
 
 ### Added
