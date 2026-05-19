@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text;
 using Huml.Net.Exceptions;
 using Huml.Net.Versioning;
@@ -5,9 +6,9 @@ using Huml.Net.Versioning;
 namespace Huml.Net.Lexer;
 
 /// <summary>Single-pass lexer that tokenises a HUML document into a pull-based token stream.</summary>
-internal sealed class Lexer
+internal ref struct Lexer
 {
-    private readonly string _source;
+    private ReadOnlySpan<char> _source;
     private readonly HumlOptions _options;
     private HumlSpecVersion _effectiveSpecVersion;
     private int _pos;
@@ -26,11 +27,10 @@ internal sealed class Lexer
         set => _effectiveSpecVersion = value;
     }
 
-    /// <summary>Initialises the lexer with a string source and parsing options.</summary>
-    internal Lexer(string source, HumlOptions options)
+    /// <summary>Initialises the lexer with a span source and parsing options.</summary>
+    internal Lexer(ReadOnlySpan<char> source, HumlOptions options)
     {
-        _source = source.Replace("\r\n", "\n", StringComparison.Ordinal)
-                        .Replace("\r", "\n", StringComparison.Ordinal);
+        _source = source;
         _options = options;
         _effectiveSpecVersion = options.SpecVersion;
     }
@@ -56,7 +56,7 @@ internal sealed class Lexer
                     continue;
             }
 
-            char ch = _source[_pos];
+            char ch = PeekCurrentChar();
 
             // Handle newlines (blank lines have been advanced by MeasureIndent if needed)
             if (ch == '\n')
@@ -214,9 +214,8 @@ internal sealed class Lexer
     private Token ScanVersionDirective()
     {
         // Expect: %HUML vX.Y.Z
-        var span = _source.AsSpan();
         int start = _pos;
-        if (!span.Slice(_pos).StartsWith("%HUML ".AsSpan(), StringComparison.Ordinal))
+        if (!_source.Slice(_pos).StartsWith("%HUML ".AsSpan(), StringComparison.Ordinal))
         {
             ThrowParseError("Invalid directive. Expected '%HUML vX.Y.Z'.");
         }
@@ -235,7 +234,7 @@ internal sealed class Lexer
             ThrowParseError("Missing version string after '%HUML '.");
         }
 
-        string value = new string(span.Slice(vstart, _pos - vstart));
+        string value = new string(_source.Slice(vstart, _pos - vstart));
 
         // Ensure nothing else on the line except optional newline
         CheckTrailingWhitespaceBeforeNewline();
@@ -352,16 +351,16 @@ internal sealed class Lexer
         if (!hasEscapes)
         {
             // Fast path: no escapes — find closing quote
-            while (_pos < _source.Length && _source[_pos] != closeQuote && _source[_pos] != '\n')
+            while (_pos < _source.Length && _source[_pos] != closeQuote && _source[_pos] != '\n' && _source[_pos] != '\r')
             {
                 _pos++;
                 _col++;
             }
-            if (_pos >= _source.Length || _source[_pos] == '\n')
+            if (_pos >= _source.Length || _source[_pos] == '\n' || _source[_pos] == '\r')
             {
                 ThrowParseError("Unterminated string literal.");
             }
-            string val = new string(_source.AsSpan().Slice(start, _pos - start));
+            string val = new string(_source.Slice(start, _pos - start));
             _pos++; // skip closing quote
             _col++;
             return val;
@@ -370,7 +369,7 @@ internal sealed class Lexer
         {
             // Slow path: process escapes with StringBuilder
             var sb = new StringBuilder();
-            while (_pos < _source.Length && _source[_pos] != closeQuote && _source[_pos] != '\n')
+            while (_pos < _source.Length && _source[_pos] != closeQuote && _source[_pos] != '\n' && _source[_pos] != '\r')
             {
                 char c = _source[_pos];
                 if (c == '\\')
@@ -405,7 +404,7 @@ internal sealed class Lexer
                     _col++;
                 }
             }
-            if (_pos >= _source.Length || _source[_pos] == '\n')
+            if (_pos >= _source.Length || _source[_pos] == '\n' || _source[_pos] == '\r')
             {
                 ThrowParseError("Unterminated string literal.");
             }
@@ -486,7 +485,7 @@ internal sealed class Lexer
                 _col++;
             }
 
-            string lineContent = new string(_source.AsSpan().Slice(contentStart, _pos - contentStart));
+            string lineContent = new string(_source.Slice(contentStart, _pos - contentStart));
             if (!first)
                 sb.Append('\n');
             sb.Append(lineContent);
@@ -583,7 +582,7 @@ internal sealed class Lexer
                 _col++;
             }
 
-            string lineContent = new string(_source.AsSpan().Slice(contentStart, _pos - contentStart));
+            string lineContent = new string(_source.Slice(contentStart, _pos - contentStart));
             if (!first)
                 sb.Append('\n');
             sb.Append(lineContent);
@@ -727,7 +726,7 @@ internal sealed class Lexer
             _col++;
         }
 
-        var span = _source.AsSpan().Slice(start, _pos - start);
+        var span = _source.Slice(start, _pos - start);
 
         // If followed by ':' or ' ', it's a key. Otherwise check keywords.
         bool isKey = _pos < _source.Length && _source[_pos] == ':';
@@ -775,7 +774,7 @@ internal sealed class Lexer
         // Consume digits and valid numeric chars
         ScanNumericChars();
 
-        var span = _source.AsSpan().Slice(start, _pos - start);
+        var span = _source.Slice(start, _pos - start);
         bool isFloat = IsFloatSpan(span);
 
         return new Token
@@ -814,7 +813,7 @@ internal sealed class Lexer
                 _pos++;
                 _col++;
             }
-            var kwSpan = _source.AsSpan().Slice(start, _pos - start); // includes sign
+            var kwSpan = _source.Slice(start, _pos - start); // includes sign
             if (kwSpan.Equals("inf".AsSpan(), StringComparison.OrdinalIgnoreCase) ||
                 kwSpan.Equals("+inf".AsSpan(), StringComparison.OrdinalIgnoreCase) ||
                 kwSpan.Equals("-inf".AsSpan(), StringComparison.OrdinalIgnoreCase))
@@ -841,7 +840,7 @@ internal sealed class Lexer
         // Scan number (already consumed sign)
         ScanNumericChars();
 
-        var span = _source.AsSpan().Slice(start, _pos - start);
+        var span = _source.Slice(start, _pos - start);
         bool isFloat = IsFloatSpan(span);
 
         return new Token
@@ -923,6 +922,28 @@ internal sealed class Lexer
                 _pos++; _col++;
             }
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // CRLF normalisation helper
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Returns the character at the current read position, normalising CR/CRLF to LF.
+    /// Must only be called when <c>_pos &lt; _source.Length</c> is already known.
+    /// When <c>\r\n</c> is encountered, advances <c>_pos</c> past the <c>\r</c> so
+    /// the caller sees <c>\n</c>; does NOT advance past the <c>\n</c> itself.
+    /// For standalone <c>\r</c>, returns <c>\n</c> without additional advance.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private char PeekCurrentChar()
+    {
+        char c = _source[_pos];
+        if (c != '\r') return c;
+        // \r\n counts as one newline: skip the \r so the next read sees \n
+        if (_pos + 1 < _source.Length && _source[_pos + 1] == '\n')
+            _pos++;
+        return '\n';
     }
 
     // -----------------------------------------------------------------------
