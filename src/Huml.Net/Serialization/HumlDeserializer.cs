@@ -29,21 +29,21 @@ internal static class HumlDeserializer
     internal static T Deserialize<T>(string huml, HumlOptions? options = null)
     {
         var opts = options ?? HumlOptions.Default;
-        var doc = new HumlParser(huml, opts).Parse();
+        var doc = new HumlParser(huml.AsSpan(), opts).Parse();
         return (T)DeserializeNode(doc, typeof(T), opts)!;
     }
 
     /// <summary>
     /// Deserialises HUML text (as a span) into a typed .NET object of type <typeparamref name="T"/>.
-    /// The span is converted to a <see cref="string"/> via <c>ToString()</c> before lexing;
-    /// a true zero-copy path is a v2 enhancement.
+    /// The span is passed directly to the ref struct lexer; no intermediate string
+    /// allocation occurs for the input buffer.
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
     [RequiresDynamicCode("Reflection-based HUML deserialisation may emit dynamic code.")]
     internal static T Deserialize<T>(ReadOnlySpan<char> huml, HumlOptions? options = null)
     {
         var opts = options ?? HumlOptions.Default;
-        var doc = new HumlParser(huml.ToString(), opts).Parse();
+        var doc = new HumlParser(huml, opts).Parse();
         return (T)DeserializeNode(doc, typeof(T), opts)!;
     }
 
@@ -56,7 +56,7 @@ internal static class HumlDeserializer
     internal static object? Deserialize(string huml, Type targetType, HumlOptions? options = null)
     {
         var opts = options ?? HumlOptions.Default;
-        var doc = new HumlParser(huml, opts).Parse();
+        var doc = new HumlParser(huml.AsSpan(), opts).Parse();
         return DeserializeNode(doc, targetType, opts);
     }
 
@@ -88,7 +88,7 @@ internal static class HumlDeserializer
             throw new ArgumentNullException(nameof(existing));
 
         var opts = options ?? HumlOptions.Default;
-        var doc = new HumlParser(huml.ToString(), opts).Parse();
+        var doc = new HumlParser(huml, opts).Parse();
         PopulateMappingEntries(doc.Entries, existing, typeof(T), opts);
     }
 

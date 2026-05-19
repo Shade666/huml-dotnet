@@ -65,17 +65,6 @@ public static class Huml
     /// implementation overload; the <see cref="Deserialize{T}(string, HumlOptions?)"/>
     /// overload delegates here via <c>AsSpan()</c>.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The span is materialised to a managed <see cref="string"/> via <c>ToString()</c> internally,
-    /// because the current lexer accepts only <see cref="string"/> input. This means accepting
-    /// <see cref="ReadOnlySpan{T}"/> at the API boundary does not avoid a heap allocation today.
-    /// </para>
-    /// <para>
-    /// A true zero-copy parse path using a <c>ref struct</c> lexer that operates directly on
-    /// <see cref="ReadOnlySpan{T}"/> is planned as a v2 enhancement.
-    /// </para>
-    /// </remarks>
     /// <typeparam name="T">The target type.</typeparam>
     /// <param name="huml">The HUML document as a character span.</param>
     /// <param name="options">Parsing options; defaults to <see cref="HumlOptions.Default"/>.</param>
@@ -156,5 +145,5 @@ public static class Huml
     /// <returns>The <see cref="HumlDocument"/> AST root.</returns>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
     public static HumlDocument Parse(string huml, HumlOptions? options = null)
-        => new HumlParser(huml, options ?? HumlOptions.Default).Parse();
+        => new HumlParser(huml.AsSpan(), options ?? HumlOptions.Default).Parse();
 }

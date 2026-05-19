@@ -10,7 +10,7 @@ namespace Huml.Net.Parser;
 /// and produces a <see cref="HumlDocument"/> AST. Covers the full HUML v0.2 grammar:
 /// scalars, vector blocks, inline lists/dicts, empty collections, and indent-driven nesting.
 /// </summary>
-internal sealed class HumlParser
+internal ref struct HumlParser
 {
     // ── Private enum for root-type inference ──────────────────────────────────
 
@@ -28,15 +28,15 @@ internal sealed class HumlParser
 
     // ── Fields ────────────────────────────────────────────────────────────────
 
-    private readonly Lexer.Lexer _lexer;
+    private Lexer.Lexer _lexer;
 
     /// <summary>
     /// Stored options — propagated to the Lexer at construction. Retained for future
     /// parser-level version gates using the <c>&gt;=</c> convention (PARS-04).
     /// </summary>
-    private readonly HumlOptions _options;
+    private HumlOptions _options;
 
-    private readonly int _maxDepth;
+    private int _maxDepth;
     private int _depth;
     private Token _lookahead;
     private HumlSpecVersion _effectiveSpecVersion;
@@ -44,13 +44,13 @@ internal sealed class HumlParser
     // ── Constructor ───────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Initialises the parser with a HUML source string and parsing options.
+    /// Initialises the parser with a HUML source span and parsing options.
     /// The <paramref name="options"/> are forwarded to the <see cref="Lexer.Lexer"/> so
     /// version-gated tokenisation rules (e.g., backtick multiline strings) fire correctly.
     /// </summary>
     /// <param name="source">The HUML document text to parse.</param>
     /// <param name="options">Options controlling spec-version behaviour.</param>
-    internal HumlParser(string source, HumlOptions options)
+    internal HumlParser(ReadOnlySpan<char> source, HumlOptions options)
     {
         _lexer = new Lexer.Lexer(source, options);
         _options = options;

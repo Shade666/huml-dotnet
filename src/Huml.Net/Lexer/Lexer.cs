@@ -112,11 +112,11 @@ internal ref struct Lexer
 
             if (ch == ' ')
             {
-                // Check if this space leads only to \n or EOF (trailing whitespace)
+                // Check if this space leads only to \n/\r\n or EOF (trailing whitespace)
                 int p2 = _pos;
                 while (p2 < _source.Length && _source[p2] == ' ')
                     p2++;
-                if (p2 >= _source.Length || _source[p2] == '\n')
+                if (p2 >= _source.Length || _source[p2] == '\n' || _source[p2] == '\r')
                 {
                     // Trailing whitespace
                     throw new HumlParseException(
@@ -181,8 +181,8 @@ internal ref struct Lexer
                 indent++;
                 p++;
             }
-            // If the line is blank (only spaces followed by \n or EOF), check for trailing whitespace
-            if (p < _source.Length && _source[p] == '\n')
+            // If the line is blank (only spaces followed by \n/\r\n or EOF), check for trailing whitespace
+            if (p < _source.Length && (_source[p] == '\n' || _source[p] == '\r'))
             {
                 if (indent > 0)
                 {
@@ -191,10 +191,9 @@ internal ref struct Lexer
                     _col = 0;
                     ThrowTrailingWhitespaceError(indent);
                 }
-                // blank line — advance past it and loop (replaces tail recursion)
-                _pos = p + 1;
-                _line++;
-                _col = 0;
+                // blank line — advance past newline and loop (replaces tail recursion)
+                _pos = p;
+                AdvancePastNewline();
                 continue;
             }
             else if (p >= _source.Length && indent > 0)
@@ -265,17 +264,13 @@ internal ref struct Lexer
         }
 
         // Skip to end of line
-        while (_pos < _source.Length && _source[_pos] != '\n')
+        while (_pos < _source.Length && _source[_pos] != '\n' && _source[_pos] != '\r')
         {
             _pos++;
             _col++;
         }
-        if (_pos < _source.Length) // skip \n
-        {
-            _pos++;
-            _line++;
-            _col = 0;
-        }
+        // Skip newline (handles both \n and \r\n)
+        AdvancePastNewline();
 
         // Recurse to get next real token
         return NextToken();
@@ -424,7 +419,8 @@ internal ref struct Lexer
         _col += 3;
 
         // After opening """, the very next character must be a newline (no inline content).
-        if (_pos >= _source.Length || _source[_pos] != '\n')
+        // Handle both \n and \r\n endings in the raw span.
+        if (_pos >= _source.Length || (_source[_pos] != '\n' && _source[_pos] != '\r'))
             ThrowParseError("Triple-quote multiline delimiter '\"\"\"' must be followed by a newline.");
 
         AdvancePastNewline();
@@ -479,7 +475,7 @@ internal ref struct Lexer
 
             // Read rest of line
             int contentStart = _pos;
-            while (_pos < _source.Length && _source[_pos] != '\n')
+            while (_pos < _source.Length && _source[_pos] != '\n' && _source[_pos] != '\r')
             {
                 _pos++;
                 _col++;
@@ -491,12 +487,8 @@ internal ref struct Lexer
             sb.Append(lineContent);
             first = false;
 
-            if (_pos < _source.Length) // skip \n
-            {
-                _pos++;
-                _line++;
-                _col = 0;
-            }
+            // Skip newline (handles both \n and \r\n)
+            AdvancePastNewline();
         }
 
         if (!closed)
@@ -539,7 +531,8 @@ internal ref struct Lexer
         _col += 3;
 
         // The opening ``` must be immediately followed by a newline (no content on same line).
-        if (_pos >= _source.Length || _source[_pos] != '\n')
+        // Handle both \n and \r\n endings in the raw span.
+        if (_pos >= _source.Length || (_source[_pos] != '\n' && _source[_pos] != '\r'))
             ThrowParseError("Backtick multiline delimiter '```' must be followed by a newline.");
 
         AdvancePastNewline();
@@ -576,7 +569,7 @@ internal ref struct Lexer
             _pos = lineStart;
             _col = 0;
             int contentStart = _pos;
-            while (_pos < _source.Length && _source[_pos] != '\n')
+            while (_pos < _source.Length && _source[_pos] != '\n' && _source[_pos] != '\r')
             {
                 _pos++;
                 _col++;
@@ -588,12 +581,8 @@ internal ref struct Lexer
             sb.Append(lineContent);
             first = false;
 
-            if (_pos < _source.Length)
-            {
-                _pos++;
-                _line++;
-                _col = 0;
-            }
+            // Skip newline (handles both \n and \r\n)
+            AdvancePastNewline();
         }
 
         if (!closed)
@@ -995,7 +984,7 @@ internal ref struct Lexer
             spaces++;
             p++;
         }
-        if (spaces > 0 && (p >= _source.Length || _source[p] == '\n'))
+        if (spaces > 0 && (p >= _source.Length || _source[p] == '\n' || _source[p] == '\r'))
         {
             _col += spaces;
             ThrowTrailingWhitespaceError(_col - spaces);
@@ -1004,7 +993,17 @@ internal ref struct Lexer
 
     private void AdvancePastNewline()
     {
-        if (_pos < _source.Length && _source[_pos] == '\n')
+        if (_pos >= _source.Length) return;
+        // Handle \r\n (CRLF) and standalone \n
+        if (_source[_pos] == '\r')
+        {
+            _pos++; // skip \r
+            if (_pos < _source.Length && _source[_pos] == '\n')
+                _pos++; // skip \n of \r\n pair
+            _line++;
+            _col = 0;
+        }
+        else if (_source[_pos] == '\n')
         {
             _pos++;
             _line++;
