@@ -66,6 +66,10 @@ public class LexerAllocationTests
         for (int i = 0; i < 5; i++)
             _ = Huml.Deserialize<AllocationPoco>(span, options);
         GC.Collect(2, GCCollectionMode.Forced, true, true);
+        // One post-GC call to reprime the thread's allocation buffer (TLAB) after compaction.
+        // Without this, the first post-compaction allocation pays a TLAB-initialisation cost
+        // (~2 KiB on .NET 8/9) that pollutes the measurement on older runtimes.
+        _ = Huml.Deserialize<AllocationPoco>(span, options);
 
         long before = GC.GetAllocatedBytesForCurrentThread();
         _ = Huml.Deserialize<AllocationPoco>(span, options);
