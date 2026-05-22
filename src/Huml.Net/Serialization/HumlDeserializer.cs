@@ -101,9 +101,6 @@ internal static class HumlDeserializer
     private static void PopulateMappingEntries(
         IReadOnlyList<HumlNode> entries, object existing, Type targetType, HumlOptions options)
     {
-        // NOTE: keep in sync with DeserializeMappingEntries — the converter dispatch block below
-        // is an intentional structural copy. If a bug is fixed in one, apply it to the other.
-
         // No Activator.CreateInstance — use 'existing' directly.
         // Get property lookup dictionary for the target type (O(1) key access).
         var lookup = PropertyDescriptor.GetLookup(targetType, options.PropertyNamingPolicy);
@@ -144,48 +141,34 @@ internal static class HumlDeserializer
             if (descriptor.Property.SetMethod is null)
                 continue;
 
-            // Deserialize the value, with converter-first priority.
-            // NOTE: keep in sync with DeserializeMappingEntries converter dispatch block.
-            object? deserializedValue;
-            if (descriptor.Converter != null)
-            {
-                // Property-level [HumlConverter] — highest priority, overrides type-level and options (POP-12)
-                deserializedValue = descriptor.Converter.ReadObject(mapping.Value);
-                ThrowIfNullForNonNullable(
-                    deserializedValue,
-                    descriptor.Property.PropertyType,
-                    mapping.Key,
-                    GetNodeLine(mapping.Value),
-                    GetNodeColumn(mapping.Value));
-            }
-            else if (ConverterCache.TryGet(descriptor.Property.PropertyType, options) is { } propConverter)
-            {
-                // Type-level or options-level converter for this property's type (POP-12)
-                deserializedValue = propConverter.ReadObject(mapping.Value);
-                ThrowIfNullForNonNullable(
-                    deserializedValue,
-                    descriptor.Property.PropertyType,
-                    mapping.Key,
-                    GetNodeLine(mapping.Value),
-                    GetNodeColumn(mapping.Value));
-            }
-            else if (mapping.Value is HumlScalar s)
-            {
-                // Direct scalar coercion — includes key in diagnostic exception
-                deserializedValue = CoerceScalar(s, descriptor.Property.PropertyType, mapping.Key, s.Line, s.Column, options);
-            }
-            else
-            {
-                // Complex node (HumlDocument, HumlInlineMapping, or HumlSequence) — route through
-                // DeserializeNode (picks up type-level + options converters).
-                // DeserializeNode calls DeserializeMappingEntries / DeserializeSequence, which create NEW
-                // objects — this naturally gives replace (not merge) semantics for collections (POP-05, POP-06).
-                deserializedValue = DeserializeNode(mapping.Value, descriptor.Property.PropertyType, options);
-            }
+            var deserializedValue = ResolvePropertyValue(mapping.Value, descriptor, mapping.Key, options);
 
             // Overlay: set property value on the existing instance (POP-03)
             descriptor.Property.SetValue(existing, deserializedValue);
         }
+    }
+
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    private static object? ResolvePropertyValue(
+        HumlNode valueNode, PropertyDescriptor descriptor, string key, HumlOptions options)
+    {
+        if (descriptor.Converter != null)
+        {
+            var v = descriptor.Converter.ReadObject(valueNode);
+            ThrowIfNullForNonNullable(v, descriptor.Property.PropertyType, key,
+                GetNodeLine(valueNode), GetNodeColumn(valueNode));
+            return v;
+        }
+        if (ConverterCache.TryGet(descriptor.Property.PropertyType, options) is { } c)
+        {
+            var v = c.ReadObject(valueNode);
+            ThrowIfNullForNonNullable(v, descriptor.Property.PropertyType, key,
+                GetNodeLine(valueNode), GetNodeColumn(valueNode));
+            return v;
+        }
+        if (valueNode is HumlScalar s)
+            return CoerceScalar(s, descriptor.Property.PropertyType, key, s.Line, s.Column, options);
+        return DeserializeNode(valueNode, descriptor.Property.PropertyType, options);
     }
 
     // ── Core dispatch ─────────────────────────────────────────────────────────
@@ -324,40 +307,7 @@ internal static class HumlDeserializer
             if (descriptor.Property.SetMethod is null)
                 continue;
 
-            // Deserialize the value, with converter-first priority.
-            object? deserializedValue;
-            if (descriptor.Converter != null)
-            {
-                // Property-level [HumlConverter] — highest priority, overrides type-level and options
-                deserializedValue = descriptor.Converter.ReadObject(mapping.Value);
-                ThrowIfNullForNonNullable(
-                    deserializedValue,
-                    descriptor.Property.PropertyType,
-                    mapping.Key,
-                    GetNodeLine(mapping.Value),
-                    GetNodeColumn(mapping.Value));
-            }
-            else if (ConverterCache.TryGet(descriptor.Property.PropertyType, options) is { } propConverter)
-            {
-                // Type-level or options-level converter for this property's type
-                deserializedValue = propConverter.ReadObject(mapping.Value);
-                ThrowIfNullForNonNullable(
-                    deserializedValue,
-                    descriptor.Property.PropertyType,
-                    mapping.Key,
-                    GetNodeLine(mapping.Value),
-                    GetNodeColumn(mapping.Value));
-            }
-            else if (mapping.Value is HumlScalar s)
-            {
-                // Direct scalar coercion — includes key in diagnostic exception (WR-01 fix preserved)
-                deserializedValue = CoerceScalar(s, descriptor.Property.PropertyType, mapping.Key, s.Line, s.Column, options);
-            }
-            else
-            {
-                // Complex node — route through DeserializeNode (picks up type-level + options converters)
-                deserializedValue = DeserializeNode(mapping.Value, descriptor.Property.PropertyType, options);
-            }
+            var deserializedValue = ResolvePropertyValue(mapping.Value, descriptor, mapping.Key, options);
 
             // Set property value via reflection
             descriptor.Property.SetValue(instance, deserializedValue);
