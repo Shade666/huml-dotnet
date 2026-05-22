@@ -101,7 +101,6 @@ public class HumlSerializerPoolTests
     public void Pool02_reentrant_serialize_from_converter_works()
     {
         var options = HumlOptions.LatestSupported;
-        options.Converters.Add(new ReentrantConverter());
 
         var outer = new OuterPoco { Name = "outer", Inner = new ReentrantInner("inner-label") };
 

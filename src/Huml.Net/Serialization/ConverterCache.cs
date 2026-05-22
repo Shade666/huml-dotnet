@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Huml.Net.Versioning;
 
 namespace Huml.Net.Serialization;
@@ -13,11 +12,6 @@ namespace Huml.Net.Serialization;
 /// </summary>
 internal static class ConverterCache
 {
-    // Full resolution cache: (targetType, options-reference-hash) → resolved converter (or null).
-    // Once an options instance produces a result for a type, that result is sticky — aligns with
-    // the contract that HumlOptions must not be mutated after first use.
-    private static readonly ConcurrentDictionary<(Type, int), HumlConverter?> Cache = new();
-
     // Converter instance cache: converterType → single shared instance (converters are stateless).
     private static readonly ConcurrentDictionary<Type, HumlConverter> InstanceCache = new();
 
@@ -30,26 +24,24 @@ internal static class ConverterCache
     [RequiresUnreferencedCode("Reflection-based converter resolution.")]
     internal static HumlConverter? TryGet(Type targetType, HumlOptions options)
     {
-        int optionsKey = RuntimeHelpers.GetHashCode(options);
-        return Cache.GetOrAdd((targetType, optionsKey), static (k, opts) =>
+        return options.ConverterResolutionCache.GetOrAdd(targetType, static (t, opts) =>
         {
             // Level 2: type-level [HumlConverter] attribute on the target type
-            var typeAttr = k.Item1.GetCustomAttribute<HumlConverterAttribute>();
+            var typeAttr = t.GetCustomAttribute<HumlConverterAttribute>();
             if (typeAttr != null)
                 return GetOrCreate(typeAttr.ConverterType);
 
             // Level 3: HumlOptions.Converters — first CanConvert match wins
             foreach (var c in opts.Converters)
-                if (c.CanConvert(k.Item1)) return c;
+                if (c.CanConvert(t)) return c;
 
             return null;
         }, options);
     }
 
-    /// <summary>Clears all caches. Use in test teardown for isolation.</summary>
+    /// <summary>Clears the converter-instance cache. Use in test teardown for isolation.</summary>
     internal static void ClearCache()
     {
-        Cache.Clear();
         InstanceCache.Clear();
     }
 

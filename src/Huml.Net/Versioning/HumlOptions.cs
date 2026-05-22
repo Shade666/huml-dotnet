@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Huml.Net.Serialization;
 
 namespace Huml.Net.Versioning;
@@ -122,17 +123,23 @@ public sealed class HumlOptions
     public bool ValidateDuplicateKeysOnWrite { get; init; }
 
     /// <summary>
-    /// A list of <see cref="Serialization.HumlConverter"/> instances consulted during serialisation and
-    /// deserialisation when no property-level or type-level <see cref="Serialization.HumlConverterAttribute"/>
-    /// is present. The first converter whose <see cref="Serialization.HumlConverter.CanConvert"/> returns
-    /// <c>true</c> for a given type is used.
+    /// A read-only list of <see cref="Serialization.HumlConverter"/> instances consulted during
+    /// serialisation and deserialisation when no property-level or type-level
+    /// <see cref="Serialization.HumlConverterAttribute"/> is present. The first converter whose
+    /// <see cref="Serialization.HumlConverter.CanConvert"/> returns <c>true</c> for a given type is used.
     /// </summary>
     /// <remarks>
-    /// Do not modify this list after passing the <see cref="HumlOptions"/> instance to any
-    /// <c>Huml.*</c> method — results are non-deterministic if the list is mutated during or
-    /// after a serialise/deserialise call.
+    /// Assign a <see cref="List{T}"/> or array at construction time via the object-initialiser
+    /// syntax: <c>Converters = new List&lt;HumlConverter&gt; { myConverter }</c>.
+    /// The property is read-only after construction — mutation after first use produces
+    /// non-deterministic results because converter resolution results are cached.
     /// </remarks>
-    public IList<Serialization.HumlConverter> Converters { get; init; } = new List<Serialization.HumlConverter>();
+    public IReadOnlyList<Serialization.HumlConverter> Converters { get; init; }
+        = Array.Empty<Serialization.HumlConverter>();
+
+    // Internal per-instance cache: Type → resolved converter (or null = none found).
+    // Populated lazily by ConverterCache.TryGet; GC'd with this HumlOptions instance.
+    internal readonly ConcurrentDictionary<Type, HumlConverter?> ConverterResolutionCache = new();
 
     /// <summary>
     /// An optional resolver that provides pre-computed type metadata for HUML (de)serialisation,
