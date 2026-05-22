@@ -143,47 +143,19 @@ public class HumlDeserializerTests
     // ── Init-only properties ──────────────────────────────────────────────────
 
     [Fact]
-    public void Deserialize_InitOnlyProperty_ThrowsHumlDeserializeException()
+    public void Deserialize_InitOnlyProperty_SetsValueSuccessfully()
     {
         const string huml = """
             Name: "test"
             """;
 
-        var act = () => HumlDeserializer.Deserialize<InitOnlyPoco>(huml);
+        var result = HumlDeserializer.Deserialize<InitOnlyPoco>(huml);
 
-        act.Should().Throw<HumlDeserializeException>()
-            .WithMessage("*Name*");
+        result.Name.Should().Be("test");
     }
 
     [Fact]
-    public void Deserialize_InitOnlyProperty_ExceptionCarriesRealLineNumber()
-    {
-        const string huml = """
-            Name: "test"
-            """;
-
-        var act = () => HumlDeserializer.Deserialize<InitOnlyPoco>(huml);
-
-        var ex = act.Should().Throw<HumlDeserializeException>().Which;
-        ex.Line.Should().Be(1);
-        ex.Key.Should().Be("Name");
-    }
-
-    [Fact]
-    public void Deserialize_InitOnlyProperty_ExceptionCarriesColumnZero()
-    {
-        const string huml = """
-            Name: "test"
-            """;
-
-        var act = () => HumlDeserializer.Deserialize<InitOnlyPoco>(huml);
-
-        var ex = act.Should().Throw<HumlDeserializeException>().Which;
-        ex.Column.Should().Be(0);
-    }
-
-    [Fact]
-    public void Deserialize_InitOnlyPropertyOnLineThree_ExceptionCarriesLine3()
+    public void Deserialize_InitOnlyProperty_OnLineThree_SetsValueSuccessfully()
     {
         const string huml = """
             # leading comment
@@ -191,10 +163,9 @@ public class HumlDeserializerTests
             Name: "test"
             """;
 
-        var act = () => HumlDeserializer.Deserialize<InitOnlyPoco>(huml);
+        var result = HumlDeserializer.Deserialize<InitOnlyPoco>(huml);
 
-        var ex = act.Should().Throw<HumlDeserializeException>().Which;
-        ex.Line.Should().Be(3);
+        result.Name.Should().Be("test");
     }
 
     // ── Collections ───────────────────────────────────────────────────────────
@@ -357,14 +328,15 @@ public class HumlDeserializerTests
     // ── No parameterless constructor ──────────────────────────────────────────
 
     [Fact]
-    public void Deserialize_TypeWithNoParameterlessCtor_ThrowsHumlDeserializeException()
+    public void Deserialize_TypeWithSingleNonParameterlessCtor_BindsParametersSuccessfully()
     {
+        // Phase 23: single non-parameterless ctor is auto-selected (D-02 priority 2).
+        // NoDefaultCtorPoco(string name) is the only public ctor — it is used automatically.
         const string huml = "Name: \"test\"";
 
-        var act = () => HumlDeserializer.Deserialize<NoDefaultCtorPoco>(huml);
+        var result = HumlDeserializer.Deserialize<NoDefaultCtorPoco>(huml);
 
-        act.Should().Throw<HumlDeserializeException>()
-            .WithMessage("*NoDefaultCtorPoco*");
+        result.Name.Should().Be("test");
     }
 
     // ── Type coercion errors ──────────────────────────────────────────────────

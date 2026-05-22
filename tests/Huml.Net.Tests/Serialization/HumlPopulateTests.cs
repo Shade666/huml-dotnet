@@ -150,15 +150,14 @@ public class HumlPopulateTests
         act.Should().Throw<ArgumentException>().WithMessage("*value type*");
     }
 
-    /// <summary>POP-09: Init-only properties in the HUML document throw HumlDeserializeException.</summary>
     [Fact]
-    public void Populate_InitOnlyProperty_ThrowsHumlDeserializeException()
+    public void Populate_InitOnlyProperty_SetsValueSuccessfully()
     {
         var existing = new InitOnlyPoco();
-        const string huml = "%HUML v0.2.0\nValue: \"x\"\n";
-        var act = () => Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        const string huml = "%HUML v0.2.0\nValue: \"updated\"\n";
+        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
 
-        act.Should().Throw<HumlDeserializeException>();
+        existing.Value.Should().Be("updated");
     }
 
     /// <summary>POP-10: Read-only properties (no setter) in the HUML document are skipped silently.</summary>
