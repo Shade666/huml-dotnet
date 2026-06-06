@@ -13,6 +13,9 @@ public class SharedSuiteTests
     private static IEnumerable<object[]> LoadFixtures(string version)
     {
         var dir = Path.Combine(AppContext.BaseDirectory, "fixtures", version, "assertions");
+        if (!Directory.Exists(dir))
+            throw new DirectoryNotFoundException(
+                $"Fixture directory '{dir}' not found. Did you forget to initialise git submodules? Run: git submodule update --init");
         var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         foreach (var file in Directory.GetFiles(dir, "*.json"))
         {

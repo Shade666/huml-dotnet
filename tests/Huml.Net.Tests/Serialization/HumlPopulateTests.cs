@@ -72,6 +72,7 @@ public class HumlPopulateTests
     {
         PropertyDescriptor.ClearCache();
         ConverterCache.ClearCache();
+        HumlOptions.ClearOptionsCaches();
     }
 
     // ── Tests ─────────────────────────────────────────────────────────────────

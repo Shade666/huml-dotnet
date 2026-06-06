@@ -115,6 +115,7 @@ public class HumlConverterTests
     {
         PropertyDescriptor.ClearCache();
         ConverterCache.ClearCache();
+        HumlOptions.ClearOptionsCaches();
     }
 
     // ── CONV-REG-* — Registration ─────────────────────────────────────────────

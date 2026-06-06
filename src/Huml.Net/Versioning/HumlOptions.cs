@@ -243,6 +243,19 @@ public sealed class HumlOptions
     public void MakeReadOnly() => _isReadOnly = true;
 
     /// <summary>
+    /// Clears the converter resolution caches on all pre-built static instances.
+    /// Call this in test constructors alongside <c>ConverterCache.ClearCache()</c> to prevent
+    /// stale cached converter resolutions from leaking between tests.
+    /// </summary>
+    internal static void ClearOptionsCaches()
+    {
+        Default.ConverterResolutionCache.Clear();
+        LatestSupported.ConverterResolutionCache.Clear();
+        LatestSupportedAutoDetect.ConverterResolutionCache.Clear();
+        Strict.ConverterResolutionCache.Clear();
+    }
+
+    /// <summary>
     /// Throws <see cref="InvalidOperationException"/> if <see cref="IsReadOnly"/> is
     /// <see langword="true"/>. Called by mutable setters to enforce the read-only contract.
     /// </summary>
