@@ -297,9 +297,9 @@ internal ref struct HumlParser
     {
         TokenType.String  => new HumlScalar(ScalarKind.String,  tok.Value)
                                 { Line = tok.Line, Column = tok.Column },
-        TokenType.Int     => new HumlScalar(ScalarKind.Integer, ParseInt(tok.Value!))
+        TokenType.Int     => new HumlScalar(ScalarKind.Integer, ParseInt(tok.Value!, tok.Line, tok.Column))
                                 { Line = tok.Line, Column = tok.Column },
-        TokenType.Float   => new HumlScalar(ScalarKind.Float,   ParseFloat(tok.Value!))
+        TokenType.Float   => new HumlScalar(ScalarKind.Float,   ParseFloat(tok.Value!, tok.Line, tok.Column))
                                 { Line = tok.Line, Column = tok.Column },
         TokenType.Bool    => new HumlScalar(ScalarKind.Bool,    string.Equals(tok.Value, "true",
                                  StringComparison.OrdinalIgnoreCase))
@@ -321,7 +321,7 @@ internal ref struct HumlParser
     /// Parses an integer literal with optional sign, base prefix (<c>0x</c>/<c>0o</c>/<c>0b</c>),
     /// and underscore separators.
     /// </summary>
-    private static long ParseInt(string s)
+    private static long ParseInt(string s, int line, int col)
     {
         int sign = 1;
         int idx = 0;
@@ -342,12 +342,29 @@ internal ref struct HumlParser
         }
 
         string digits = s.Substring(idx).Replace("_", "", StringComparison.Ordinal);
-        return sign * Convert.ToInt64(digits, radix);
+        try
+        {
+            return sign * Convert.ToInt64(digits, radix);
+        }
+        catch (OverflowException)
+        {
+            throw new HumlParseException(
+                $"Integer literal '{s}' overflows the supported range (int64).", line, col);
+        }
     }
 
     /// <summary>Parses a floating-point literal, stripping underscore separators.</summary>
-    private static double ParseFloat(string s) =>
-        double.Parse(s.Replace("_", "", StringComparison.Ordinal), CultureInfo.InvariantCulture);
+    private static double ParseFloat(string s, int line, int col)
+    {
+        try
+        {
+            return double.Parse(s.Replace("_", "", StringComparison.Ordinal), CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            throw new HumlParseException($"Invalid float literal '{s}'.", line, col);
+        }
+    }
 
     // ── Block parsers ─────────────────────────────────────────────────────────
 

@@ -186,8 +186,8 @@ internal ref struct Lexer
             {
                 if (indent > 0)
                 {
-                    // Trailing whitespace on blank line
-                    _pos = p - indent + indent; // position at the spaces
+                    // _pos is at the newline; ThrowTrailingWhitespaceError uses 'indent' for column.
+                    _pos = p;
                     _col = 0;
                     ThrowTrailingWhitespaceError(indent);
                 }
@@ -300,12 +300,14 @@ internal ref struct Lexer
 
         string value = ScanQuotedStringContent('"');
 
-        // Now decide: if this is at the beginning of a line (modulo indent) and is followed by ': ' or '::', it's a QuotedKey
-        // We need to skip whitespace and check for colon
+        // Heuristic: classify as QuotedKey when at the line's indentation level AND followed by ':'
+        // (which indicates ': value' or '::' vector indicator). This is a structural approximation
+        // — without parser context the lexer cannot distinguish a quoted VALUE followed by ':' from
+        // a genuine quoted KEY, e.g. in inline dicts where the column heuristic breaks down. The
+        // common case (block-level quoted keys) is handled correctly by this check.
         bool isKey = false;
         if (!spaceBefore || tokenCol == _lineIndent)
         {
-            // Check if followed by ': ' or '::'
             if (_pos < _source.Length && _source[_pos] == ':')
             {
                 isKey = true;
@@ -565,8 +567,9 @@ internal ref struct Lexer
                 break;
             }
 
-            // Content line
-            _pos = lineStart;
+            // Content line — strip structural indentation (keyIndent + 2 spaces, bounded by spaces).
+            int stripCount = Math.Min(keyIndent + 2, spaces);
+            _pos = lineStart + stripCount;
             _col = 0;
             int contentStart = _pos;
             while (_pos < _source.Length && _source[_pos] != '\n' && _source[_pos] != '\r')
