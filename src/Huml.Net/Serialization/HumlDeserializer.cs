@@ -14,6 +14,15 @@ namespace Huml.Net.Serialization;
 /// </summary>
 internal static class HumlDeserializer
 {
+    // ── Caches ────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Caches the result of <c>GetInterface(IEnumerable&lt;&gt;.FullName)</c> per type to avoid
+    /// per-call reflection cost for collection targets not caught by earlier dispatch branches.
+    /// Stores <c>null</c> for types that do not implement <c>IEnumerable&lt;T&gt;</c>.
+    /// </summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, Type?> IEnumerableInterfaceCache = new();
+
     // ── Public entry points ───────────────────────────────────────────────────
 
     /// <summary>
@@ -501,8 +510,12 @@ internal static class HumlDeserializer
             }
             else
             {
-                // Check if target implements IEnumerable<T>
-                var iface = targetType.GetInterface(typeof(IEnumerable<>).FullName!);
+                // Check if target implements IEnumerable<T> — result cached per type.
+                if (!IEnumerableInterfaceCache.TryGetValue(targetType, out var iface))
+                {
+                    iface = targetType.GetInterface(typeof(IEnumerable<>).FullName!);
+                    IEnumerableInterfaceCache.TryAdd(targetType, iface);
+                }
                 isAssignableFromList = iface != null;
             }
 
