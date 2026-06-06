@@ -4,6 +4,14 @@ using Huml.Net.Serialization;
 namespace Huml.Net.Versioning;
 
 /// <summary>Configuration options for HUML parsing and serialisation.</summary>
+/// <remarks>
+/// <para>
+/// <b>Document size:</b> Huml.Net does not enforce a maximum document size. There is no
+/// built-in limit on the number of bytes or characters in an input document beyond
+/// <see cref="MaxRecursionDepth"/>. When parsing untrusted input, enforce size constraints
+/// in the caller before passing the document to any <c>Huml.*</c> method.
+/// </para>
+/// </remarks>
 public sealed class HumlOptions
 {
     /// <summary>
