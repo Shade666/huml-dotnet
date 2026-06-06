@@ -6,8 +6,8 @@ namespace Huml.Net.Serialization;
 /// <remarks>
 /// <para>
 /// This is a <see cref="FlagsAttribute"/> enum, so values can be combined with the bitwise OR operator.
-/// <see cref="Always"/> is the combination of <see cref="WhenWritingNull"/> and <see cref="WhenWritingDefault"/>
-/// (value <c>3</c>).
+/// <see cref="Always"/> has the numeric value <c>3</c> and omits every property unconditionally —
+/// including non-null, non-default values — and is handled as a named special case, not via bit flags.
 /// </para>
 /// <para>
 /// The naming and semantics are intentionally aligned with
@@ -50,8 +50,10 @@ public enum HumlIgnoreCondition
     WhenWritingDefault = 2,
 
     /// <summary>
-    /// Omit every property unconditionally, regardless of its runtime value.
-    /// Equivalent to <see cref="WhenWritingNull"/> | <see cref="WhenWritingDefault"/> (value <c>3</c>).
+    /// Omit every property unconditionally, regardless of its runtime value (including non-null,
+    /// non-default values). Handled as an explicit named case in the serialiser — behaviour is
+    /// unconditional omission, not a combination of <see cref="WhenWritingNull"/> and
+    /// <see cref="WhenWritingDefault"/>. Numeric value <c>3</c>.
     /// </summary>
     Always = 3,
 }

@@ -30,7 +30,17 @@ public abstract class HumlConverter<T> : HumlConverter
     /// Writes <paramref name="value"/> to the serialiser output via <paramref name="context"/>.
     /// </summary>
     /// <param name="context">The serialiser context providing append methods.</param>
-    /// <param name="value">The value to serialise.</param>
+    /// <param name="value">The value to serialise. Never <c>null</c> for reference types —
+    /// null values are emitted as <c>null</c> by <see cref="WriteObject"/> before <c>Write</c>
+    /// is called.</param>
+    /// <remarks>
+    /// When invoked from a property-level converter context, the output produced by this method
+    /// is inserted inline as the scalar value for the mapping entry (<c>key: &lt;output&gt;</c>).
+    /// The output must be a single-line HUML scalar (a quoted string, a number, a keyword such
+    /// as <c>true</c> / <c>false</c> / <c>null</c>, etc.) — embedded newlines will break the
+    /// current mapping entry's syntax. Use <see cref="HumlSerializerContext.AppendRaw"/> only
+    /// when you are certain the output is a valid single-line value.
+    /// </remarks>
     public abstract void Write(HumlSerializerContext context, T value);
 
     internal override object? ReadObject(HumlNode node) => Read(node);

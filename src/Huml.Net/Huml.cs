@@ -111,6 +111,7 @@ public static class Huml
         // NOTE: ArgumentNullException.ThrowIfNull is not available on netstandard2.1.
 #pragma warning disable CA1510 // ThrowIfNull is .NET 6+; library targets netstandard2.1
         if (huml is null) throw new ArgumentNullException(nameof(huml));
+        if (existing is null && !typeof(T).IsValueType) throw new ArgumentNullException(nameof(existing));
 #pragma warning restore CA1510
         Populate<T>(huml.AsSpan(), existing, options);
     }
