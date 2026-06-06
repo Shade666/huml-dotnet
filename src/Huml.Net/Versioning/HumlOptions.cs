@@ -144,6 +144,25 @@ public sealed class HumlOptions
     public bool ValidateDuplicateKeysOnWrite { get; init; }
 
     /// <summary>
+    /// Controls how the deserialiser handles HUML keys that do not map to any property on the
+    /// target type and are not captured by a <c>[HumlExtensionData]</c> property.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="UnmappedMemberHandling.Skip"/> (the default) silently ignores unknown keys,
+    /// preserving forward-compatibility with documents produced by newer HUML writers.
+    /// </para>
+    /// <para>
+    /// <see cref="UnmappedMemberHandling.Disallow"/> throws
+    /// <see cref="T:Huml.Net.Exceptions.HumlDeserializeException"/> listing the unrecognised
+    /// key. If the type has a <c>[HumlExtensionData]</c> property, unknown keys are routed
+    /// there and the exception is suppressed — extension data is an explicit opt-in for unknown
+    /// keys and takes precedence over <c>Disallow</c>.
+    /// </para>
+    /// </remarks>
+    public UnmappedMemberHandling UnmappedMemberHandling { get; init; } = UnmappedMemberHandling.Skip;
+
+    /// <summary>
     /// A read-only list of <see cref="Serialization.HumlConverter"/> instances consulted during
     /// serialisation and deserialisation when no property-level or type-level
     /// <see cref="Serialization.HumlConverterAttribute"/> is present. The first converter whose

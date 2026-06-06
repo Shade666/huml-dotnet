@@ -11,6 +11,7 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 ## [Unreleased]
 
 ### Added
+- **`HumlOptions.UnmappedMemberHandling`:** New option controlling how the deserialiser handles HUML keys that do not map to any property on the target type. `Skip` (default) silently ignores unknown keys, preserving existing forward-compatibility behaviour. `Disallow` throws `HumlDeserializeException` listing the unrecognised key. A `[HumlExtensionData]` property on the type suppresses `Disallow` — unknown keys are routed there instead.
 - **`HumlOptions.LatestSupportedAutoDetect`:** New pre-built options preset that reads the `%HUML` header and silently falls back to the latest supported version when the declared version is unknown or outside the support window. Unlike `Default`/`AutoDetect` (which throw `HumlUnsupportedVersionException` on unknown versions), this preset is permissive — use it when consuming documents from heterogeneous sources where version drift is expected.
 - **`HumlOptions.MakeReadOnly()` / `IsReadOnly`:** Pre-built instances (`Default`, `LatestSupported`, `AutoDetect`) are now frozen at static-initialisation time. Calling `MakeReadOnly()` on any instance sets `IsReadOnly = true`; the call is idempotent. An internal `ThrowIfReadOnly()` guard helper is wired for future mutable-setter additions. Mirrors the STJ .NET 7+ pattern.
 

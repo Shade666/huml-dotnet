@@ -126,10 +126,11 @@ internal static class HumlDeserializer
             // Find matching descriptor by HUML key (case-sensitive, O(1))
             lookup.TryGetValue(mapping.Key, out PropertyDescriptor? descriptor);
 
-            // Unknown key — skip silently (forward compatibility, POP-04)
+            // Unknown key handling (forward compatibility, POP-04)
             if (descriptor is null)
             {
                 // Extension data capture: route unmapped keys to the [HumlExtensionData] property if present.
+                // Extension data is an explicit opt-in for unknown keys and suppresses UnmappedMemberHandling.Disallow.
                 if (extDesc != null)
                 {
                     var extDictObj = extDesc.Property.GetValue(existing);
@@ -143,6 +144,10 @@ internal static class HumlDeserializer
                     else if (extDictObj is Dictionary<string, object?> od)
                         od[mapping.Key] = CoerceExtensionValue(mapping.Value, options);
                 }
+                else if (options.UnmappedMemberHandling == Versioning.UnmappedMemberHandling.Disallow)
+                    throw new HumlDeserializeException(
+                        $"Unrecognised key '{mapping.Key}' encountered during deserialisation of type '{targetType.Name}'. " +
+                        "Set HumlOptions.UnmappedMemberHandling to Skip to ignore unknown keys.");
                 continue;
             }
 
@@ -288,10 +293,11 @@ internal static class HumlDeserializer
             // Find matching descriptor by HUML key (case-sensitive, O(1))
             lookup.TryGetValue(mapping.Key, out PropertyDescriptor? descriptor);
 
-            // Unknown key — skip silently (forward compatibility)
+            // Unknown key handling (forward compatibility)
             if (descriptor is null)
             {
                 // Extension data capture: route unmapped keys to the [HumlExtensionData] property if present.
+                // Extension data is an explicit opt-in for unknown keys and suppresses UnmappedMemberHandling.Disallow.
                 if (extDesc != null)
                 {
                     var extDictObj = extDesc.Property.GetValue(instance);
@@ -305,6 +311,10 @@ internal static class HumlDeserializer
                     else if (extDictObj is Dictionary<string, object?> od)
                         od[mapping.Key] = CoerceExtensionValue(mapping.Value, options);
                 }
+                else if (options.UnmappedMemberHandling == Versioning.UnmappedMemberHandling.Disallow)
+                    throw new HumlDeserializeException(
+                        $"Unrecognised key '{mapping.Key}' encountered during deserialisation of type '{targetType.Name}'. " +
+                        "Set HumlOptions.UnmappedMemberHandling to Skip to ignore unknown keys.");
                 continue;
             }
 
