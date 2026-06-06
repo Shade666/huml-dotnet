@@ -30,6 +30,7 @@ public sealed class HumlOptions
         LatestSupported.MakeReadOnly();
         Default.MakeReadOnly();
         LatestSupportedAutoDetect.MakeReadOnly();
+        Strict.MakeReadOnly();
     }
 
     /// <summary>
@@ -54,6 +55,28 @@ public sealed class HumlOptions
     {
         VersionSource = VersionSource.Header,
         UnknownVersionBehaviour = UnknownVersionBehaviour.UseLatest,
+    };
+
+    /// <summary>
+    /// Maximum-strictness preset. Enables every validation toggle:
+    /// <list type="bullet">
+    /// <item>Reads the <c>%HUML</c> version header and throws
+    ///   <see cref="Exceptions.HumlUnsupportedVersionException"/> for unknown versions.</item>
+    /// <item>Throws <see cref="Exceptions.HumlDeserializeException"/> for any HUML key that
+    ///   does not map to a target property (see <see cref="UnmappedMemberHandling"/>).</item>
+    /// <item>Throws <see cref="Exceptions.HumlSerializeException"/> for duplicate dictionary
+    ///   keys during serialisation (see <see cref="ValidateDuplicateKeysOnWrite"/>).</item>
+    /// </list>
+    /// Required-property enforcement via <c>[HumlRequired]</c> is unconditional and is always
+    /// active regardless of this preset. Mirrors the STJ .NET 10
+    /// <c>JsonSerializerOptions.Strict</c> pattern.
+    /// </summary>
+    public static readonly HumlOptions Strict = new()
+    {
+        VersionSource = VersionSource.Header,
+        UnknownVersionBehaviour = UnknownVersionBehaviour.Throw,
+        UnmappedMemberHandling = UnmappedMemberHandling.Disallow,
+        ValidateDuplicateKeysOnWrite = true,
     };
 
     /// <summary>The HUML spec version to use when parsing or serialising.</summary>
