@@ -22,8 +22,8 @@ Huml.Net throws four exception types, all in the namespace `Huml.Net.Exceptions`
 | Operation               | Can Throw                                                                                                                         |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `Huml.Parse()`          | `HumlParseException`, `HumlUnsupportedVersionException`                                                                           |
-| `Huml.Deserialize<T>()` | `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage, or missing `[HumlRequired]` / C# `required` members), `HumlUnsupportedVersionException` (version stage) |
-| `Huml.Populate<T>()`    | `ArgumentNullException` (null `huml` string or null existing instance), `ArgumentException` (T is a value type), `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage), `HumlUnsupportedVersionException` (version stage) |
+| `Huml.Deserialize<T>()` | `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage, missing `[HumlRequired]` / C# `required` members, or unknown key when `UnmappedMemberHandling = Disallow`), `HumlUnsupportedVersionException` (version stage) |
+| `Huml.Populate<T>()`    | `ArgumentNullException` (null `huml` string or null existing instance), `ArgumentException` (T is a value type), `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage, or unknown key when `UnmappedMemberHandling = Disallow`), `HumlUnsupportedVersionException` (version stage) |
 | `Huml.Serialize<T>()`   | `HumlSerializeException`                                                                                                          |
 
 ## Exception Properties
@@ -47,7 +47,14 @@ Thrown when valid HUML cannot be mapped to the target .NET type.
 
 ### HumlSerializeException
 
-Thrown when a .NET object cannot be serialised to HUML. Has no additional properties beyond `Message` and `InnerException`.
+Thrown when a .NET object cannot be serialised to HUML. Has no additional properties beyond
+`Message` and `InnerException`.
+
+When the unserialisable value originates from a named POCO property, the message includes
+property and type context: `"Cannot serialize property 'Handler' on type 'MyDto': delegates,
+function pointers, and similar non-data types are not supported by HumlSerializer."` For
+non-property paths (sequence elements, direct values) the prior short format
+(`"Cannot serialize type '...'."`) is retained.
 
 ### HumlUnsupportedVersionException
 
@@ -91,3 +98,7 @@ catch (HumlDeserializeException ex)
 - `init`-only properties are now settable during deserialisation via reflection. The previous
   `HumlDeserializeException` for `init`-only setters has been removed as of 0.2.0-alpha.2.
   See [Constructor Binding](constructor-binding.md) for details.
+- When `HumlOptions.UnmappedMemberHandling = Disallow`, `HumlDeserializeException` is thrown
+  listing the first unrecognised key encountered. This check is suppressed when the target type
+  declares a `[HumlExtensionData]` property — unknown keys are captured there instead.
+  See [Options Reference](options-reference.md) for the full preset comparison table.

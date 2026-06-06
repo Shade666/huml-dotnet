@@ -137,6 +137,27 @@ var cfg = Huml.Deserialize<ApiConfig>("""
     """);
 ```
 
+### Example 8: Options presets
+
+```csharp
+using Huml.Net;
+using Huml.Net.Exceptions;
+using Huml.Net.Versioning;
+
+// Maximum strictness — throws on unknown version headers, unrecognised keys, and duplicate dict keys
+try
+{
+    var result = Huml.Deserialize<MyDto>(humlText, HumlOptions.Strict);
+}
+catch (HumlDeserializeException ex)
+{
+    Console.WriteLine($"Strict validation rejected unknown key: {ex.Message}");
+}
+
+// Lenient version-detection — silently falls back to latest when header version is unrecognised
+var lenient = Huml.Deserialize<MyDto>(humlText, HumlOptions.LatestSupportedAutoDetect);
+```
+
 ## Features
 
 **Spec compliance**
@@ -155,7 +176,8 @@ var cfg = Huml.Deserialize<ApiConfig>("""
 - `init`-only property support — `{ get; init; }` properties settable during deserialisation
 - Required-property enforcement — `[HumlRequired]` attribute and C# `required` modifier; throws on missing keys
 - Extension data — `[HumlExtensionData]` captures unknown keys into a `Dictionary<string, HumlNode>` overflow bucket
-- Collection dispatch: `T[]`, `List<T>`, `IEnumerable<T>`, `HashSet<T>`, `ISet<T>`, `IReadOnlySet<T>`, `Dictionary<string,T>`
+- Collection dispatch: `T[]`, `List<T>`, `IEnumerable<T>`, `HashSet<T>`, `SortedSet<T>`, `ISet<T>`, `IReadOnlySet<T>`, `Dictionary<string,T>`, `IDictionary<string,T>`
+- Unknown-key handling via `HumlOptions.UnmappedMemberHandling` (`Skip` / `Disallow`)
 - `Huml.Populate<T>()` overlays a HUML document onto an existing object instance
 
 **Attributes**
@@ -168,6 +190,8 @@ var cfg = Huml.Deserialize<ApiConfig>("""
 - Naming policy: `HumlNamingPolicy.KebabCase`, `SnakeCase`, `CamelCase`, `PascalCase`
 - Enum support: `HumlEnumValueAttribute` for custom member names; round-trips through quoted strings
 - Custom converters: `HumlConverter<T>` abstract base and `HumlOptions.Converters` list
+- Preset instances: `Default` / `AutoDetect`, `LatestSupported`, `LatestSupportedAutoDetect` (silent fallback), `Strict` (maximum-strictness validation); all pre-frozen (`IsReadOnly`)
+- `MakeReadOnly()` to freeze any custom instance; pre-built instances are frozen at type-load time
 
 **Performance**
 - Zero-copy span deserialisation — `Lexer` and `HumlParser` are `ref struct` types; no intermediate string allocation
@@ -195,7 +219,9 @@ var cfg = Huml.Deserialize<ApiConfig>("""
 | `Converters`                    | `IList<HumlConverter>`    | `[]`        | Custom converters; first `CanConvert` match wins. Property/type `[HumlConverter]` takes precedence |
 | `DefaultIgnoreCondition`        | `HumlIgnoreCondition`     | `Never`     | Global default for when to omit properties. `Never` = emit all; `WhenWritingNull` / `WhenWritingDefault` = suppress null or default values. Per-property `OmitIfDefault` and class-level `[HumlIgnoreDefaults]` take precedence |
 | `ValidateDuplicateKeysOnWrite`  | `bool`                    | `false`     | When `true`, throws `HumlSerializeException` if a dictionary produces duplicate keys (ordinal comparison). Opt-in; default preserves existing behaviour |
+| `UnmappedMemberHandling`        | `UnmappedMemberHandling`  | `Skip`      | `Skip` silently ignores unknown HUML keys (forward-compatible). `Disallow` throws `HumlDeserializeException` listing the unrecognised key. Suppressed when `[HumlExtensionData]` is present. |
 | `TypeInfoResolver`              | `IHumlTypeInfoResolver?`  | `null`      | Plug-in point for a source-generated type info resolver. Returning `null` from `GetTypeInfo` falls through to the built-in reflection path |
+| `IsReadOnly`                    | `bool` (read)             | `false`     | `true` after `MakeReadOnly()` is called. All built-in preset instances (`Default`, `LatestSupported`, `Strict`, etc.) are pre-frozen at type-load time. |
 
 ## Compatibility
 

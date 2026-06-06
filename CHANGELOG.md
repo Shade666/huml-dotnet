@@ -10,6 +10,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+(no changes yet)
+
+## [0.2.0-alpha.3] - 2026-06-06
+
 ### Added
 - **Document size limitation documented:** `HumlOptions` XML docs and `docs/options-reference.md` now explicitly state that no maximum document size is enforced. Callers parsing untrusted input must impose their own size limit before invoking any `Huml.*` method.
 - **`HumlOptions.Strict`:** New maximum-strictness preset bundling all validation toggles: reads the `%HUML` version header (`VersionSource.Header`), throws on unknown versions (`UnknownVersionBehaviour.Throw`), disallows unmapped keys (`UnmappedMemberHandling.Disallow`), and validates duplicate dictionary keys on write (`ValidateDuplicateKeysOnWrite = true`). Pre-frozen at static-initialisation time. Mirrors the STJ .NET 10 `JsonSerializerOptions.Strict` preset.
@@ -114,7 +118,8 @@ Initial alpha release.
 - **Public API:** `System.Text.Json`-style static `Huml` facade with `Serialize`, `Deserialize`, and `Parse` overloads.
 - **CI/NuGet:** GitHub Actions pipeline with SourceLink, MinVer, and OIDC Trusted Publishing.
 
-[Unreleased]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.2...HEAD
+[Unreleased]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.3...HEAD
+[0.2.0-alpha.3]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.2...v0.2.0-alpha.3
 [0.2.0-alpha.2]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.1...v0.2.0-alpha.2
 [0.2.0-alpha.1]: https://github.com/primeBeri/huml-dotnet/compare/v0.1.0-alpha.1...v0.2.0-alpha.1
 [0.1.0-alpha.1]: https://github.com/primeBeri/huml-dotnet/releases/tag/v0.1.0-alpha.1
