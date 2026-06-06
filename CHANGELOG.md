@@ -10,6 +10,9 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+### Added
+- **`HumlOptions.MakeReadOnly()` / `IsReadOnly`:** Pre-built instances (`Default`, `LatestSupported`, `AutoDetect`) are now frozen at static-initialisation time. Calling `MakeReadOnly()` on any instance sets `IsReadOnly = true`; the call is idempotent. An internal `ThrowIfReadOnly()` guard helper is wired for future mutable-setter additions. Mirrors the STJ .NET 7+ pattern.
+
 ### Changed
 - **`HumlSerializeException` enriched with property and type context:** When `HumlSerializer` encounters an unsupported type (delegates, function pointers) on a POCO property, the exception message now includes the property name and containing type name — e.g. `"Cannot serialize property 'Handler' on type 'MyDto': delegates, function pointers, and similar non-data types are not supported by HumlSerializer."` Previously the message only named the unsupported type with no source location. Serialisation of unsupported items in sequences or direct values retains the prior format.
 

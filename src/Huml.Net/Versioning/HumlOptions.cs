@@ -25,6 +25,12 @@ public sealed class HumlOptions
         VersionSource = VersionSource.Header,
     };
 
+    static HumlOptions()
+    {
+        LatestSupported.MakeReadOnly();
+        Default.MakeReadOnly();
+    }
+
     /// <summary>
     /// Auto-detect options: reads the <c>%HUML vX.Y</c> directive from the document header,
     /// validates the declared version against <see cref="SpecVersionPolicy.MinimumSupported"/> and
@@ -154,6 +160,34 @@ public sealed class HumlOptions
     /// serialiser — this property wires the call site for future source-generator support.
     /// </remarks>
     public Serialization.IHumlTypeInfoResolver? TypeInfoResolver { get; init; }
+
+    private bool _isReadOnly;
+
+    /// <summary>
+    /// Gets a value indicating whether this <see cref="HumlOptions"/> instance has been locked
+    /// against further mutation. Pre-built instances (<see cref="Default"/>,
+    /// <see cref="LatestSupported"/>, <see cref="AutoDetect"/>) are read-only from the moment
+    /// the type is first accessed.
+    /// </summary>
+    public bool IsReadOnly => _isReadOnly;
+
+    /// <summary>
+    /// Marks this instance as read-only. Subsequent calls to any future mutable setter will
+    /// throw <see cref="InvalidOperationException"/>. This call is idempotent.
+    /// </summary>
+    public void MakeReadOnly() => _isReadOnly = true;
+
+    /// <summary>
+    /// Throws <see cref="InvalidOperationException"/> if <see cref="IsReadOnly"/> is
+    /// <see langword="true"/>. Called by mutable setters to enforce the read-only contract.
+    /// </summary>
+    internal void ThrowIfReadOnly()
+    {
+        if (_isReadOnly)
+            throw new InvalidOperationException(
+                "HumlOptions instance is read-only and cannot be modified. " +
+                "Create a new HumlOptions instance instead.");
+    }
 
     private int _maxRecursionDepth = 64;
 
