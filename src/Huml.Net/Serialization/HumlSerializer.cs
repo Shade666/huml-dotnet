@@ -416,11 +416,14 @@ internal static class HumlSerializer
         if (converterOverride != null)
         {
             var valueType = value?.GetType();
+            // When value is null, fall back to the converter's own type as the re-entry guard key
+            // so recursion through null-valued converter calls is still detected.
+            var guardType = valueType ?? converterOverride.GetType();
             _activeConverterTypes ??= new HashSet<Type>();
-            bool added = valueType != null && _activeConverterTypes.Add(valueType);
-            if (valueType != null && !added)
+            bool added = _activeConverterTypes.Add(guardType);
+            if (!added)
                 throw new InvalidOperationException(
-                    $"Converter re-entry detected for type '{valueType.Name}'. " +
+                    $"Converter re-entry detected for type '{guardType.Name}'. " +
                     "A converter must not call AppendSerializedValue with the same type it handles.");
             try
             {
@@ -433,8 +436,8 @@ internal static class HumlSerializer
             }
             finally
             {
-                if (valueType != null && added)
-                    _activeConverterTypes.Remove(valueType);
+                if (added)
+                    _activeConverterTypes.Remove(guardType);
             }
             return;
         }

@@ -41,7 +41,8 @@ public abstract class HumlConverter<T> : HumlConverter
             if (typeof(T).IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
                 throw new InvalidOperationException(
                     $"Converter '{GetType().Name}' received a null value for non-nullable value type '{typeof(T).Name}'.");
-            Write(context, default!);
+            // Reference type null: emit "null" directly — do not call Write which may not handle null.
+            context.AppendRaw("null");
             return;
         }
         Write(context, (T)value);
