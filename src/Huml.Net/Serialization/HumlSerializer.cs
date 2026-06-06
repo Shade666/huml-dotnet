@@ -370,7 +370,7 @@ internal static class HumlSerializer
                 if (shouldOmit) continue;
             }
 
-            EmitEntry(sb, indent, desc.HumlKey, propValue, depth, options, desc.Inline, desc.Converter);
+            EmitEntry(sb, indent, desc.HumlKey, propValue, depth, options, desc.Inline, desc.Converter, declaringType: obj.GetType());
         }
 
         // Emit extension-data entries after all declared properties (EXT-04).
@@ -409,7 +409,8 @@ internal static class HumlSerializer
         int depth,
         HumlOptions options,
         bool? inlineOverride = null,
-        HumlConverter? converterOverride = null)
+        HumlConverter? converterOverride = null,
+        Type? declaringType = null)
     {
         // Property-level converter dispatch (highest priority — wins over type-level and options)
         if (converterOverride != null)
@@ -504,9 +505,14 @@ internal static class HumlSerializer
         // POCO object (not null — null was handled by IsScalarValue)
         var valueType2 = value!.GetType();
         if (IsUnsupportedType(valueType2))
-            throw new HumlSerializeException(
-                $"Cannot serialize type '{valueType2.FullName}': delegates, function pointers, and " +
-                "similar non-data types are not supported by HumlSerializer.");
+        {
+            var msg = declaringType != null
+                ? $"Cannot serialize property '{key}' on type '{declaringType.Name}': delegates, " +
+                  "function pointers, and similar non-data types are not supported by HumlSerializer."
+                : $"Cannot serialize type '{valueType2.FullName}': delegates, function pointers, and " +
+                  "similar non-data types are not supported by HumlSerializer.";
+            throw new HumlSerializeException(msg);
+        }
         sb.Append(indent);
         AppendKey(sb, key);
         sb.Append("::\n");

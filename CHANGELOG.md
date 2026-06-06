@@ -10,7 +10,8 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
-(no changes yet)
+### Changed
+- **`HumlSerializeException` enriched with property and type context:** When `HumlSerializer` encounters an unsupported type (delegates, function pointers) on a POCO property, the exception message now includes the property name and containing type name — e.g. `"Cannot serialize property 'Handler' on type 'MyDto': delegates, function pointers, and similar non-data types are not supported by HumlSerializer."` Previously the message only named the unsupported type with no source location. Serialisation of unsupported items in sequences or direct values retains the prior format.
 
 ## [0.2.0-alpha.2] - 2026-05-19
 
