@@ -29,6 +29,7 @@ public sealed class HumlOptions
     {
         LatestSupported.MakeReadOnly();
         Default.MakeReadOnly();
+        LatestSupportedAutoDetect.MakeReadOnly();
     }
 
     /// <summary>
@@ -40,6 +41,20 @@ public sealed class HumlOptions
     /// Equivalent to <see cref="Default"/>.
     /// </summary>
     public static readonly HumlOptions AutoDetect = Default;
+
+    /// <summary>
+    /// Options that read the <c>%HUML</c> header and fall back to the latest supported spec
+    /// version (<see cref="HumlSpecVersion.V0_2"/>) when the declared version is unknown or
+    /// outside the support window. Unlike <see cref="Default"/> and <see cref="AutoDetect"/>,
+    /// this preset never throws <see cref="Exceptions.HumlUnsupportedVersionException"/> —
+    /// unsupported versions are silently treated as the latest supported version.
+    /// Use when consuming documents from heterogeneous sources where version drift is expected.
+    /// </summary>
+    public static readonly HumlOptions LatestSupportedAutoDetect = new()
+    {
+        VersionSource = VersionSource.Header,
+        UnknownVersionBehaviour = UnknownVersionBehaviour.UseLatest,
+    };
 
     /// <summary>The HUML spec version to use when parsing or serialising.</summary>
     public HumlSpecVersion SpecVersion { get; init; } = HumlSpecVersion.V0_2;
