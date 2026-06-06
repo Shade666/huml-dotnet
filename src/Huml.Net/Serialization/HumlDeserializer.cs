@@ -634,8 +634,23 @@ internal static class HumlDeserializer
                 }
 
                 case ScalarKind.Integer:
-                    // Parser produces long; convert to target numeric type
-                    return Convert.ChangeType(scalar.Value, underlying, CultureInfo.InvariantCulture);
+                {
+                    // Parser produces long; use checked casts for common integral types to avoid
+                    // boxing/unboxing on the hot path while preserving OverflowException semantics.
+                    var rawLong = (long)scalar.Value!;
+                    return underlying switch
+                    {
+                        _ when underlying == typeof(long)   => (object)rawLong,
+                        _ when underlying == typeof(int)    => (object)checked((int)rawLong),
+                        _ when underlying == typeof(short)  => (object)checked((short)rawLong),
+                        _ when underlying == typeof(byte)   => (object)checked((byte)rawLong),
+                        _ when underlying == typeof(sbyte)  => (object)checked((sbyte)rawLong),
+                        _ when underlying == typeof(uint)   => (object)checked((uint)rawLong),
+                        _ when underlying == typeof(ulong)  => (object)checked((ulong)rawLong),
+                        _ when underlying == typeof(ushort) => (object)checked((ushort)rawLong),
+                        _                                   => Convert.ChangeType(scalar.Value, underlying, CultureInfo.InvariantCulture),
+                    };
+                }
 
                 case ScalarKind.Float:
                     // Parser produces double; convert to target numeric type
