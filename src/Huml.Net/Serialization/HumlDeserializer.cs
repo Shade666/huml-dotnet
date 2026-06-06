@@ -252,7 +252,7 @@ internal static class HumlDeserializer
 
         object instance;
         HashSet<string>? alreadyBound = null;
-        var boundKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var boundKeys = new HashSet<string>(StringComparer.Ordinal);
         var selectedCtor = PropertyDescriptor.GetSelectedConstructor(targetType, options.PropertyNamingPolicy);
 
         if (selectedCtor != null)
@@ -341,7 +341,8 @@ internal static class HumlDeserializer
         foreach (var desc in descriptors)
         {
             if (!desc.IsRequired) continue;
-            // alreadyBound uses OrdinalIgnoreCase (set in InvokeConstructor) — plain Contains is correct.
+            // alreadyBound (OrdinalIgnoreCase) covers constructor-bound keys; boundKeys (Ordinal) covers
+            // property-bound keys — desc.HumlKey is always the canonical descriptor key so Ordinal is correct.
             bool wasBound = (alreadyBound != null && alreadyBound.Contains(desc.HumlKey))
                          || boundKeys.Contains(desc.HumlKey);
             if (!wasBound)
@@ -505,7 +506,8 @@ internal static class HumlDeserializer
         }
 
         // c. IEnumerable<T> dispatch (materialise as List<T>)
-        // Covers: IEnumerable<T> itself, ICollection<T>, IReadOnlyList<T>, etc.
+        // Covers: IEnumerable<T> itself, ICollection<T>, IReadOnlyCollection<T>, IReadOnlyList<T>,
+        // and any other interface that implements IEnumerable<T>. List<T> satisfies all of them.
         if (targetType.IsGenericType)
         {
             var typeDef = targetType.GetGenericTypeDefinition();
@@ -554,7 +556,11 @@ internal static class HumlDeserializer
     private static object DeserializeDictionary(IReadOnlyList<HumlNode> entries, Type targetType, HumlOptions options)
     {
         var valueType = targetType.GetGenericArguments()[1];
-        var dict = (IDictionary)Activator.CreateInstance(targetType)!;
+        // IDictionary<string,T> is an interface — instantiate Dictionary<string,T> instead.
+        var concreteType = targetType.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+            ? typeof(Dictionary<,>).MakeGenericType(typeof(string), valueType)
+            : targetType;
+        var dict = (IDictionary)Activator.CreateInstance(concreteType)!;
 
         foreach (var entry in entries)
         {
@@ -650,7 +656,7 @@ internal static class HumlDeserializer
                         return DateOnly.ParseExact(raw, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
                     if (underlying == typeof(TimeOnly))
-                        return TimeOnly.Parse(raw, CultureInfo.InvariantCulture);
+                        return TimeOnly.ParseExact(raw, "HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture);
 #endif
 
                     return Convert.ChangeType(scalar.Value, underlying, CultureInfo.InvariantCulture);
@@ -813,9 +819,9 @@ internal static class HumlDeserializer
     {
         if (!type.IsGenericType)
             return false;
-        if (type.GetGenericTypeDefinition() != typeof(Dictionary<,>))
+        var def = type.GetGenericTypeDefinition();
+        if (def != typeof(Dictionary<,>) && def != typeof(IDictionary<,>))
             return false;
-        var args = type.GetGenericArguments();
-        return args[0] == typeof(string);
+        return type.GetGenericArguments()[0] == typeof(string);
     }
 }
