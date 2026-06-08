@@ -23,6 +23,13 @@ internal static class HumlDeserializer
     /// </summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, Type?> IEnumerableInterfaceCache = new();
 
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, HumlDerivedTypeAttribute[]>
+        DerivedTypeCache = new();
+
+    private static HumlDerivedTypeAttribute[] GetDerivedTypeRegistrations(Type type) =>
+        DerivedTypeCache.GetOrAdd(type, static t =>
+            (HumlDerivedTypeAttribute[])t.GetCustomAttributes(typeof(HumlDerivedTypeAttribute), inherit: false));
+
     // ── Public entry points ───────────────────────────────────────────────────
 
     /// <summary>
@@ -234,6 +241,57 @@ internal static class HumlDeserializer
         // Dispatch to dictionary path if targetType is Dictionary<string, T>
         if (IsStringKeyedDictionary(targetType))
             return DeserializeDictionary(entries, targetType, options);
+
+        // Polymorphic dispatch (POLY-01..04): if targetType carries [HumlPolymorphic],
+        // scan entries for the discriminator key and re-dispatch to the concrete type.
+        var polyAttr = targetType.GetCustomAttribute<HumlPolymorphicAttribute>();
+        if (polyAttr != null)
+        {
+            string discriminatorKey = polyAttr.TypeDiscriminatorPropertyName;
+            HumlMapping? discriminatorEntry = null;
+            foreach (var entry in entries)
+            {
+                if (entry is HumlMapping m &&
+                    string.Equals(m.Key, discriminatorKey, StringComparison.Ordinal))
+                {
+                    discriminatorEntry = m;
+                    break;
+                }
+            }
+
+            if (discriminatorEntry != null &&
+                discriminatorEntry.Value is HumlScalar { Kind: ScalarKind.String } labelScalar)
+            {
+                var label = labelScalar.Value as string ?? string.Empty;
+                var registrations = GetDerivedTypeRegistrations(targetType);
+                Type? concreteType = null;
+                foreach (var reg in registrations)
+                {
+                    if (string.Equals(reg.TypeDiscriminator, label, StringComparison.Ordinal))
+                    {
+                        concreteType = reg.DerivedType;
+                        break;
+                    }
+                }
+
+                // Build filtered list: all entries except the discriminator entry.
+                // ReferenceEquals is safe — the parser allocates a distinct HumlMapping per key.
+                var filtered = new List<HumlNode>(entries.Count - 1);
+                foreach (var entry in entries)
+                    if (!ReferenceEquals(entry, discriminatorEntry))
+                        filtered.Add(entry);
+
+                if (concreteType != null)
+                    return DeserializeMappingEntries(filtered, concreteType, options);
+
+                if (polyAttr.UnknownDerivedTypeHandling == HumlUnknownDerivedTypeHandling.FallBackToBaseType)
+                    return DeserializeMappingEntries(filtered, targetType, options);
+
+                throw new HumlDeserializeException(
+                    $"Unknown derived type discriminator value \"{label}\" for base type '{targetType.Name}'.");
+            }
+            // No discriminator key found — fall through to normal POCO deserialisation.
+        }
 
         // Phase 23: raise ambiguous-constructor error at deserialise time (not BuildDescriptors —
         // BuildDescriptors runs for serialize/populate too, so we defer the throw here).
