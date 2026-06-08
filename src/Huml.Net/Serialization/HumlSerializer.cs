@@ -380,8 +380,11 @@ internal static class HumlSerializer
     {
         // SGS seam: resolver-driven path. When the resolver supplies property metadata
         // (Properties non-null), use delegate-based emission and bypass reflection.
+        // Prefer the runtime type's TypeInfo (covers polymorphic derived types whose own
+        // TypeInfo includes inherited properties) before falling back to the declared type.
         var targetType = declaredType ?? obj.GetType();
-        var typeInfo = options.TypeInfoResolver?.GetTypeInfo(targetType, options);
+        var typeInfo = options.TypeInfoResolver?.GetTypeInfo(obj.GetType(), options)
+                      ?? options.TypeInfoResolver?.GetTypeInfo(targetType, options);
 
         // Polymorphic discriminator emit (POLY-05): when the declared type carries
         // [HumlPolymorphic] and the runtime type is a registered derived type, emit

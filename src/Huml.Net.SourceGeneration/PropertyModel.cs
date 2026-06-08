@@ -5,4 +5,5 @@ internal readonly record struct PropertyModel(
     string Name,
     string TypeName,
     bool HasGet,
-    bool HasSet);
+    bool HasSet,
+    string DeclaringTypeFqn);

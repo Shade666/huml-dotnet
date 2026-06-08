@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -44,24 +45,44 @@ public sealed class HumlSerializationGenerator : IIncrementalGenerator
             if (attr.ConstructorArguments.Length == 0) continue;
             if (attr.ConstructorArguments[0].Value is not INamedTypeSymbol typeSymbol) continue;
 
-            var properties = new List<PropertyModel>();
-            foreach (var member in typeSymbol.GetMembers())
+            // Walk the type hierarchy from base to derived so properties appear base-first
+            // (matching the reflection path's declaration-order convention). This ensures
+            // derived types include inherited properties without the serialiser needing to
+            // chain multiple TypeInfo lookups.
+            var hierarchy = new List<INamedTypeSymbol>();
+            var current = typeSymbol;
+            while (current != null && current.SpecialType != SpecialType.System_Object)
             {
-                if (member is not IPropertySymbol prop) continue;
-                if (prop.DeclaredAccessibility != Accessibility.Public) continue;
-                if (prop.IsStatic || prop.IsIndexer || prop.IsAbstract) continue;
+                hierarchy.Add(current);
+                current = current.BaseType;
+            }
+            hierarchy.Reverse();
 
-                var canGet = prop.GetMethod?.DeclaredAccessibility == Accessibility.Public;
-                var canSet = prop.SetMethod?.DeclaredAccessibility == Accessibility.Public
-                          || prop.SetMethod?.IsInitOnly == true;
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var properties = new List<PropertyModel>();
+            foreach (var t in hierarchy)
+            {
+                var declaringFqn = t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                foreach (var member in t.GetMembers())
+                {
+                    if (member is not IPropertySymbol prop) continue;
+                    if (prop.DeclaredAccessibility != Accessibility.Public) continue;
+                    if (prop.IsStatic || prop.IsIndexer || prop.IsAbstract) continue;
+                    if (!seen.Add(prop.Name)) continue; // skip overrides / hidden properties
 
-                if (!canGet) continue;
+                    var canGet = prop.GetMethod?.DeclaredAccessibility == Accessibility.Public;
+                    var canSet = prop.SetMethod?.DeclaredAccessibility == Accessibility.Public
+                              || prop.SetMethod?.IsInitOnly == true;
 
-                properties.Add(new PropertyModel(
-                    prop.Name,
-                    prop.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                    canGet,
-                    canSet));
+                    if (!canGet) continue;
+
+                    properties.Add(new PropertyModel(
+                        prop.Name,
+                        prop.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        canGet,
+                        canSet,
+                        declaringFqn));
+                }
             }
 
             var fqn = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
@@ -140,9 +161,9 @@ public sealed class HumlSerializationGenerator : IIncrementalGenerator
             sb.Append($" Name = \"{prop.Name}\",");
             sb.Append($" PropertyType = typeof({prop.TypeName}),");
             if (prop.HasGet)
-                sb.Append($" Get = static o => (({type.FullyQualifiedName})o).{prop.Name},");
+                sb.Append($" Get = static o => (({prop.DeclaringTypeFqn})o).{prop.Name},");
             if (prop.HasSet)
-                sb.Append($" Set = static (o, v) => (({type.FullyQualifiedName})o).{prop.Name} = ({prop.TypeName})v!,");
+                sb.Append($" Set = static (o, v) => (({prop.DeclaringTypeFqn})o).{prop.Name} = ({prop.TypeName})v!,");
             sb.AppendLine(" },");
         }
 
