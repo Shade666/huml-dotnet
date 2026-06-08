@@ -64,13 +64,48 @@ All 143 v1 requirements are complete across four shipped milestones. See `.plann
 - [x] Document-size limitation documented in `HumlOptions` XML docs and `docs/options-reference.md` — Validated Phase 38
 - [x] 14 correctness fixes from CODEBASE-REVIEW.md (CR-01–06, WR-01/06/07/08/09/11/12, IN-01/02/04) — Validated Phases 40–44
 
+## Current Milestone: v0.2.0-alpha.4 — V3 Backlog Clear
+
+**Goal:** Ship all 12 V3 backlog items — polymorphic deserialisation, source-generator seam completion, full `HumlTypeInfo<T>` parity, `NumberHandling` modes, per-member naming-policy override, fuzz tests, and a batch of small quality/documentation fixes.
+
+**Target features:**
+- Polymorphic deserialisation (`[HumlDerivedType]`, discriminator-based dispatch)
+- `Huml.Net.SourceGeneration` — Roslyn incremental source generator, new NuGet package
+- Full `HumlTypeInfo<T>` parity (`Properties`, `CreateObject`, callbacks) — requires source generator
+- `HumlOptions.NumberHandling` (AllowReadingFromString / WriteAsString / AllowNamedFloatingPointLiterals)
+- `[HumlNamingPolicy(typeof(...))]` per-member naming-policy override attribute
+- Fuzz / property-based parse tests (adversarial grammar boundary inputs)
+- Quality/doc batch: `ScanComment` simplification, `Nullable<T>` default skip, `Converters` hardening, misleading-comment fix, `HumlNamingPolicy` digit-boundary doc, `HumlDeserializeException` 3-arg ctor `[Obsolete]`
+
 ### Active
 
-(No active requirements — all v1 requirements complete. New requirements to be defined via `/gsd:new-milestone`.)
+- [ ] **POLY-01:** Polymorphic deserialisation — `[HumlDerivedType(Type, discriminator)]` attribute and discriminator-based dispatch
+- [ ] **POLY-02:** `HumlOptions.PolymorphismOptions` configuration block (discriminator key, ignore-on-collision, unknown fallback)
+- [ ] **GEN-01:** `Huml.Net.SourceGeneration` Roslyn incremental source generator emitting compiled `HumlTypeInfo<T>` per registered type
+- [ ] **GEN-02:** `HumlSerializerContext` base class with `GetTypeInfo<T>()` mirroring STJ generic form
+- [ ] **GEN-03:** Generator integrates with `HumlOptions.TypeInfoResolver` seam (Phase 25)
+- [ ] **TI-01:** `HumlTypeInfo<T>.Properties` collection (`HumlPropertyInfo<T>` per-property metadata)
+- [ ] **TI-02:** `HumlTypeInfo<T>.CreateObject` factory delegate
+- [ ] **TI-03:** On-serialising / on-deserialised callbacks on `HumlTypeInfo<T>`
+- [ ] **NUM-01:** `HumlOptions.NumberHandling` flags enum with `AllowReadingFromString`, `WriteAsString`, `AllowNamedFloatingPointLiterals`
+- [ ] **ATTR-01:** `[HumlNamingPolicy(typeof(ConcretePolicy))]` per-member naming-policy override attribute
+- [ ] **TEST-01:** Fuzz / property-based parse tests — 20+ adversarial inputs, no `StackOverflowException` / `NullReferenceException`
+- [ ] **QUAL-01:** Simplify `ScanComment` double-condition (999.59)
+- [ ] **QUAL-02:** Skip `Activator.CreateInstance` for `Nullable<T>` defaults (999.60)
+- [ ] **QUAL-03:** Harden `HumlOptions.Converters` against post-resolution mutation (999.61)
+- [ ] **QUAL-04:** Fix misleading comment in `InferScalarOrInlineListRootType` (999.64)
+- [ ] **QUAL-05:** Document digit-as-word-boundary in `HumlNamingPolicy` XML doc (999.67)
+- [ ] **QUAL-06:** Mark `HumlDeserializeException` 3-argument constructor `[Obsolete]` (999.68)
 
 ### Out of Scope
 
-- Source generator / AOT support — v2 concern; reflection-based is sufficient for v1 (`IHumlTypeInfoResolver` seam defined in Phase 25)
+- Streaming / `IAsyncEnumerable` parsing — complexity not justified for config-file use case
+- `IBufferWriter<char>` output overload — V4; deferred (999.45)
+- Schema validation — outside HUML spec scope
+- HUML → JSON / YAML round-trip converters — distinct utility concern
+- `Huml.Net.Linting` package — v2+ concern; package boundary established in architecture; no logic accretes into core parser
+- .NET Framework support — `netstandard2.1` compat floor requires `Span<T>` in public API
+- Source generator / AOT support for previous milestones — `IHumlTypeInfoResolver` seam (Phase 25) was the pre-requisite; source generator now in scope for this milestone
 - Streaming / `IAsyncEnumerable` parsing — complexity not justified for config-file use case
 - Schema validation — outside HUML spec scope
 - HUML → JSON / YAML round-trip converters — distinct utility concern
@@ -85,7 +120,7 @@ All 143 v1 requirements are complete across four shipped milestones. See `.plann
 - **Architecture mirrors go-huml:** single-pass `Lexer` (ref struct) → token stream → recursive-descent `HumlParser` (ref struct) → `HumlNode` AST → `HumlSerializer` / `HumlDeserializer` via reflection
 - **TDD discipline:** shared suite fixtures drive Red/Green cycle before any production code
 - **Properties in declaration order** (not alphabetically) — .NET convention differs from go-huml's alphabetical sort
-- **Current state:** 4 milestones shipped (v0.1.0-alpha.1 through v0.2.0-alpha.3); 143/143 v1 requirements complete; all planning artifacts archived to `.planning/milestones/`
+- **Current state:** 4 milestones shipped (v0.1.0-alpha.1 through v0.2.0-alpha.3); 143/143 v1 requirements complete; all planning artifacts archived to `.planning/milestones/`; Milestone 5 (v0.2.0-alpha.4) in planning
 
 ## Constraints
 
@@ -113,5 +148,22 @@ All 143 v1 requirements are complete across four shipped milestones. See `.plann
 | `ConverterResolutionCache` on `HumlOptions` instance | Static dict keyed on options hash code leaks permanently (one entry per unique options reference) | ✓ Phase 27.6 fix — GC'd with options instance |
 | `HumlOptions.Strict` preset | Composites all validation toggles; mirrors STJ .NET 10 `JsonSerializerOptions.Strict` | ✓ Phase 36 decision — `MakeReadOnly()` applied at static init |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-06-06 — Milestones 1–4 complete (v0.2.0-alpha.3). All 143 v1 requirements validated. Planning artifacts archived to .planning/milestones/.*
+*Last updated: 2026-06-07 — Milestone 5 started (v0.2.0-alpha.4 planning). 143/143 v1 requirements validated.*
