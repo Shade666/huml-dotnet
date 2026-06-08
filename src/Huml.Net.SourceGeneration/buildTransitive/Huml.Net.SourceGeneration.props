@@ -1,0 +1,16 @@
+<Project>
+  <!--
+    Automatically injected into projects that reference Huml.Net.SourceGeneration.
+    Ensures the companion Huml.Net runtime library is present so generated code that
+    references HumlTypeInfo<T>, HumlGeneratedContext, and related types compiles
+    without requiring a separate explicit PackageReference to Huml.Net.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Huml.Net" Version="0.2.0-alpha.3"
+                      Condition="'$(HumlNetReferenceAdded)' != 'true'" />
+  </ItemGroup>
+  <PropertyGroup>
+    <!-- Guard against duplicate injection when both projects are referenced -->
+    <HumlNetReferenceAdded>true</HumlNetReferenceAdded>
+  </PropertyGroup>
+</Project>

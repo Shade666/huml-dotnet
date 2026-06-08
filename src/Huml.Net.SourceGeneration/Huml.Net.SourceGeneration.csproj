@@ -15,10 +15,35 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <MinVerTagPrefix>v</MinVerTagPrefix>
+    <!-- Generator DLL must live in analyzers/, not lib/. NU5128 ("no lib/ folder") is
+         expected and suppressed — this package ships no runtime assembly. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <DevelopmentDependency>false</DevelopmentDependency>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- Place generator DLL and documentation in analyzers/dotnet/cs/ as required by
+         the Roslyn SDK NuGet convention. IncludeBuildOutput=false prevents a lib/ copy. -->
+    <None Include="$(OutputPath)$(AssemblyName).dll"
+          Pack="true"
+          PackagePath="analyzers\dotnet\cs"
+          Visible="false" />
+    <None Include="$(OutputPath)$(AssemblyName).xml"
+          Pack="true"
+          PackagePath="analyzers\dotnet\cs"
+          Visible="false"
+          Condition="Exists('$(OutputPath)$(AssemblyName).xml')" />
+    <!-- buildTransitive props: consuming projects automatically get Huml.Net as a dependency
+         so generated code that references HumlTypeInfo<T> / HumlGeneratedContext compiles
+         without requiring users to manually add a separate Huml.Net package reference. -->
+    <None Include="buildTransitive\Huml.Net.SourceGeneration.props"
+          Pack="true"
+          PackagePath="buildTransitive\"
+          Visible="false" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="All">
