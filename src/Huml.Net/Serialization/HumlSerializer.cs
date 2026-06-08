@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 using Huml.Net.Exceptions;
 using Huml.Net.Parser;
@@ -29,6 +30,13 @@ internal static class HumlSerializer
 
     [ThreadStatic]
     private static bool _serializationActive;
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, HumlDerivedTypeAttribute[]>
+        DerivedTypeCache = new();
+
+    private static HumlDerivedTypeAttribute[] GetDerivedTypeRegistrations(Type type) =>
+        DerivedTypeCache.GetOrAdd(type, static t =>
+            (HumlDerivedTypeAttribute[])t.GetCustomAttributes(typeof(HumlDerivedTypeAttribute), inherit: false));
 
     // ── Public entry points ───────────────────────────────────────────────────
 
@@ -375,7 +383,32 @@ internal static class HumlSerializer
         var targetType = declaredType ?? obj.GetType();
         _ = options.TypeInfoResolver?.GetTypeInfo(targetType, options);
 
-        var descriptors = PropertyDescriptor.GetDescriptors(targetType, options.PropertyNamingPolicy);
+        // Polymorphic discriminator emit (POLY-05): when the declared type carries
+        // [HumlPolymorphic] and the runtime type is a registered derived type, emit
+        // the discriminator key as the first mapping entry.
+        var polyAttr = targetType.GetCustomAttribute<HumlPolymorphicAttribute>();
+        if (polyAttr != null)
+        {
+            var runtimeType = obj.GetType();
+            if (runtimeType != targetType)
+            {
+                foreach (var reg in GetDerivedTypeRegistrations(targetType))
+                {
+                    if (reg.DerivedType == runtimeType)
+                    {
+                        sb.Append(Indent(depth));
+                        AppendKey(sb, polyAttr.TypeDiscriminatorPropertyName);
+                        sb.Append(": \"");
+                        AppendEscapedString(sb, reg.TypeDiscriminator);
+                        sb.Append("\"\n");
+                        break;
+                    }
+                }
+            }
+        }
+
+        var descriptorType = (polyAttr != null && obj.GetType() != targetType) ? obj.GetType() : targetType;
+        var descriptors = PropertyDescriptor.GetDescriptors(descriptorType, options.PropertyNamingPolicy);
         var indent = Indent(depth);
 
         foreach (var desc in descriptors)
@@ -414,7 +447,7 @@ internal static class HumlSerializer
 
         // Emit extension-data entries after all declared properties (EXT-04).
         var extDesc = PropertyDescriptor.GetExtensionDataDescriptor(
-            declaredType ?? obj.GetType(), options.PropertyNamingPolicy);
+            descriptorType, options.PropertyNamingPolicy);
         if (extDesc != null)
         {
             var extVal = extDesc.Property.GetValue(obj);
