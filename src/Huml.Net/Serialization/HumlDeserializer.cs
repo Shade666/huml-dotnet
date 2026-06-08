@@ -182,6 +182,8 @@ internal static class HumlDeserializer
         }
         if (valueNode is HumlScalar s)
             return CoerceScalar(s, descriptor.Property.PropertyType, key, s.Line, s.Column, options, descriptor.NumberHandling);
+        if (valueNode is HumlSequence seqNode)
+            return DeserializeSequence(seqNode, descriptor.Property.PropertyType, options, descriptor.NumberHandling);
         return DeserializeNode(valueNode, descriptor.Property.PropertyType, options);
     }
 
@@ -446,7 +448,8 @@ internal static class HumlDeserializer
     /// preserving natural sort order and deduplicating duplicate input elements.
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
-    private static object DeserializeSequence(HumlSequence seq, Type targetType, HumlOptions options)
+    private static object DeserializeSequence(HumlSequence seq, Type targetType, HumlOptions options,
+        HumlNumberHandling? memberNumberHandling = null)
     {
         // a. Array dispatch
         if (targetType.IsArray)
@@ -455,7 +458,7 @@ internal static class HumlDeserializer
             var array = Array.CreateInstance(elementType, seq.Items.Count);
             for (int i = 0; i < seq.Items.Count; i++)
             {
-                var item = DeserializeNode(seq.Items[i], elementType, options);
+                var item = DeserializeSequenceItem(seq.Items[i], elementType, options, memberNumberHandling);
                 array.SetValue(item, i);
             }
             return array;
@@ -467,7 +470,7 @@ internal static class HumlDeserializer
             var elementType = targetType.GetGenericArguments()[0];
             var list = (IList)Activator.CreateInstance(targetType)!;
             foreach (var item in seq.Items)
-                list.Add(DeserializeNode(item, elementType, options));
+                list.Add(DeserializeSequenceItem(item, elementType, options, memberNumberHandling));
             return list;
         }
 
@@ -490,7 +493,7 @@ internal static class HumlDeserializer
                 var addMethod = hashSetType.GetMethod("Add")!;
                 foreach (var item in seq.Items)
                 {
-                    var element = DeserializeNode(item, elementType, options);
+                    var element = DeserializeSequenceItem(item, elementType, options, memberNumberHandling);
                     addMethod.Invoke(set, new object?[] { element });
                 }
                 return set;
@@ -506,7 +509,7 @@ internal static class HumlDeserializer
             var addMethod = sortedSetType.GetMethod("Add")!;
             foreach (var item in seq.Items)
             {
-                var element = DeserializeNode(item, elementType, options);
+                var element = DeserializeSequenceItem(item, elementType, options, memberNumberHandling);
                 addMethod.Invoke(set, new object?[] { element });
             }
             return set;
@@ -543,13 +546,27 @@ internal static class HumlDeserializer
                 var listType = typeof(List<>).MakeGenericType(elementType);
                 var list = (IList)Activator.CreateInstance(listType)!;
                 foreach (var item in seq.Items)
-                    list.Add(DeserializeNode(item, elementType, options));
+                    list.Add(DeserializeSequenceItem(item, elementType, options, memberNumberHandling));
                 return list;
             }
         }
 
         throw new HumlDeserializeException(
             $"Cannot deserialize sequence into type '{targetType.Name}'.");
+    }
+
+    /// <summary>
+    /// Deserialises a single sequence item, applying <paramref name="memberNumberHandling"/>
+    /// when the item is a scalar (propagates per-property <see cref="HumlNumberHandlingAttribute"/>
+    /// to elements of a collection property).
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    private static object? DeserializeSequenceItem(HumlNode item, Type elementType, HumlOptions options,
+        HumlNumberHandling? memberNumberHandling)
+    {
+        if (memberNumberHandling.HasValue && item is HumlScalar scalar)
+            return CoerceScalar(scalar, elementType, key: null, line: scalar.Line, column: scalar.Column, options, memberNumberHandling);
+        return DeserializeNode(item, elementType, options);
     }
 
     // ── Dictionary deserialization ────────────────────────────────────────────

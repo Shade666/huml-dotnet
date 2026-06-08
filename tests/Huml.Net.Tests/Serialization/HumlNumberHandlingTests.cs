@@ -291,6 +291,56 @@ public sealed class HumlNumberHandlingTests
         act.Should().Throw<HumlDeserializeException>();
     }
 
+    // ── NUM-04: Per-member override propagates to collection elements ─────────
+
+    [Fact]
+    public void Num22_per_member_write_as_string_applies_to_list_elements_multiline()
+    {
+        // [HumlNumberHandling(WriteAsString)] on a List<int> property must quote every element
+        var dto = new IntListWriteDto { Values = new List<int> { 1, 2, 3 } };
+        var output = Huml.Serialize(dto, HumlOptions.LatestSupported);
+
+        output.Should().Contain("- \"1\"");
+        output.Should().Contain("- \"2\"");
+        output.Should().Contain("- \"3\"");
+        output.Should().NotContain("- 1\n");
+    }
+
+    [Fact]
+    public void Num23_per_member_write_as_string_applies_to_inline_list_elements()
+    {
+        // Same as Num22 but with CollectionFormat.Inline — items in inline sequence must also be quoted
+        var dto = new IntListWriteDto { Values = new List<int> { 10, 20 } };
+        var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
+        var output = Huml.Serialize(dto, opts);
+
+        output.Should().Contain("\"10\"");
+        output.Should().Contain("\"20\"");
+    }
+
+    [Fact]
+    public void Num24_per_member_allow_reading_from_string_applies_to_list_elements()
+    {
+        const string huml = "%HUML v0.2.0\nValues::\n  - \"5\"\n  - \"10\"";
+        var result = Huml.Deserialize<IntListReadDto>(huml, HumlOptions.LatestSupported);
+
+        result!.Values.Should().ContainInOrder(5, 10);
+    }
+
+    // ── NUM-04 DTOs ──────────────────────────────────────────────────────────
+
+    private sealed class IntListWriteDto
+    {
+        [HumlNumberHandling(HumlNumberHandling.WriteAsString)]
+        public List<int> Values { get; set; } = new();
+    }
+
+    private sealed class IntListReadDto
+    {
+        [HumlNumberHandling(HumlNumberHandling.AllowReadingFromString)]
+        public List<int> Values { get; set; } = new();
+    }
+
     // ── NUM-03 DTOs ──────────────────────────────────────────────────────────
 
     private sealed class MixedReadDto
