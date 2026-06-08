@@ -201,17 +201,37 @@ internal static class HumlSerializer
             return;
         }
 
-        // Integer types — emit bare literal
+        // Integer types — emit bare literal or quoted string
         if (IsIntegerType(value))
         {
-            sb.Append(((IFormattable)value).ToString(null, CultureInfo.InvariantCulture));
+            var formatted = ((IFormattable)value).ToString(null, CultureInfo.InvariantCulture);
+            if (options.NumberHandling.HasFlag(HumlNumberHandling.WriteAsString))
+            {
+                sb.Append('"');
+                sb.Append(formatted);
+                sb.Append('"');
+            }
+            else
+            {
+                sb.Append(formatted);
+            }
             return;
         }
 
         // Floating-point types
         if (value is double d)
         {
-            sb.Append(FormatDouble(d));
+            if (options.NumberHandling.HasFlag(HumlNumberHandling.WriteAsString) &&
+                !double.IsNaN(d) && !double.IsInfinity(d))
+            {
+                sb.Append('"');
+                sb.Append(d.ToString("R", CultureInfo.InvariantCulture));
+                sb.Append('"');
+            }
+            else
+            {
+                sb.Append(FormatDouble(d));
+            }
             return;
         }
 
@@ -232,14 +252,33 @@ internal static class HumlSerializer
                 sb.Append("-inf");
                 return;
             }
-            sb.Append(f.ToString("G", CultureInfo.InvariantCulture));
+            if (options.NumberHandling.HasFlag(HumlNumberHandling.WriteAsString))
+            {
+                sb.Append('"');
+                sb.Append(f.ToString("R", CultureInfo.InvariantCulture));
+                sb.Append('"');
+            }
+            else
+            {
+                sb.Append(f.ToString("G", CultureInfo.InvariantCulture));
+            }
             return;
         }
 
         // decimal
         if (value is decimal dec)
         {
-            sb.Append(dec.ToString(CultureInfo.InvariantCulture));
+            var formatted = dec.ToString(CultureInfo.InvariantCulture);
+            if (options.NumberHandling.HasFlag(HumlNumberHandling.WriteAsString))
+            {
+                sb.Append('"');
+                sb.Append(formatted);
+                sb.Append('"');
+            }
+            else
+            {
+                sb.Append(formatted);
+            }
             return;
         }
 

@@ -659,6 +659,15 @@ internal static class HumlDeserializer
                         return TimeOnly.ParseExact(raw, "HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture);
 #endif
 
+                    // AllowReadingFromString gates only numeric targets; other IConvertible types (string→char, string→Guid, etc.)
+                    // pass through unconditionally — this is intentional and matches STJ behaviour.
+                    if (IsNumericType(underlying) &&
+                        !options.NumberHandling.HasFlag(HumlNumberHandling.AllowReadingFromString))
+                        throw new HumlDeserializeException(
+                            $"Cannot assign string scalar to numeric type '{underlying.Name}'. " +
+                            $"Set HumlOptions.NumberHandling = HumlNumberHandling.AllowReadingFromString to allow this.",
+                            key, line, column);
+
                     return Convert.ChangeType(scalar.Value, underlying, CultureInfo.InvariantCulture);
                 }
 
@@ -810,6 +819,17 @@ internal static class HumlDeserializer
 
     /// <summary>Returns the source column from a HumlNode. All nodes inherit Column from HumlNode.</summary>
     private static int GetNodeColumn(HumlNode node) => node.Column;
+
+    /// <summary>
+    /// Returns <c>true</c> if <paramref name="t"/> is one of the built-in numeric types
+    /// that can be coerced from a string scalar when
+    /// <see cref="HumlNumberHandling.AllowReadingFromString"/> is set.
+    /// </summary>
+    private static bool IsNumericType(Type t) =>
+        t == typeof(int)     || t == typeof(long)    || t == typeof(short)   ||
+        t == typeof(byte)    || t == typeof(sbyte)   || t == typeof(uint)    ||
+        t == typeof(ulong)   || t == typeof(ushort)  || t == typeof(float)   ||
+        t == typeof(double)  || t == typeof(decimal);
 
     /// <summary>
     /// Returns <c>true</c> if <paramref name="type"/> is <c>Dictionary&lt;string, T&gt;</c>
