@@ -31,7 +31,7 @@ public static class Huml
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static string Serialize<T>(T value, HumlOptions? options = null)
-        => Serialization.HumlSerializer.Serialize(value, options);
+        => Serialization.HumlSerializer.Serialize(value, typeof(T), options);
 
     /// <summary>Serialises <paramref name="value"/> of the given <paramref name="type"/> to a HUML string.</summary>
     /// <param name="value">The value to serialise. May be <c>null</c>.</param>

@@ -12,6 +12,11 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ### Added
 
+- **`[HumlPolymorphic]` attribute:** Marks a class or interface as the polymorphic base for discriminator-based dispatch. Controls the discriminator key name (default `_type`) and `HumlUnknownDerivedTypeHandling` behaviour.
+- **`[HumlDerivedType(Type, string)]` attribute:** Registers a concrete derived type and its discriminator label on the polymorphic base class. Repeatable — add one per concrete subtype.
+- **`HumlUnknownDerivedTypeHandling` enum:** `Throw` (default) — throws `HumlDeserializeException` for unrecognised discriminator values. `FallBackToBaseType` — deserialises as the base type without throwing.
+- **Serialiser polymorphic emit:** When the declared type carries `[HumlPolymorphic]` and the runtime instance is a registered derived type, the discriminator key is emitted as the first mapping entry.
+- **Deserialiser polymorphic dispatch:** Strips the discriminator key before POCO construction so `UnmappedMemberHandling.Disallow` is not triggered by the discriminator entry.
 - **`HumlNumberHandling` enum:** `[Flags]` enum with `Strict` (0), `AllowReadingFromString` (1), `WriteAsString` (2).
 - **`HumlOptions.NumberHandling`:** New `init`-only property (default `Strict`). `AllowReadingFromString` opts into coercing quoted-string scalars to numeric target types during deserialisation. `WriteAsString` opts into quoting finite numeric values on serialisation. `NaN`, `+inf`, and `-inf` are never quoted.
 - **`[HumlNumberHandling]` attribute:** Per-member override for `HumlNumberHandling`; stored in `PropertyDescriptor` at cache-build time; takes precedence over `HumlOptions.NumberHandling` for the annotated property during both serialisation and deserialisation.
