@@ -22,6 +22,7 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 - **`[HumlNumberHandling]` attribute:** Per-member override for `HumlNumberHandling`; stored in `PropertyDescriptor` at cache-build time; takes precedence over `HumlOptions.NumberHandling` for the annotated property during both serialisation and deserialisation.
 - **`HumlKnownNamingPolicy` enum:** `Unspecified = 0` (defers to global), `CamelCase = 1`, `SnakeCase = 2`, `KebabCase = 3`, `PascalCase = 4`. Identifies a built-in naming policy for use with `[HumlNamingPolicy]`.
 - **`[HumlNamingPolicy]` attribute:** Per-member override for the naming policy applied to HUML key generation. Takes precedence over `HumlOptions.PropertyNamingPolicy` for the annotated property. `[HumlProperty(Name = ...)]` still wins over `[HumlNamingPolicy]`. Stored as `PropertyDescriptor.MemberNamingPolicy` at cache-build time.
+- **Adversarial and fuzz parse tests (`FuzzParserTests`):** 25 hand-crafted adversarial inputs (Fuzz01-Fuzz25) covering truncated documents, nesting depth at and beyond the configured limit, very long keys and values, bidi override characters (U+202E, U+202D), null bytes (U+0000), lone surrogates (U+D800, U+DC00), unknown and malformed version headers, and extreme numeric literals. Asserts the safety invariant: `HumlParseException` or `HumlUnsupportedVersionException` are acceptable outcomes; `NullReferenceException`, `IndexOutOfRangeException`, `ArgumentOutOfRangeException`, and `OverflowException` are not.
 
 ### Breaking Changes
 
