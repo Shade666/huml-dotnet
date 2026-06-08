@@ -14,6 +14,7 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 - **`HumlNumberHandling` enum:** `[Flags]` enum with `Strict` (0), `AllowReadingFromString` (1), `WriteAsString` (2).
 - **`HumlOptions.NumberHandling`:** New `init`-only property (default `Strict`). `AllowReadingFromString` opts into coercing quoted-string scalars to numeric target types during deserialisation. `WriteAsString` opts into quoting finite numeric values on serialisation. `NaN`, `+inf`, and `-inf` are never quoted.
+- **`[HumlNumberHandling]` attribute:** Per-member override for `HumlNumberHandling`; stored in `PropertyDescriptor` at cache-build time; takes precedence over `HumlOptions.NumberHandling` for the annotated property during both serialisation and deserialisation.
 
 ### Breaking Changes
 
