@@ -10,6 +10,11 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+### Added
+
+- **`HumlNumberHandling` enum:** `[Flags]` enum with `Strict` (0), `AllowReadingFromString` (1), `WriteAsString` (2).
+- **`HumlOptions.NumberHandling`:** New `init`-only property (default `Strict`). `AllowReadingFromString` opts into coercing quoted-string scalars to numeric target types during deserialisation. `WriteAsString` opts into quoting finite numeric values on serialisation. `NaN`, `+inf`, and `-inf` are never quoted.
+
 ### Breaking Changes
 
 - **`HumlSerializerContext` renamed to `HumlWriterContext`:** All `HumlConverter<T>` implementations must update their `Write(HumlWriterContext context, T value)` override signature. The old name is not available as an alias.

@@ -141,6 +141,32 @@ public sealed class HumlOptions
     public HumlIgnoreCondition DefaultIgnoreCondition { get; init; } = HumlIgnoreCondition.Never;
 
     /// <summary>
+    /// Controls how numeric values are handled during serialisation and deserialisation.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When <see cref="HumlNumberHandling.AllowReadingFromString"/> is set, a
+    /// <c>ScalarKind.String</c> scalar (e.g. a quoted HUML value such as <c>"42"</c>) may be
+    /// coerced to a numeric target type during deserialisation. Without this flag, assigning a
+    /// quoted string to a numeric property throws
+    /// <see cref="T:Huml.Net.Exceptions.HumlDeserializeException"/>.
+    /// </para>
+    /// <para>
+    /// When <see cref="HumlNumberHandling.WriteAsString"/> is set, finite numeric values
+    /// (integers, <c>float</c>, <c>double</c>, <c>decimal</c>) are emitted as quoted HUML
+    /// strings rather than bare numeric literals. <c>NaN</c>, <c>+inf</c>, and <c>-inf</c>
+    /// are always emitted unquoted regardless of this setting — they are HUML native scalar
+    /// kinds.
+    /// </para>
+    /// <para>
+    /// Combining <see cref="HumlNumberHandling.WriteAsString"/> and
+    /// <see cref="HumlNumberHandling.AllowReadingFromString"/> produces a round-trip-safe
+    /// configuration.
+    /// </para>
+    /// </remarks>
+    public HumlNumberHandling NumberHandling { get; init; } = HumlNumberHandling.Strict;
+
+    /// <summary>
     /// When <c>true</c>, <see cref="T:Huml.Net.Serialization.HumlSerializer"/> throws
     /// <see cref="T:Huml.Net.Exceptions.HumlSerializeException"/> if two entries in the same
     /// dictionary produce the same key string (compared using
