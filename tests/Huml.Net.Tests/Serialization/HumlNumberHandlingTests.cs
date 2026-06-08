@@ -248,7 +248,7 @@ public sealed class HumlNumberHandlingTests
     }
 
     [Fact]
-    public void Num19_global_allow_reading_applies_to_non_annotated_member()
+    public void Num19_per_member_write_and_read_round_trip_under_global_strict()
     {
         // Serialise with per-member WriteAsString on AnnotatedValue; StrictValue emits bare
         var dto = new MixedWriteDto { AnnotatedValue = 10, StrictValue = 20 };
