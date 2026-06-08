@@ -10,6 +10,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+(no changes yet)
+
+## [0.2.0-alpha.4] - 2026-06-08
+
 ### Added
 
 - **`[HumlPolymorphic]` attribute:** Marks a class or interface as the polymorphic base for discriminator-based dispatch. Controls the discriminator key name (default `_type`) and `HumlUnknownDerivedTypeHandling` behaviour.

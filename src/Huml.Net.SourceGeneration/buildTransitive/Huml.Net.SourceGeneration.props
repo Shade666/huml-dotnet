@@ -6,7 +6,7 @@
     without requiring a separate explicit PackageReference to Huml.Net.
   -->
   <ItemGroup>
-    <PackageReference Include="Huml.Net" Version="0.2.0-alpha.3"
+    <PackageReference Include="Huml.Net" Version="0.2.0-alpha.4"
                       Condition="'$(HumlNetReferenceAdded)' != 'true'" />
   </ItemGroup>
   <PropertyGroup>

@@ -11,6 +11,7 @@ public sealed class HumlSerializableAttribute : Attribute
     /// <summary>The CLR type to register for source-generation.</summary>
     public Type SerializableType { get; }
 
+    /// <summary>Initialises a new instance registering <paramref name="serializableType"/> for source-generation.</summary>
     /// <param name="serializableType">The CLR type to register for source-generation.</param>
     public HumlSerializableAttribute(Type serializableType)
     {
