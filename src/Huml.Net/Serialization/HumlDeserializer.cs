@@ -370,6 +370,8 @@ internal static class HumlDeserializer
         var ctorParams = ctor.GetParameters();
         var args = new object?[ctorParams.Length];
         var alreadyBound = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Look up property descriptors so per-member [HumlNumberHandling] applies to constructor-bound scalars.
+        var lookup = PropertyDescriptor.GetLookup(targetType, options.PropertyNamingPolicy);
 
         for (int i = 0; i < ctorParams.Length; i++)
         {
@@ -404,7 +406,12 @@ internal static class HumlDeserializer
 
             if (matched != null)
             {
-                args[i] = DeserializeNode(matched.Value, param.ParameterType, options);
+                // Apply per-member [HumlNumberHandling] when the value is a scalar and a descriptor exists.
+                lookup.TryGetValue(matched.Key, out var descriptor);
+                if (matched.Value is HumlScalar scalar && descriptor?.NumberHandling is { } nh)
+                    args[i] = CoerceScalar(scalar, param.ParameterType, matched.Key, scalar.Line, scalar.Column, options, nh);
+                else
+                    args[i] = DeserializeNode(matched.Value, param.ParameterType, options);
                 alreadyBound.Add(matched.Key); // store HUML key (not param.Name) — Pitfall 4
             }
             else if (param.HasDefaultValue) // gate on HasDefaultValue, NOT null check — Pitfall 1
