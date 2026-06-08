@@ -509,7 +509,7 @@ internal static class HumlSerializer
             }
             if (wantInline && AllDictionaryValuesAreScalar(dict, options))
             {
-                EmitInlineDictionary(sb, indent, key, dict, options);
+                EmitInlineDictionary(sb, indent, key, dict, options, numberHandlingOverride);
                 return;
             }
             sb.Append(indent);
@@ -535,13 +535,13 @@ internal static class HumlSerializer
             }
             if (wantInline && items.TrueForAll(i => IsScalarValue(i, options)))
             {
-                EmitInlineSequence(sb, indent, key, items, depth, options);
+                EmitInlineSequence(sb, indent, key, items, depth, options, numberHandlingOverride);
                 return;
             }
             sb.Append(indent);
             AppendKey(sb, key);
             sb.Append("::\n");
-            EmitSequenceItems(sb, items, depth + 1, options);
+            EmitSequenceItems(sb, items, depth + 1, options, numberHandlingOverride);
             return;
         }
 
@@ -568,7 +568,8 @@ internal static class HumlSerializer
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void EmitInlineSequence(
-        StringBuilder sb, string indent, string key, List<object?> items, int depth, HumlOptions options)
+        StringBuilder sb, string indent, string key, List<object?> items, int depth, HumlOptions options,
+        HumlNumberHandling? memberNumberHandling = null)
     {
         sb.Append(indent);
         AppendKey(sb, key);
@@ -576,7 +577,7 @@ internal static class HumlSerializer
         for (int i = 0; i < items.Count; i++)
         {
             if (i > 0) sb.Append(", ");
-            SerializeValue(sb, items[i], depth + 1, options);
+            SerializeValue(sb, items[i], depth + 1, options, memberNumberHandling: memberNumberHandling);
         }
         sb.Append('\n');
     }
@@ -587,7 +588,8 @@ internal static class HumlSerializer
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void EmitInlineDictionary(
-        StringBuilder sb, string indent, string key, IDictionary dict, HumlOptions options)
+        StringBuilder sb, string indent, string key, IDictionary dict, HumlOptions options,
+        HumlNumberHandling? memberNumberHandling = null)
     {
         // NOTE: ValidateDuplicateKeysOnWrite is not checked here. This path is only reachable
         // when CollectionFormat.Inline is set and all dictionary values are scalar. Duplicate-key
@@ -603,7 +605,7 @@ internal static class HumlSerializer
             var entryKey = entry.Key?.ToString() ?? "null";
             AppendKey(sb, entryKey);
             sb.Append(": ");
-            SerializeValue(sb, entry.Value, 0, options);
+            SerializeValue(sb, entry.Value, 0, options, memberNumberHandling: memberNumberHandling);
         }
         sb.Append('\n');
     }
@@ -738,7 +740,8 @@ internal static class HumlSerializer
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void EmitSequenceItems(
-        StringBuilder sb, IEnumerable items, int depth, HumlOptions options)
+        StringBuilder sb, IEnumerable items, int depth, HumlOptions options,
+        HumlNumberHandling? memberNumberHandling = null)
     {
         var indent = Indent(depth);
         foreach (var item in items)
@@ -747,7 +750,7 @@ internal static class HumlSerializer
             sb.Append("- ");
             if (IsScalarValue(item, options))
             {
-                SerializeValue(sb, item, depth + 1, options);
+                SerializeValue(sb, item, depth + 1, options, memberNumberHandling: memberNumberHandling);
                 sb.Append('\n');
             }
             else
@@ -756,7 +759,7 @@ internal static class HumlSerializer
                 if (item is IDictionary dict2)
                     SerializeDictionaryBody(sb, dict2, depth + 1, options);
                 else if (item is IEnumerable nested and not string)
-                    EmitSequenceItems(sb, nested, depth + 1, options);
+                    EmitSequenceItems(sb, nested, depth + 1, options, memberNumberHandling);
                 else if (item != null)
                 {
                     var itemType = item.GetType();
