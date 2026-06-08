@@ -9,7 +9,7 @@ namespace Huml.Net.Serialization;
 /// Wraps the internal <see cref="StringBuilder"/> accumulator and serialiser options,
 /// exposing append methods without leaking internal types.
 /// </summary>
-public sealed class HumlSerializerContext
+public sealed class HumlWriterContext
 {
     private readonly StringBuilder _sb;
     private readonly int _depth;
@@ -17,7 +17,7 @@ public sealed class HumlSerializerContext
     /// <summary>The serialisation options active for the current operation.</summary>
     public HumlOptions Options { get; }
 
-    internal HumlSerializerContext(StringBuilder sb, int depth, HumlOptions options)
+    internal HumlWriterContext(StringBuilder sb, int depth, HumlOptions options)
     {
         _sb = sb;
         _depth = depth;

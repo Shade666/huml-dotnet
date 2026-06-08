@@ -29,6 +29,10 @@ public class HumlDeserializeExceptionTests
         ex.Column.Should().BeNull();
     }
 
+    // These tests exercise the [Obsolete] 3-arg constructor to verify existing behaviour
+    // is preserved. Suppress CS0618 for the call sites — the constructor is intentionally
+    // still present and correct; the [Obsolete] attribute guides new callers to the 4-arg form.
+#pragma warning disable CS0618
     [Fact]
     public void Diagnostic_ctor_sets_key_property()
     {
@@ -63,6 +67,7 @@ public class HumlDeserializeExceptionTests
         var ex = new HumlDeserializeException("type mismatch", "myKey", 42);
         ex.Message.Should().Contain("type mismatch");
     }
+#pragma warning restore CS0618
 
     [Fact]
     public void Four_param_ctor_sets_column_property()

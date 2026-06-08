@@ -57,7 +57,7 @@ public class HumlPopulateTests
             return null;
         }
 
-        public override void Write(HumlSerializerContext context, string? value)
+        public override void Write(HumlWriterContext context, string? value)
             => context.AppendRaw(value is null ? "null" : $"\"{value.ToUpperInvariant()}\"");
     }
 

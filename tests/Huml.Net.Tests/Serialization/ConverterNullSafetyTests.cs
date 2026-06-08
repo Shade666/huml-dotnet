@@ -13,6 +13,13 @@ namespace Huml.Net.Tests.Serialization;
 /// </summary>
 public sealed class ConverterNullSafetyTests
 {
+    public ConverterNullSafetyTests()
+    {
+        PropertyDescriptor.ClearCache();
+        ConverterCache.ClearCache();
+        HumlOptions.ClearOptionsCaches();
+    }
+
     private static readonly HumlOptions Opts = HumlOptions.LatestSupported;
 
     // ── IN-04: WriteObject emits "null" for reference-type null values ─────────
@@ -21,7 +28,7 @@ public sealed class ConverterNullSafetyTests
     {
         public override string? Read(HumlNode node) => node is HumlScalar s ? s.Value as string : null;
 
-        public override void Write(HumlSerializerContext context, string value)
+        public override void Write(HumlWriterContext context, string value)
         {
             // value must never be null — IN-04 fix ensures WriteObject doesn't pass null here.
             if (value is null)
@@ -79,7 +86,7 @@ public sealed class ConverterNullSafetyTests
     {
         public override TreeNode? Read(HumlNode n) => null;
 
-        public override void Write(HumlSerializerContext ctx, TreeNode value)
+        public override void Write(HumlWriterContext ctx, TreeNode value)
         {
             // Intentionally passes the same value back — triggers re-entry for the Child property.
             ctx.AppendSerializedValue(value);

@@ -163,6 +163,7 @@ internal sealed record PropertyDescriptor(
                 // Always compute DefaultValue so ClassIgnoresDefaults and DefaultIgnoreCondition
                 // can check it at emit time without a second reflection call (per D-06).
                 object? defaultValue = prop.PropertyType.IsValueType
+                    && Nullable.GetUnderlyingType(prop.PropertyType) == null
                     ? Activator.CreateInstance(prop.PropertyType)
                     : null;
 

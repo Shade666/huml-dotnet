@@ -38,6 +38,7 @@ public sealed class HumlDeserializeException : Exception
     /// <param name="message">Description of the deserialisation error.</param>
     /// <param name="key">The HUML key where the error occurred, or <c>null</c> when there is no enclosing key (e.g. a root-level scalar).</param>
     /// <param name="line">The 1-based line number where the error occurred.</param>
+    [Obsolete("Use the four-argument constructor that includes column.", error: false)]
     public HumlDeserializeException(string message, string? key, int line)
         : base(key is null ? message : $"[line {line}] Key '{key}': {message}")
     {

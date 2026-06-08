@@ -29,7 +29,7 @@ public class HumlConverterTests
             return new Point(int.Parse(parts[0]), int.Parse(parts[1]));
         }
 
-        public override void Write(HumlSerializerContext context, Point value)
+        public override void Write(HumlWriterContext context, Point value)
             => context.AppendRaw($"\"{value.X},{value.Y}\"");
     }
 
@@ -39,7 +39,7 @@ public class HumlConverterTests
         public NoCtor_Converter(int ignored) { }
         public override bool CanConvert(Type t) => t == typeof(Point);
         public override Point Read(HumlNode node) => default;
-        public override void Write(HumlSerializerContext context, Point value) { }
+        public override void Write(HumlWriterContext context, Point value) { }
     }
 
     // Converter whose CanConvert always returns false — for CONV-ERR-02
@@ -47,7 +47,7 @@ public class HumlConverterTests
     {
         public override bool CanConvert(Type t) => false;
         public override Point Read(HumlNode node) => default;
-        public override void Write(HumlSerializerContext context, Point value) { }
+        public override void Write(HumlWriterContext context, Point value) { }
     }
 
     // POCO with property-level [HumlConverter]
@@ -80,7 +80,7 @@ public class HumlConverterTests
             return new TaggedPoint(int.Parse(parts[0]), int.Parse(parts[1]));
         }
 
-        public override void Write(HumlSerializerContext context, TaggedPoint value)
+        public override void Write(HumlWriterContext context, TaggedPoint value)
             => context.AppendRaw($"\"{value.X},{value.Y}\"");
     }
 

@@ -23,5 +23,5 @@ public abstract class HumlConverter
     internal abstract object? ReadObject(HumlNode node);
 
     /// <summary>Internal hook — writes <paramref name="value"/> without knowing T.</summary>
-    internal abstract void WriteObject(HumlSerializerContext context, object? value);
+    internal abstract void WriteObject(HumlWriterContext context, object? value);
 }

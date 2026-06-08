@@ -104,7 +104,7 @@ Key implementation details:
   floats, decimals, NaN/Inf, `null`, `IEnumerable`, `Dictionary`, and finally the POCO fallback.
 - **Key emission:** `AppendKey(sb, key)` calls `NeedsQuoting()` to decide between bare and quoted
   key syntax. `AppendEscapedString(sb, value)` handles escaping for string values.
-- **Converter dispatch:** Before built-in type dispatch, `SerializeValue()` checks for a property-level `[HumlConverter]` attribute, then a type-level `[HumlConverter]`, then `HumlOptions.Converters`. The first matching converter's `Write(HumlSerializerContext, value)` method is called.
+- **Converter dispatch:** Before built-in type dispatch, `SerializeValue()` checks for a property-level `[HumlConverter]` attribute, then a type-level `[HumlConverter]`, then `HumlOptions.Converters`. The first matching converter's `Write(HumlWriterContext, value)` method is called.
 - **Enum serialisation:** Enum values are serialised as quoted strings. The name is resolved via `EnumNameCache` — honouring `[HumlEnumValue]` overrides and `HumlOptions.PropertyNamingPolicy` transforms.
 
 ## Deserialiser

@@ -22,7 +22,7 @@ public sealed class DateTimeOffsetConverter : HumlConverter<DateTimeOffset>
         throw new InvalidOperationException($"Expected a string scalar for DateTimeOffset, got {node.GetType().Name}.");
     }
 
-    public override void Write(HumlSerializerContext context, DateTimeOffset value)
+    public override void Write(HumlWriterContext context, DateTimeOffset value)
     {
         // AppendRaw emits a quoted HUML string literal
         context.AppendRaw($"\"{value:O}\"");
@@ -58,7 +58,7 @@ public record Timestamp(DateTimeOffset Value);
 ```csharp
 var options = new HumlOptions
 {
-    Converters = { new DateTimeOffsetConverter() }
+    Converters = new List<HumlConverter> { new DateTimeOffsetConverter() }
 };
 
 var dto = Huml.Deserialize<MyDto>(humlText, options);
@@ -73,7 +73,7 @@ When multiple registrations could match, priority is:
 3. `HumlOptions.Converters` list (first match wins)
 4. Built-in type dispatch
 
-## HumlSerializerContext Methods
+## HumlWriterContext Methods
 
 | Method                                 | Use When                                                                 |
 | -------------------------------------- | ------------------------------------------------------------------------ |
@@ -98,6 +98,6 @@ public sealed class ReadOnlyListConverter : HumlConverter<object>
         typeToConvert.GetGenericTypeDefinition() == typeof(IReadOnlyList<>);
 
     public override object? Read(HumlNode node) { /* ... */ return null; }
-    public override void Write(HumlSerializerContext context, object value) { /* ... */ }
+    public override void Write(HumlWriterContext context, object value) { /* ... */ }
 }
 ```

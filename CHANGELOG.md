@@ -10,7 +10,21 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
-(no changes yet)
+### Breaking Changes
+
+- **`HumlSerializerContext` renamed to `HumlWriterContext`:** All `HumlConverter<T>` implementations must update their `Write(HumlWriterContext context, T value)` override signature. The old name is not available as an alias.
+
+### Changed
+
+- **`ScanComment` in Lexer:** Merged two sequential EOF/non-space checks into a single short-circuit condition.
+- **`PropertyDescriptor.BuildDescriptors`:** `Nullable<T>` default values are now assigned as `null` directly without calling `Activator.CreateInstance`.
+- **`HumlOptions.MakeReadOnly()`:** `Converters` list is now frozen to an immutable copy on lock; post-freeze mutations to the original list reference no longer affect converter resolution.
+- **`HumlNamingPolicy` XML docs:** Added digit-as-word-boundary examples (`B2B → b-2-b`, `Version2Name → version-2-name`) to `KebabCase` and `SnakeCase` remarks.
+- **`InferScalarOrInlineListRootType` comment** corrected to accurately describe single-slot pending-buffer token management.
+
+### Deprecated
+
+- **`HumlDeserializeException(string message, string? key, int line)` (3-argument constructor)** is now `[Obsolete]`. Use the 4-argument constructor `(message, key, line, column)` instead.
 
 ## [0.2.0-alpha.3] - 2026-06-06
 

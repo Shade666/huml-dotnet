@@ -31,8 +31,8 @@ internal static class ConverterCache
             if (typeAttr != null)
                 return GetOrCreate(typeAttr.ConverterType);
 
-            // Level 3: HumlOptions.Converters — first CanConvert match wins
-            foreach (var c in opts.Converters)
+            // Level 3: HumlOptions.EffectiveConverters — first CanConvert match wins
+            foreach (var c in opts.EffectiveConverters)
                 if (c.CanConvert(t)) return c;
 
             return null;

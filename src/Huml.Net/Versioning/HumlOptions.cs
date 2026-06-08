@@ -227,6 +227,7 @@ public sealed class HumlOptions
     public Serialization.IHumlTypeInfoResolver? TypeInfoResolver { get; init; }
 
     private bool _isReadOnly;
+    private IReadOnlyList<Serialization.HumlConverter>? _frozenConverters;
 
     /// <summary>
     /// Gets a value indicating whether this <see cref="HumlOptions"/> instance has been locked
@@ -240,7 +241,22 @@ public sealed class HumlOptions
     /// Marks this instance as read-only. Subsequent calls to any future mutable setter will
     /// throw <see cref="InvalidOperationException"/>. This call is idempotent.
     /// </summary>
-    public void MakeReadOnly() => _isReadOnly = true;
+    public void MakeReadOnly()
+    {
+        if (_isReadOnly) return;
+        Volatile.Write(ref _frozenConverters, Array.AsReadOnly(Converters.ToArray()));
+        _isReadOnly = true;
+    }
+
+    /// <summary>
+    /// Returns the frozen converter list after <see cref="MakeReadOnly"/> has been called,
+    /// or the live <see cref="Converters"/> list when the instance has not yet been frozen.
+    /// Internal callers in the serialisation hot path should always read this property rather
+    /// than <see cref="Converters"/> directly so that post-freeze mutations to the original
+    /// list reference have no effect.
+    /// </summary>
+    internal IReadOnlyList<Serialization.HumlConverter> EffectiveConverters
+        => Volatile.Read(ref _frozenConverters) ?? Converters;
 
     /// <summary>
     /// Clears the converter resolution caches on all pre-built static instances.

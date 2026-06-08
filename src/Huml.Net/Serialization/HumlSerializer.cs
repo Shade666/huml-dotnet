@@ -145,7 +145,7 @@ internal static class HumlSerializer
 
     /// <summary>
     /// Core serialization dispatch. Called by <see cref="SerializeValue"/> and by
-    /// <see cref="HumlSerializerContext.AppendSerializedValue"/>.
+    /// <see cref="HumlWriterContext.AppendSerializedValue"/>.
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     internal static void SerializeValueInternal(StringBuilder sb, object? value, int depth, HumlOptions options, Type? declaredType = null)
@@ -169,7 +169,7 @@ internal static class HumlSerializer
                     "A converter must not call AppendSerializedValue with the same type it handles.");
             try
             {
-                var ctx = new HumlSerializerContext(sb, depth, options);
+                var ctx = new HumlWriterContext(sb, depth, options);
                 converter.WriteObject(ctx, value);
             }
             finally
@@ -430,7 +430,7 @@ internal static class HumlSerializer
                 sb.Append(indent);
                 AppendKey(sb, key);
                 sb.Append(": ");
-                var ctx = new HumlSerializerContext(sb, depth, options);
+                var ctx = new HumlWriterContext(sb, depth, options);
                 converterOverride.WriteObject(ctx, value);
                 sb.Append('\n');
             }

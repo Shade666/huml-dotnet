@@ -252,14 +252,9 @@ internal ref struct Lexer
 
     private Token ScanComment()
     {
-        // Must be "# " (hash + space), else error
-        if (_pos + 1 < _source.Length && _source[_pos + 1] != ' ')
+        // Must be "# " (hash + space), else error — covers EOF and non-space in one check
+        if (_pos + 1 >= _source.Length || _source[_pos + 1] != ' ')
         {
-            ThrowParseError("Comments must start with '# ' (hash followed by a space).");
-        }
-        if (_pos + 1 >= _source.Length)
-        {
-            // "#" at EOF — no space after
             ThrowParseError("Comments must start with '# ' (hash followed by a space).");
         }
 

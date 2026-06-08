@@ -36,7 +36,7 @@ public class HumlSerializerPoolTests
         public override ReentrantInner Read(HumlNode node)
             => throw new HumlDeserializeException("Read not used in this test.");
 
-        public override void Write(HumlSerializerContext context, ReentrantInner value)
+        public override void Write(HumlWriterContext context, ReentrantInner value)
         {
             // Re-enter the serialiser: produce a complete HUML document for an inner POCO,
             // then embed it as a quoted string scalar so the outer document remains valid HUML.
@@ -63,6 +63,7 @@ public class HumlSerializerPoolTests
     {
         PropertyDescriptor.ClearCache();
         ConverterCache.ClearCache();
+        HumlOptions.ClearOptionsCaches();
     }
 
     // ── POOL-01 ───────────────────────────────────────────────────────────────

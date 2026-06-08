@@ -233,13 +233,13 @@ internal ref struct HumlParser
     {
         // We have a value token at root. Read it, then peek the next token.
         // If next token is Comma → inline list. Otherwise → scalar.
-        // Since we must not lose the first token, we use the two-slot buffer approach:
-        // store current lookahead, advance, check next, then prepend both to buffer.
-        //
-        // Implementation: use _pending buffer. We read one token ahead.
+        // We have a value token in the lookahead. Consume it, then peek at the next token
+        // (Peek does NOT consume — nextToken stays in the lookahead buffer).
+        // Store firstToken in the single-slot _pending buffer so it is replayed on the next Advance() call.
+        // Only firstToken is stored; nextToken was never consumed so it remains available via Peek/Advance.
         var firstToken = Advance();
         var nextToken = Peek();
-        // Prepend both back using the pending buffer
+        // Store firstToken in the single pending slot for replay
         _pending = firstToken;
         _hasPending = true;
 

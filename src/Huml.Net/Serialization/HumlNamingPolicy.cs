@@ -16,12 +16,16 @@ public abstract class HumlNamingPolicy
     /// <summary>Gets the naming policy that converts PascalCase names to kebab-case:
     /// <c>FullName</c> → <c>full-name</c>.</summary>
     /// <remarks>Acronyms split letter-by-letter: <c>URL</c> → <c>u-r-l</c>.
+    /// Digits are treated as word boundaries: <c>B2B</c> → <c>b-2-b</c>,
+    /// <c>Version2Name</c> → <c>version-2-name</c>.
     /// For acronym-aware conversion, use <see cref="HumlPropertyAttribute"/> directly.</remarks>
     public static HumlNamingPolicy KebabCase { get; } = new KebabCasePolicy();
 
     /// <summary>Gets the naming policy that converts PascalCase names to snake_case:
     /// <c>FullName</c> → <c>full_name</c>.</summary>
-    /// <remarks>Acronyms split letter-by-letter: <c>URL</c> → <c>u_r_l</c>.</remarks>
+    /// <remarks>Acronyms split letter-by-letter: <c>URL</c> → <c>u_r_l</c>.
+    /// Digits are treated as word boundaries: <c>B2B</c> → <c>b_2_b</c>,
+    /// <c>Version2Name</c> → <c>version_2_name</c>.</remarks>
     public static HumlNamingPolicy SnakeCase { get; } = new SnakeCasePolicy();
 
     /// <summary>Gets the naming policy that converts PascalCase names to camelCase:
@@ -104,7 +108,7 @@ public abstract class HumlNamingPolicy
     /// <summary>
     /// Inserts <paramref name="separator"/> at word boundaries (uppercase-after-lowercase/digit),
     /// lowercasing all characters. Each uppercase letter in an acronym sequence is treated as its
-    /// own word boundary (STJ-equivalent: URL → u-r-l / u_r_l).
+    /// own word boundary (STJ-equivalent: URL → u-r-l / u_r_l, B2B → b-2-b / b_2_b).
     /// Non-alphanumeric characters pass through as-is and reset the state machine.
     /// </summary>
     private static string Separate(string name, char separator)
