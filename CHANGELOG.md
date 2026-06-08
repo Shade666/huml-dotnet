@@ -27,6 +27,7 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 - **`HumlTypeInfo` lifecycle callbacks:** `OnSerializing`, `OnSerialized`, `OnDeserializing`, and `OnDeserialized` (`Action<object>?`) virtual properties added to `HumlTypeInfo`; all default to null.
 - **`HumlTypeInfo` property metadata:** `Properties` (`IReadOnlyList<HumlPropertyInfo>?`) virtual property added to `HumlTypeInfo`; null means "fall through to reflection path", an empty list means "type has no properties".
 - **`HumlTypeInfo<T>.CreateObject`:** `Func<T>?` virtual property added to `HumlTypeInfo<T>`; null means fall back to `Activator.CreateInstance`. Typed on the generic form to preserve static type safety at the call site.
+- **`IHumlTypeInfoResolver` activation (TI-04):** When `options.TypeInfoResolver?.GetTypeInfo(type, options)` returns a `HumlTypeInfo` with non-null `Properties`, both the serialiser and deserialiser use the provided `HumlPropertyInfo` delegates (`Get`/`Set`) instead of reflection. Lifecycle callbacks (`OnSerializing`, `OnSerialized`, `OnDeserializing`, `OnDeserialized`) are invoked in the correct order around the delegate loop. The resolver path bypasses the required-property check and unmapped-member check; the resolver takes full responsibility for property population. When `Properties` is null, both paths fall through to the existing `PropertyDescriptor` reflection path unchanged.
 
 ### Breaking Changes
 
