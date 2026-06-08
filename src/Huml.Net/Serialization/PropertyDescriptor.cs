@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Huml.Net.Parser;
+using Huml.Net.Versioning;
 
 namespace Huml.Net.Serialization;
 
@@ -26,7 +27,8 @@ internal sealed record PropertyDescriptor(
     bool IsRequired,             // true when [HumlRequired] or C# required modifier is detected
     object? DefaultValue,
     bool? Inline,
-    HumlConverter? Converter)   // property-level [HumlConverter] resolved at cache-build time
+    HumlConverter? Converter,   // property-level [HumlConverter] resolved at cache-build time
+    HumlNumberHandling? NumberHandling) // property-level [HumlNumberHandling] resolved at cache-build time; null = use global option
 {
     // ── Cache ─────────────────────────────────────────────────────────────────
 
@@ -188,9 +190,12 @@ internal sealed record PropertyDescriptor(
                             $"Converter type '{converterAttr.ConverterType.Name}' does not derive from HumlConverter.");
                 }
 
+                var numberHandlingAttr = prop.GetCustomAttribute<HumlNumberHandlingAttribute>();
+                var numberHandling = numberHandlingAttr?.Handling;
+
                 result.Add(new PropertyDescriptor(
                     humlKey, prop, omitIfDefault, classIgnoresDefaults,
-                    isInitOnly, isRequired, defaultValue, inline, converter));
+                    isInitOnly, isRequired, defaultValue, inline, converter, numberHandling));
             }
         }
 
@@ -257,7 +262,8 @@ internal sealed record PropertyDescriptor(
                     IsRequired: false,
                     DefaultValue: null,
                     Inline: null,
-                    Converter: null);
+                    Converter: null,
+                    NumberHandling: null);
                 firstExtPropName = prop.Name;
             }
         }
