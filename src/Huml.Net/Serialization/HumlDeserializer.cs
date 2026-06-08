@@ -334,9 +334,31 @@ internal static class HumlDeserializer
             }
         }
 
-        // SGS seam: custom resolver hook. Currently a no-op — HumlTypeInfo<T> carries no
-        // property metadata yet. The call site is wired so future phases can activate it.
-        _ = options.TypeInfoResolver?.GetTypeInfo(targetType, options);
+        // SGS seam: resolver-driven path. When the resolver supplies property metadata
+        // (Properties non-null), use delegate-based population and bypass reflection.
+        var typeInfo = options.TypeInfoResolver?.GetTypeInfo(targetType, options);
+        if (typeInfo?.Properties is { } resolverProps)
+        {
+            typeInfo.OnDeserializing?.Invoke(instance);
+            foreach (var entry in entries)
+            {
+                if (entry is not HumlMapping mapping) continue;
+                HumlPropertyInfo? propInfo = null;
+                foreach (var p in resolverProps)
+                {
+                    if (string.Equals(p.Name, mapping.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        propInfo = p;
+                        break;
+                    }
+                }
+                if (propInfo?.Set is null) continue;
+                var value = DeserializeNode(mapping.Value, propInfo.PropertyType ?? typeof(object), options);
+                propInfo.Set(instance, value);
+            }
+            typeInfo.OnDeserialized?.Invoke(instance);
+            return instance;
+        }
 
         // Get property lookup dictionary for the target type (O(1) key access)
         var lookup = PropertyDescriptor.GetLookup(targetType, options.PropertyNamingPolicy);

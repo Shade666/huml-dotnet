@@ -378,10 +378,10 @@ internal static class HumlSerializer
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void SerializeMappingBody(StringBuilder sb, object obj, int depth, HumlOptions options, Type? declaredType = null)
     {
-        // SGS seam: custom resolver hook. Currently a no-op — HumlTypeInfo<T> carries no
-        // property metadata yet. The call site is wired so future phases can activate it.
+        // SGS seam: resolver-driven path. When the resolver supplies property metadata
+        // (Properties non-null), use delegate-based emission and bypass reflection.
         var targetType = declaredType ?? obj.GetType();
-        _ = options.TypeInfoResolver?.GetTypeInfo(targetType, options);
+        var typeInfo = options.TypeInfoResolver?.GetTypeInfo(targetType, options);
 
         // Polymorphic discriminator emit (POLY-05): when the declared type carries
         // [HumlPolymorphic] and the runtime type is a registered derived type, emit
@@ -405,6 +405,21 @@ internal static class HumlSerializer
                     }
                 }
             }
+        }
+
+        if (typeInfo?.Properties is { } resolverProps)
+        {
+            typeInfo.OnSerializing?.Invoke(obj);
+            foreach (var propInfo in resolverProps)
+            {
+                if (propInfo.Get is null) continue;
+                var propValue = propInfo.Get(obj);
+                EmitEntry(sb, Indent(depth), propInfo.Name, propValue, depth, options,
+                          inlineOverride: false, converterOverride: null,
+                          declaringType: obj.GetType(), numberHandlingOverride: null);
+            }
+            typeInfo.OnSerialized?.Invoke(obj);
+            return;
         }
 
         var descriptorType = (polyAttr != null && obj.GetType() != targetType) ? obj.GetType() : targetType;
