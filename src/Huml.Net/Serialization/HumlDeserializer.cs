@@ -181,7 +181,7 @@ internal static class HumlDeserializer
             return v;
         }
         if (valueNode is HumlScalar s)
-            return CoerceScalar(s, descriptor.Property.PropertyType, key, s.Line, s.Column, options);
+            return CoerceScalar(s, descriptor.Property.PropertyType, key, s.Line, s.Column, options, descriptor.NumberHandling);
         return DeserializeNode(valueNode, descriptor.Property.PropertyType, options);
     }
 
@@ -585,7 +585,7 @@ internal static class HumlDeserializer
     /// (e.g. a root-level scalar document); the resulting exception omits the key prefix.
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
-    private static object? CoerceScalar(HumlScalar scalar, Type targetType, string? key, int line, int column, HumlOptions options)
+    private static object? CoerceScalar(HumlScalar scalar, Type targetType, string? key, int line, int column, HumlOptions options, HumlNumberHandling? memberOverride = null)
     {
         // Unwrap Nullable<T> to its underlying type for comparison
         var underlying = Nullable.GetUnderlyingType(targetType) ?? targetType;
@@ -662,7 +662,7 @@ internal static class HumlDeserializer
                     // AllowReadingFromString gates only numeric targets; other IConvertible types (string→char, string→Guid, etc.)
                     // pass through unconditionally — this is intentional and matches STJ behaviour.
                     if (IsNumericType(underlying) &&
-                        !options.NumberHandling.HasFlag(HumlNumberHandling.AllowReadingFromString))
+                        !(memberOverride ?? options.NumberHandling).HasFlag(HumlNumberHandling.AllowReadingFromString))
                         throw new HumlDeserializeException(
                             $"Cannot assign string scalar to numeric type '{underlying.Name}'. " +
                             $"Set HumlOptions.NumberHandling = HumlNumberHandling.AllowReadingFromString to allow this.",

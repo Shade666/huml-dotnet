@@ -140,15 +140,15 @@ internal static class HumlSerializer
     // ── Core serialization logic ──────────────────────────────────────────────
 
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
-    private static void SerializeValue(StringBuilder sb, object? value, int depth, HumlOptions options, Type? declaredType = null)
-        => SerializeValueInternal(sb, value, depth, options, declaredType);
+    private static void SerializeValue(StringBuilder sb, object? value, int depth, HumlOptions options, Type? declaredType = null, HumlNumberHandling? memberNumberHandling = null)
+        => SerializeValueInternal(sb, value, depth, options, declaredType, memberNumberHandling);
 
     /// <summary>
     /// Core serialization dispatch. Called by <see cref="SerializeValue"/> and by
     /// <see cref="HumlWriterContext.AppendSerializedValue"/>.
     /// </summary>
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
-    internal static void SerializeValueInternal(StringBuilder sb, object? value, int depth, HumlOptions options, Type? declaredType = null)
+    internal static void SerializeValueInternal(StringBuilder sb, object? value, int depth, HumlOptions options, Type? declaredType = null, HumlNumberHandling? memberNumberHandling = null)
     {
         if (value is null)
         {
@@ -205,7 +205,7 @@ internal static class HumlSerializer
         if (IsIntegerType(value))
         {
             var formatted = ((IFormattable)value).ToString(null, CultureInfo.InvariantCulture);
-            if (options.NumberHandling.HasFlag(HumlNumberHandling.WriteAsString))
+            if ((memberNumberHandling ?? options.NumberHandling).HasFlag(HumlNumberHandling.WriteAsString))
             {
                 sb.Append('"');
                 sb.Append(formatted);
@@ -221,7 +221,7 @@ internal static class HumlSerializer
         // Floating-point types
         if (value is double d)
         {
-            if (options.NumberHandling.HasFlag(HumlNumberHandling.WriteAsString) &&
+            if ((memberNumberHandling ?? options.NumberHandling).HasFlag(HumlNumberHandling.WriteAsString) &&
                 !double.IsNaN(d) && !double.IsInfinity(d))
             {
                 sb.Append('"');
@@ -252,7 +252,7 @@ internal static class HumlSerializer
                 sb.Append("-inf");
                 return;
             }
-            if (options.NumberHandling.HasFlag(HumlNumberHandling.WriteAsString))
+            if ((memberNumberHandling ?? options.NumberHandling).HasFlag(HumlNumberHandling.WriteAsString))
             {
                 sb.Append('"');
                 sb.Append(f.ToString("R", CultureInfo.InvariantCulture));
@@ -269,7 +269,7 @@ internal static class HumlSerializer
         if (value is decimal dec)
         {
             var formatted = dec.ToString(CultureInfo.InvariantCulture);
-            if (options.NumberHandling.HasFlag(HumlNumberHandling.WriteAsString))
+            if ((memberNumberHandling ?? options.NumberHandling).HasFlag(HumlNumberHandling.WriteAsString))
             {
                 sb.Append('"');
                 sb.Append(formatted);
@@ -409,7 +409,7 @@ internal static class HumlSerializer
                 if (shouldOmit) continue;
             }
 
-            EmitEntry(sb, indent, desc.HumlKey, propValue, depth, options, desc.Inline, desc.Converter, declaringType: obj.GetType());
+            EmitEntry(sb, indent, desc.HumlKey, propValue, depth, options, desc.Inline, desc.Converter, declaringType: obj.GetType(), numberHandlingOverride: desc.NumberHandling);
         }
 
         // Emit extension-data entries after all declared properties (EXT-04).
@@ -449,7 +449,8 @@ internal static class HumlSerializer
         HumlOptions options,
         bool? inlineOverride = null,
         HumlConverter? converterOverride = null,
-        Type? declaringType = null)
+        Type? declaringType = null,
+        HumlNumberHandling? numberHandlingOverride = null)
     {
         // Property-level converter dispatch (highest priority — wins over type-level and options)
         if (converterOverride != null)
@@ -486,7 +487,7 @@ internal static class HumlSerializer
             sb.Append(indent);
             AppendKey(sb, key);
             sb.Append(": ");
-            SerializeValue(sb, value, depth + 1, options);
+            SerializeValue(sb, value, depth + 1, options, memberNumberHandling: numberHandlingOverride);
             sb.Append('\n');
             return;
         }
