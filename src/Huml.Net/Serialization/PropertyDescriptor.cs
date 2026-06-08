@@ -27,8 +27,9 @@ internal sealed record PropertyDescriptor(
     bool IsRequired,             // true when [HumlRequired] or C# required modifier is detected
     object? DefaultValue,
     bool? Inline,
-    HumlConverter? Converter,   // property-level [HumlConverter] resolved at cache-build time
-    HumlNumberHandling? NumberHandling) // property-level [HumlNumberHandling] resolved at cache-build time; null = use global option
+    HumlConverter? Converter,     // property-level [HumlConverter] resolved at cache-build time
+    HumlNumberHandling? NumberHandling, // property-level [HumlNumberHandling] resolved at cache-build time; null = use global option
+    HumlNamingPolicy? MemberNamingPolicy) // property-level [HumlNamingPolicy] resolved at cache-build time; null = use global option
 {
     // ── Cache ─────────────────────────────────────────────────────────────────
 
@@ -145,9 +146,21 @@ internal sealed record PropertyDescriptor(
 
                 // Resolve [HumlProperty] name and OmitIfDefault
                 var humlProp = prop.GetCustomAttribute<HumlPropertyAttribute>();
+
+                // Resolve per-member [HumlNamingPolicy] attribute
+                var namingPolicyAttr = prop.GetCustomAttribute<HumlNamingPolicyAttribute>();
+                HumlNamingPolicy? memberPolicy = namingPolicyAttr?.Policy switch
+                {
+                    HumlKnownNamingPolicy.CamelCase  => HumlNamingPolicy.CamelCase,
+                    HumlKnownNamingPolicy.SnakeCase  => HumlNamingPolicy.SnakeCase,
+                    HumlKnownNamingPolicy.KebabCase  => HumlNamingPolicy.KebabCase,
+                    HumlKnownNamingPolicy.PascalCase => HumlNamingPolicy.PascalCase,
+                    _                                => null,  // Unspecified or null attr
+                };
+
                 string humlKey = (humlProp?.Name is { Length: > 0 } explicitName)
-                    ? explicitName                                        // [HumlProperty] explicit name WINS — policy never applied
-                    : (policy?.ConvertName(prop.Name) ?? prop.Name);     // policy or identity
+                    ? explicitName                                                       // [HumlProperty] explicit name WINS — no policy applied
+                    : (memberPolicy ?? policy)?.ConvertName(prop.Name) ?? prop.Name;    // member > global > identity
                 bool omitIfDefault = humlProp?.OmitIfDefault ?? false;
                 bool? inline = humlProp?.Inline switch
                 {
@@ -195,7 +208,7 @@ internal sealed record PropertyDescriptor(
 
                 result.Add(new PropertyDescriptor(
                     humlKey, prop, omitIfDefault, classIgnoresDefaults,
-                    isInitOnly, isRequired, defaultValue, inline, converter, numberHandling));
+                    isInitOnly, isRequired, defaultValue, inline, converter, numberHandling, memberPolicy));
             }
         }
 
@@ -263,7 +276,8 @@ internal sealed record PropertyDescriptor(
                     DefaultValue: null,
                     Inline: null,
                     Converter: null,
-                    NumberHandling: null);
+                    NumberHandling: null,
+                    MemberNamingPolicy: null);
                 firstExtPropName = prop.Name;
             }
         }
