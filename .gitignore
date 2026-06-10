@@ -111,3 +111,4 @@ packages/
 # Local working clones / harness artefacts
 userDefinedLanguages/
 .bg-shell/
+.tmp-spec/
