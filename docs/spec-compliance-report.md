@@ -26,7 +26,7 @@ Regression coverage: `tests/Huml.Net.Tests/Lexer/SpecComplianceFixTests.cs` (35 
 
 | # | Behaviour | Spec position | Recommendation |
 |---|-----------|---------------|----------------|
-| L1 | **CRLF / lone CR accepted as line breaks** (deliberate normalisation in `PeekCurrentChar`/`AdvancePastNewline`) | "Line breaks: Unix-style (`\n`)" | **Needs maintainer ratification.** Recommend keeping (Windows/.NET ergonomics) and documenting as an intentional, opt-out-able divergence — or aligning strictly before 1.0. go-huml rejects CRLF (trailing `\r` reads as trailing whitespace). |
+| L1 | **CRLF / lone CR accepted as line breaks** (deliberate normalisation in `PeekCurrentChar`/`AdvancePastNewline`) | "Line breaks: Unix-style (`\n`)" | **Ratified 2026-06-10: kept as an intentional, documented divergence** — Huml.Net accepts CRLF/CR on input and always emits `\n`. G4 docs must state this plainly. (go-huml rejects CRLF; raise as ecosystem note upstream.) |
 | L2 | `key::1`, `key::"x"` etc. accepted (inline vector with zero spaces after `::`) | Tokenizer: `":: "` literal | Fix alongside `Token.SpaceBefore` enforcement (the parser never reads it); route to G3 review |
 | L3 | Two-plus spaces after `-` accepted (`-  1`) | "Only a single space … after the indicators" | Same `SpaceBefore` work as L2 |
 | L4 | `[ ]` / `{  }` accepted as empty vectors | Grammar literals `"[]"` / `"{}"` | Trivial fix in `ScanEmptyCollection`; bundle with L2/L3 |
