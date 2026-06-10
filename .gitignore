@@ -104,3 +104,6 @@ packages/
 
 # Personal Claude settings
 .claude/settings.local.json
+
+# User Archived Content
+.Archive 
