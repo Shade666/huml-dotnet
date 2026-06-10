@@ -208,6 +208,25 @@ internal static class HumlDeserializer
         if (node is HumlScalar scalar)
             return CoerceScalar(scalar, targetType, key: null, line: scalar.Line, column: scalar.Column, options);
 
+        // Root unwrap: a document whose single entry is not a mapping is a root scalar
+        // or root sequence — dispatch the value node directly against the target type
+        // (Deserialize<long>("123"), Deserialize<object>("1, 2"), …). Mismatched targets
+        // then fail loudly in CoerceScalar instead of silently yielding an empty object.
+        if (node is HumlDocument { Entries: [not HumlMapping and var rootValue] })
+            return DeserializeNode(rootValue, targetType, options);
+
+        // An `object` target gets natural CLR shapes (mirrors System.Text.Json):
+        // mappings → Dictionary<string, object?>, sequences → List<object?>. Without
+        // this, the POCO path below materialises a content-less `new object()`,
+        // silently discarding the document content.
+        if (targetType == typeof(object))
+        {
+            if (node is HumlDocument or HumlInlineMapping)
+                targetType = typeof(Dictionary<string, object?>);
+            else if (node is HumlSequence)
+                targetType = typeof(List<object?>);
+        }
+
         if (node is HumlDocument doc)
             return DeserializeMappingEntries(doc.Entries, targetType, options);
 

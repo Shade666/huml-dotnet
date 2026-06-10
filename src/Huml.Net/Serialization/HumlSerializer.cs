@@ -728,39 +728,75 @@ internal static class HumlSerializer
             AppendKey(sb, key);
             if (seq.Items.Count == 0) { sb.Append(":: []\n"); return; }
             sb.Append("::\n");
-            var itemIndent = Indent(depth + 1);
-            foreach (var item in seq.Items)
+            EmitHumlSequenceItems(sb, seq, depth + 1, options);
+            return;
+        }
+        // Defensive: unknown future node types are silently skipped.
+    }
+
+    /// <summary>
+    /// Emits the items of an AST <see cref="HumlSequence"/> at <paramref name="depth"/>.
+    /// Vector items use the "- ::" form; inline mappings are re-emitted as multiline
+    /// blocks (semantically lossless, consistent with <see cref="EmitHumlNode"/>).
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
+    private static void EmitHumlSequenceItems(StringBuilder sb, HumlSequence seq, int depth, HumlOptions options)
+    {
+        var itemIndent = Indent(depth);
+        foreach (var item in seq.Items)
+        {
+            sb.Append(itemIndent);
+            sb.Append("- ");
+            switch (item)
             {
-                sb.Append(itemIndent);
-                sb.Append("- ");
-                if (item is HumlScalar s)
-                {
+                case HumlScalar s:
                     switch (s.Kind)
                     {
                         case ScalarKind.Null: sb.Append("null"); break;
                         case ScalarKind.NaN:  sb.Append("nan");  break;
                         case ScalarKind.Inf:  sb.Append(s.Value as string ?? "inf"); break;
-                        default: SerializeValue(sb, s.Value, depth + 2, options); break;
+                        default: SerializeValue(sb, s.Value, depth + 1, options); break;
                     }
                     sb.Append('\n');
-                }
-                else
-                {
-                    sb.Append('\n');
-                    if (item is HumlDocument childDoc)
-                    {
-                        var grandIndent = Indent(depth + 2);
-                        foreach (var entry in childDoc.Entries)
-                        {
-                            if (entry is HumlMapping m)
-                                EmitHumlNode(sb, grandIndent, m.Key, m.Value, depth + 2, options);
-                        }
-                    }
-                }
+                    break;
+
+                case HumlSequence nestedSeq when nestedSeq.Items.Count == 0:
+                    sb.Append(":: []\n");
+                    break;
+
+                case HumlSequence nestedSeq:
+                    sb.Append("::\n");
+                    EmitHumlSequenceItems(sb, nestedSeq, depth + 1, options);
+                    break;
+
+                case HumlDocument { Entries.Count: 0 }:
+                case HumlInlineMapping { Entries.Count: 0 }:
+                    sb.Append(":: {}\n");
+                    break;
+
+                case HumlDocument childDoc:
+                    sb.Append("::\n");
+                    EmitMappingEntries(sb, childDoc.Entries, depth + 1, options);
+                    break;
+
+                case HumlInlineMapping inline:
+                    sb.Append("::\n");
+                    EmitMappingEntries(sb, inline.Entries, depth + 1, options);
+                    break;
             }
-            return;
         }
-        // Defensive: unknown future node types are silently skipped.
+    }
+
+    [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
+    private static void EmitMappingEntries(
+        StringBuilder sb, IReadOnlyList<HumlNode> entries, int depth, HumlOptions options)
+    {
+        var childIndent = Indent(depth);
+        foreach (var entry in entries)
+        {
+            if (entry is HumlMapping m)
+                EmitHumlNode(sb, childIndent, m.Key, m.Value, depth, options);
+        }
     }
 
     /// <summary>
@@ -798,11 +834,19 @@ internal static class HumlSerializer
             }
             else
             {
-                sb.Append('\n');
+                // Vector list items use the "- ::" form (grammar: multiline_list_item =
+                // "- " MULTILINE_VECTOR_START …) with the block one level deeper.
+                int mark = sb.Length;
+                sb.Append("::\n");
+                int bodyStart = sb.Length;
+                bool isListLike = false;
                 if (item is IDictionary dict2)
                     SerializeDictionaryBody(sb, dict2, depth + 1, options);
                 else if (item is IEnumerable nested and not string)
+                {
+                    isListLike = true;
                     EmitSequenceItems(sb, nested, depth + 1, options, memberNumberHandling);
+                }
                 else if (item != null)
                 {
                     var itemType = item.GetType();
@@ -811,6 +855,13 @@ internal static class HumlSerializer
                             $"Cannot serialize type '{itemType.FullName}': delegates, function pointers, and " +
                             "similar non-data types are not supported by HumlSerializer.");
                     SerializeMappingBody(sb, item, depth + 1, options);
+                }
+                if (sb.Length == bodyStart)
+                {
+                    // Empty vector item: a bare "- ::" is the ambiguous-empty-vector error,
+                    // so fall back to the inline empty signifier.
+                    sb.Length = mark;
+                    sb.Append(isListLike ? ":: []\n" : ":: {}\n");
                 }
             }
         }

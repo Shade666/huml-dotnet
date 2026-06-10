@@ -176,9 +176,10 @@ public class HumlSerializerInlineTests
 
         var result = Huml.Serialize(poco, opts);
 
-        // Complex list (contains POCOs) must fall back to multiline
+        // Complex list (contains POCOs) must fall back to multiline, with vector
+        // items in the grammar-valid "- ::" form (no bare dash, no trailing space).
         result.Should().Contain("Items::\n");
-        result.Should().Contain("  - \n");
+        result.Should().Contain("  - ::\n");
         result.Should().Contain("    X: 1\n");
     }
 

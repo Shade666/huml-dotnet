@@ -19,6 +19,9 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ### Fixed
 
+- **Lists of objects now serialise to valid HUML.** Vector items inside multi-line lists were emitted as a bare dash with trailing whitespace (`- ` + newline) followed by a key block — a form the grammar (and Huml.Net's own parser) rejects, so `Serialize` output containing a `List<SomePoco>` could never be deserialised. Items now use the grammar's `- ::` form (matching go-huml's encoder); empty vector items emit `- :: []`/`- :: {}`.
+- **`object`-typed deserialisation no longer silently discards content.** A nested mapping or sequence deserialised into an `object?` slot produced a content-less `new object()`. Mappings now materialise as `Dictionary<string, object?>`, sequences as `List<object?>`, mirroring `System.Text.Json`.
+- **Root scalars and root sequences now deserialise into typed targets** (`Huml.Deserialize<long>("123")`, `Huml.Deserialize<List<long>>("1, 2, 3")`) — previously these silently produced empty/default objects; mismatched targets now throw `HumlDeserializeException`.
 - **Quoted keys now work in inline dicts** (`key:: "a b": 1`, root `a: 1, "b c": 2`) — the lexer previously misclassified them as string values via a column heuristic; it now uses the same followed-by-`:` lookahead as go-huml.
 - **`key::1` (no space between `::` and an inline value) is now a parse error**, matching the spec tokenizer's literal `":: "`; any number of spaces is now permitted before a trailing comment after `::` (`key::  # note`), matching `(whitespace*, comment)?`.
 - **Empty vectors must be the literals `[]`/`{}`** — `[ ]` and `{  }` are now parse errors.
