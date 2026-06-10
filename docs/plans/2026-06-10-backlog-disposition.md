@@ -56,6 +56,7 @@ The go-huml evidence changed several G1.3 recommendations — in five cases the 
 - Two's-complement wrap for 64-bit hex/octal/binary literals (`0xFFFFFFFFFFFFFFFF` → `-1`) vs decimal overflow error — consistency decision.
 - BOM policy (currently "Unexpected character"; spec silent).
 - L9 / S5 — inline `#` without preceding space; bare `#` at EOL (go accepts `#\n`, grammar says `"# "`): fold into the G3 review with the upstream answer if one lands first.
+- One unreproducible single-test failure was observed on net9.0 during a parallel three-TFM run on 2026-06-10 (passed on immediate re-run and on two subsequent full runs). Suspected allocation-measurement sensitivity under parallel execution — G3 should review the GC-measuring tests for parallel-run robustness.
 
 ### UPSTREAM (issues to file, no code change)
 

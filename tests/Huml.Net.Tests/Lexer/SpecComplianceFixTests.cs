@@ -141,6 +141,135 @@ public class SpecComplianceFixTests
         act.Should().NotThrow();
     }
 
+    // ── B3: empty vectors are the literals "[]" / "{}" — no internal whitespace ──
+
+    [Theory]
+    [InlineData("key:: [ ]")]
+    [InlineData("key:: {  }")]
+    [InlineData("key:: [ }")]
+    public void Empty_vector_with_internal_whitespace_throws(string input)
+    {
+        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
+        act.Should().Throw<HumlParseException>();
+    }
+
+    [Theory]
+    [InlineData("key:: []")]
+    [InlineData("key:: {}")]
+    public void Empty_vector_literals_parse(string input)
+    {
+        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
+        act.Should().NotThrow();
+    }
+
+    // ── B4: tokenizer permits a comment between the opening delimiter and the newline ──
+
+    [Fact]
+    public void Comment_after_opening_triple_quote_parses()
+    {
+        var doc = Huml.Parse("key: \"\"\" # note\n  content\n\"\"\"", HumlOptions.LatestSupported);
+        var scalar = ((HumlMapping)doc.Entries[0]).Value.Should().BeOfType<HumlScalar>().Subject;
+        scalar.Value.Should().Be("content");
+    }
+
+    [Fact]
+    public void Comment_after_opening_backticks_parses_in_v01()
+    {
+        var doc = Huml.Parse("%HUML v0.1.0\nkey: ``` # note\n  content\n```", HumlOptions.Default);
+        var scalar = ((HumlMapping)doc.Entries[0]).Value.Should().BeOfType<HumlScalar>().Subject;
+        scalar.Value.Should().Be("content");
+    }
+
+    [Fact]
+    public void Garbage_after_opening_triple_quote_still_throws()
+    {
+        var act = () => Huml.Parse("key: \"\"\" extra\n  content\n\"\"\"", HumlOptions.LatestSupported);
+        act.Should().Throw<HumlParseException>();
+    }
+
+    // ── B2: inline vector values require ":: " (exactly one space); B5: any number
+    //    of spaces is permitted before a trailing comment after "::" ──
+
+    [Theory]
+    [InlineData("key::1")]
+    [InlineData("key::\"x\"")]
+    [InlineData("key::[]")]
+    [InlineData("key::{}")]
+    [InlineData("key::true")]
+    public void Inline_vector_value_without_space_after_indicator_throws(string input)
+    {
+        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
+        act.Should().Throw<HumlParseException>();
+    }
+
+    [Theory]
+    [InlineData("key:: 1")]
+    [InlineData("key:: []")]
+    public void Inline_vector_value_with_single_space_parses(string input)
+    {
+        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
+        act.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData("key:: # c\n  - 1")]
+    [InlineData("key::  # c\n  - 1")]
+    [InlineData("key::# c\n  - 1")]
+    public void Comment_after_vector_indicator_parses_with_any_space_count(string input)
+    {
+        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Two_spaces_before_inline_vector_value_still_throws()
+    {
+        var act = () => Huml.Parse("key::  1", HumlOptions.LatestSupported);
+        act.Should().Throw<HumlParseException>();
+    }
+
+    // ── B1: dict_key = simple_key | STRING — quoted keys are valid in inline dicts ──
+
+    [Fact]
+    public void Quoted_key_in_inline_dict_parses()
+    {
+        var doc = Huml.Parse("key:: \"a b\": 1", HumlOptions.LatestSupported);
+        var inner = ((HumlMapping)doc.Entries[0]).Value;
+        var mapping = inner.Should().BeOfType<HumlInlineMapping>().Subject;
+        ((HumlMapping)mapping.Entries[0]).Key.Should().Be("a b");
+    }
+
+    [Fact]
+    public void Quoted_key_in_root_inline_dict_parses()
+    {
+        var doc = Huml.Parse("a: 1, \"b c\": 2", HumlOptions.LatestSupported);
+        doc.Entries.Should().HaveCount(2);
+        ((HumlMapping)doc.Entries[1]).Key.Should().Be("b c");
+    }
+
+    [Fact]
+    public void Quoted_key_at_block_position_still_parses()
+    {
+        var doc = Huml.Parse("\"my key\": 1", HumlOptions.LatestSupported);
+        ((HumlMapping)doc.Entries[0]).Key.Should().Be("my key");
+    }
+
+    [Theory]
+    [InlineData("list:: \"a\", \"b\"")]
+    [InlineData("key: \"plain value\"")]
+    public void Quoted_strings_not_followed_by_colon_remain_values(string input)
+    {
+        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Quoted_key_after_scalar_indicator_still_throws()
+    {
+        var act = () => Huml.Parse("key: \"v\": 1", HumlOptions.LatestSupported);
+        act.Should().Throw<HumlParseException>();
+    }
+
     // ── v0.1 `"""` strips ALL leading/trailing whitespace per content line ──
 
     [Fact]

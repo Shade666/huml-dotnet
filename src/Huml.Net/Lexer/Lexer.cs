@@ -306,19 +306,11 @@ internal ref struct Lexer
 
         string value = ScanQuotedStringContent('"');
 
-        // Heuristic: classify as QuotedKey when at the line's indentation level AND followed by ':'
-        // (which indicates ': value' or '::' vector indicator). This is a structural approximation
-        // — without parser context the lexer cannot distinguish a quoted VALUE followed by ':' from
-        // a genuine quoted KEY, e.g. in inline dicts where the column heuristic breaks down. The
-        // common case (block-level quoted keys) is handled correctly by this check.
-        bool isKey = false;
-        if (!spaceBefore || tokenCol == _lineIndent)
-        {
-            if (_pos < _source.Length && _source[_pos] == ':')
-            {
-                isKey = true;
-            }
-        }
+        // dict_key = simple_key | STRING: a quoted string immediately followed by ':' is a
+        // key wherever it appears (block position, inline dicts, root inline dicts) — the
+        // same lookahead go-huml uses. No space may precede ':', so the check is direct;
+        // a quoted string with anything else after it is a String value.
+        bool isKey = _pos < _source.Length && _source[_pos] == ':';
 
         return new Token
         {
@@ -426,10 +418,9 @@ internal ref struct Lexer
         _pos += 3; // skip opening """
         _col += 3;
 
-        // After opening """, the very next character must be a newline (no inline content).
-        // Handle both \n and \r\n endings in the raw span.
-        if (_pos >= _source.Length || (_source[_pos] != '\n' && _source[_pos] != '\r'))
-            ThrowParseError("Triple-quote multiline delimiter '\"\"\"' must be followed by a newline.");
+        // Tokenizer: OPENING, (whitespace*, comment)?, '\n' — a trailing comment is the
+        // only content permitted after the opening delimiter.
+        ConsumeRestOfOpeningDelimiterLine("\"\"\"");
 
         AdvancePastNewline();
 
@@ -547,10 +538,9 @@ internal ref struct Lexer
         _pos += 3; // skip opening ```
         _col += 3;
 
-        // The opening ``` must be immediately followed by a newline (no content on same line).
-        // Handle both \n and \r\n endings in the raw span.
-        if (_pos >= _source.Length || (_source[_pos] != '\n' && _source[_pos] != '\r'))
-            ThrowParseError("Backtick multiline delimiter '```' must be followed by a newline.");
+        // Tokenizer: OPENING, (whitespace*, comment)?, '\n' — a trailing comment is the
+        // only content permitted after the opening delimiter.
+        ConsumeRestOfOpeningDelimiterLine("```");
 
         AdvancePastNewline();
 
@@ -653,14 +643,27 @@ internal ref struct Lexer
             _pos++; // skip second ':'
             _col++;
 
-            // After '::', the next char must be exactly one space (for inline content) or
-            // end-of-line / EOF (for multiline block). Multiple spaces are not allowed.
-            if (_pos < _source.Length && _source[_pos] == ' ')
+            // Tokenizer: ":: " (exactly one space) introduces an inline value, while
+            // "::" followed by (whitespace*, comment)? newline introduces a multiline
+            // block — so any space count is fine before a comment or end-of-line, but
+            // an inline value needs exactly one space, and zero spaces is never valid.
+            if (_pos < _source.Length)
             {
-                // Peek ahead: if the character after the single space is also a space, that is
-                // "multiple spaces after '::'", which is invalid.
-                if (_pos + 1 < _source.Length && _source[_pos + 1] == ' ')
-                    ThrowParseError("Only one space is allowed after '::'.");
+                char next = _source[_pos];
+                if (next == ' ')
+                {
+                    int p = _pos;
+                    while (p < _source.Length && _source[p] == ' ')
+                        p++;
+                    bool atComment = p < _source.Length && _source[p] == '#';
+                    bool atEol = p >= _source.Length || _source[p] == '\n' || _source[p] == '\r';
+                    if (!atComment && !atEol && p - _pos > 1)
+                        ThrowParseError("Only one space is allowed after '::'.");
+                }
+                else if (next != '\n' && next != '\r' && next != '#')
+                {
+                    ThrowParseError("A space must follow '::' before an inline value.");
+                }
             }
         }
         else
@@ -689,6 +692,43 @@ internal ref struct Lexer
         };
     }
 
+    /// <summary>
+    /// After an opening multiline delimiter, consumes optional spaces and an optional
+    /// trailing comment, erroring on any other content before the newline.
+    /// Tokenizer rule: <c>OPENING, (whitespace*, comment)?, '\n'</c>.
+    /// Leaves <c>_pos</c> at the newline (or EOF — the unclosed-string error surfaces later).
+    /// </summary>
+    private void ConsumeRestOfOpeningDelimiterLine(string delimiter)
+    {
+        int spaces = 0;
+        while (_pos < _source.Length && _source[_pos] == ' ')
+        {
+            _pos++; _col++; spaces++;
+        }
+
+        if (_pos >= _source.Length || _source[_pos] == '\n' || _source[_pos] == '\r')
+        {
+            if (spaces > 0)
+                ThrowParseError("Trailing whitespace is not allowed.");
+            return;
+        }
+
+        if (_source[_pos] == '#')
+        {
+            if (_pos + 1 >= _source.Length || _source[_pos + 1] != ' ')
+                ThrowParseError("Comments must start with '# ' (hash followed by a space).");
+            while (_pos < _source.Length && _source[_pos] != '\n' && _source[_pos] != '\r')
+            {
+                _pos++; _col++;
+            }
+            if (_source[_pos - 1] == ' ')
+                ThrowParseError("Trailing whitespace is not allowed.");
+            return;
+        }
+
+        ThrowParseError($"Multiline delimiter '{delimiter}' must be followed by a newline, optionally after a trailing comment.");
+    }
+
     private Token ScanEmptyCollection(TokenType type, char open, char close)
     {
         int tokenCol = _col;
@@ -696,16 +736,11 @@ internal ref struct Lexer
         _pos++; // skip open char
         _col++;
 
-        // Skip optional whitespace
-        while (_pos < _source.Length && _source[_pos] == ' ')
-        {
-            _pos++;
-            _col++;
-        }
-
+        // Empty vectors are the literal signifiers "[]" and "{}" — the grammar admits
+        // no internal whitespace, and go-huml matches them with peekString("[]").
         if (_pos >= _source.Length || _source[_pos] != close)
         {
-            ThrowParseError($"Expected '{close}' to close '{open}'.");
+            ThrowParseError($"Expected '{close}' immediately after '{open}' — empty vectors are the literals [] and {{}}.");
         }
         _pos++; // skip close char
         _col++;

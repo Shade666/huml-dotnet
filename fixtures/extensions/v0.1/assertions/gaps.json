@@ -24,5 +24,12 @@
   {"name": "list_item_dash_without_space", "input": "list::\n  -1", "error": true},
   {"name": "root_negative_integer", "input": "-5", "error": false},
   {"name": "comment_trailing_space_before_content", "input": "# comment \nkey: 1", "error": true},
-  {"name": "inline_comment_trailing_space_before_content", "input": "key: 1 # comment \nfoo: 2", "error": true}
+  {"name": "inline_comment_trailing_space_before_content", "input": "key: 1 # comment \nfoo: 2", "error": true},
+  {"name": "quoted_key_in_inline_dict", "input": "key:: \"a b\": 1", "error": false},
+  {"name": "quoted_key_in_root_inline_dict", "input": "a: 1, \"b c\": 2", "error": false},
+  {"name": "inline_vector_value_without_space", "input": "key::1", "error": true},
+  {"name": "empty_list_with_internal_space", "input": "key:: [ ]", "error": true},
+  {"name": "empty_dict_with_internal_space", "input": "key:: { }", "error": true},
+  {"name": "comment_after_opening_multiline_delimiter", "input": "key: \"\"\" # note\n  content\n\"\"\"", "error": false},
+  {"name": "multiple_spaces_before_comment_after_vector_indicator", "input": "key::  # c\n  - 1", "error": false}
 ]

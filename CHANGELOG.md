@@ -19,6 +19,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ### Fixed
 
+- **Quoted keys now work in inline dicts** (`key:: "a b": 1`, root `a: 1, "b c": 2`) — the lexer previously misclassified them as string values via a column heuristic; it now uses the same followed-by-`:` lookahead as go-huml.
+- **`key::1` (no space between `::` and an inline value) is now a parse error**, matching the spec tokenizer's literal `":: "`; any number of spaces is now permitted before a trailing comment after `::` (`key::  # note`), matching `(whitespace*, comment)?`.
+- **Empty vectors must be the literals `[]`/`{}`** — `[ ]` and `{  }` are now parse errors.
+- **A comment is now permitted after an opening multiline delimiter** (`key: """ # note`), per the spec tokenizer (also for v0.1 backticks).
 - **`FormatException` no longer escapes `Huml.Parse`** for digitless base prefixes (`key: 0x`, `0b2`, `0o8`): the lexer now requires at least one digit after `0x`/`0o`/`0b`, and `ParseInt` converts any residual conversion failure into `HumlParseException`.
 - **Underscores are now accepted in hex/octal/binary digits and exponent digits** (`0xCAFE_BABE`, `1e1_0`) per the spec tokenizer digit classes.
 - **Allocation regression on the deserialise hot path:** the polymorphic dispatch introduced in 0.2.0-alpha.4 called `GetCustomAttribute<HumlPolymorphicAttribute>()` on every `Deserialize` call, allocating ~180 bytes per call even for non-polymorphic types. Attribute lookups are now cached per type in a shared `PolymorphicMetadataCache` (also de-duplicating the derived-type registration cache between serialiser and deserialiser). The span deserialisation path is allocation-bounded again.
