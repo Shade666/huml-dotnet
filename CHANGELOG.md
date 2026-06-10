@@ -10,7 +10,9 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
-(no changes yet)
+### Fixed
+
+- **Allocation regression on the deserialise hot path:** the polymorphic dispatch introduced in 0.2.0-alpha.4 called `GetCustomAttribute<HumlPolymorphicAttribute>()` on every `Deserialize` call, allocating ~180 bytes per call even for non-polymorphic types. Attribute lookups are now cached per type in a shared `PolymorphicMetadataCache` (also de-duplicating the derived-type registration cache between serialiser and deserialiser). The span deserialisation path is allocation-bounded again.
 
 ## [0.2.0-alpha.4] - 2026-06-08
 

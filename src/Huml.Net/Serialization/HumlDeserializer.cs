@@ -23,13 +23,6 @@ internal static class HumlDeserializer
     /// </summary>
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, Type?> IEnumerableInterfaceCache = new();
 
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, HumlDerivedTypeAttribute[]>
-        DerivedTypeCache = new();
-
-    private static HumlDerivedTypeAttribute[] GetDerivedTypeRegistrations(Type type) =>
-        DerivedTypeCache.GetOrAdd(type, static t =>
-            (HumlDerivedTypeAttribute[])t.GetCustomAttributes(typeof(HumlDerivedTypeAttribute), inherit: false));
-
     // ── Public entry points ───────────────────────────────────────────────────
 
     /// <summary>
@@ -244,7 +237,7 @@ internal static class HumlDeserializer
 
         // Polymorphic dispatch (POLY-01..04): if targetType carries [HumlPolymorphic],
         // scan entries for the discriminator key and re-dispatch to the concrete type.
-        var polyAttr = targetType.GetCustomAttribute<HumlPolymorphicAttribute>();
+        var polyAttr = PolymorphicMetadataCache.GetPolymorphicAttribute(targetType);
         if (polyAttr != null)
         {
             string discriminatorKey = polyAttr.TypeDiscriminatorPropertyName;
@@ -263,7 +256,7 @@ internal static class HumlDeserializer
                 discriminatorEntry.Value is HumlScalar { Kind: ScalarKind.String } labelScalar)
             {
                 var label = labelScalar.Value as string ?? string.Empty;
-                var registrations = GetDerivedTypeRegistrations(targetType);
+                var registrations = PolymorphicMetadataCache.GetDerivedTypeRegistrations(targetType);
                 Type? concreteType = null;
                 foreach (var reg in registrations)
                 {

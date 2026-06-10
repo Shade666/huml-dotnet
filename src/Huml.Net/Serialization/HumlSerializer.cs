@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reflection;
 using System.Text;
 using Huml.Net.Exceptions;
 using Huml.Net.Parser;
@@ -30,13 +29,6 @@ internal static class HumlSerializer
 
     [ThreadStatic]
     private static bool _serializationActive;
-
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, HumlDerivedTypeAttribute[]>
-        DerivedTypeCache = new();
-
-    private static HumlDerivedTypeAttribute[] GetDerivedTypeRegistrations(Type type) =>
-        DerivedTypeCache.GetOrAdd(type, static t =>
-            (HumlDerivedTypeAttribute[])t.GetCustomAttributes(typeof(HumlDerivedTypeAttribute), inherit: false));
 
     // ── Public entry points ───────────────────────────────────────────────────
 
@@ -389,13 +381,13 @@ internal static class HumlSerializer
         // Polymorphic discriminator emit (POLY-05): when the declared type carries
         // [HumlPolymorphic] and the runtime type is a registered derived type, emit
         // the discriminator key as the first mapping entry.
-        var polyAttr = targetType.GetCustomAttribute<HumlPolymorphicAttribute>();
+        var polyAttr = PolymorphicMetadataCache.GetPolymorphicAttribute(targetType);
         if (polyAttr != null)
         {
             var runtimeType = obj.GetType();
             if (runtimeType != targetType)
             {
-                foreach (var reg in GetDerivedTypeRegistrations(targetType))
+                foreach (var reg in PolymorphicMetadataCache.GetDerivedTypeRegistrations(targetType))
                 {
                     if (reg.DerivedType == runtimeType)
                     {
