@@ -1,7 +1,7 @@
 [
-  {"name": "bool_true_uppercase", "input": "key: TRUE", "error": false},
-  {"name": "bool_false_uppercase", "input": "key: FALSE", "error": false},
-  {"name": "null_uppercase", "input": "key: NULL", "error": false},
+  {"name": "bool_true_uppercase", "input": "key: TRUE", "error": true},
+  {"name": "bool_false_uppercase", "input": "key: FALSE", "error": true},
+  {"name": "null_uppercase", "input": "key: NULL", "error": true},
   {"name": "tab_indentation_at_line_start", "input": "\tkey: \"value\"", "error": true},
   {"name": "quoted_key_with_integer_value", "input": "\"my-key\": 42", "error": false},
   {"name": "root_float_scalar", "input": "3.14", "error": false},
@@ -11,9 +11,18 @@
   {"name": "multiline_list_integer_items", "input": "list::\n  - 1\n  - 2\n  - 3", "error": false},
   {"name": "ambiguous_empty_vector_bare", "input": "key::", "error": true},
   {"name": "quoted_key_containing_colon", "input": "\"a:b\": \"v\"", "error": false},
-  {"name": "inf_mixed_case", "input": "key: Inf", "error": false},
-  {"name": "nan_mixed_case", "input": "key: NaN", "error": false},
+  {"name": "inf_mixed_case", "input": "key: Inf", "error": true},
+  {"name": "nan_mixed_case", "input": "key: NaN", "error": true},
   {"name": "blank_line_between_entries", "input": "key: \"value\"\n\nnext: \"other\"", "error": false},
   {"name": "string_value_containing_colon_space", "input": "key: \"hello: world\"", "error": false},
-  {"name": "float_with_underscores", "input": "key: 1_000.5", "error": false}
+  {"name": "float_with_underscores", "input": "key: 1_000.5", "error": false},
+  {"name": "hex_prefix_without_digits", "input": "key: 0x", "error": true},
+  {"name": "binary_with_invalid_digit", "input": "key: 0b2", "error": true},
+  {"name": "octal_with_invalid_digit", "input": "key: 0o8", "error": true},
+  {"name": "hex_with_underscores", "input": "key: 0xCAFE_BABE", "error": false},
+  {"name": "exponent_with_underscores", "input": "key: 1e1_0", "error": false},
+  {"name": "list_item_dash_without_space", "input": "list::\n  -1", "error": true},
+  {"name": "root_negative_integer", "input": "-5", "error": false},
+  {"name": "comment_trailing_space_before_content", "input": "# comment \nkey: 1", "error": true},
+  {"name": "inline_comment_trailing_space_before_content", "input": "key: 1 # comment \nfoo: 2", "error": true}
 ]

@@ -302,7 +302,7 @@ internal ref struct HumlParser
         TokenType.Float   => new HumlScalar(ScalarKind.Float,   ParseFloat(tok.Value!, tok.Line, tok.Column))
                                 { Line = tok.Line, Column = tok.Column },
         TokenType.Bool    => new HumlScalar(ScalarKind.Bool,    string.Equals(tok.Value, "true",
-                                 StringComparison.OrdinalIgnoreCase))
+                                 StringComparison.Ordinal))
                                 { Line = tok.Line, Column = tok.Column },
         TokenType.Null    => new HumlScalar(ScalarKind.Null,    null)
                                 { Line = tok.Line, Column = tok.Column },
@@ -350,6 +350,12 @@ internal ref struct HumlParser
         {
             throw new HumlParseException(
                 $"Integer literal '{s}' overflows the supported range (int64).", line, col);
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentException)
+        {
+            // Defence in depth: the lexer validates digits, but a malformed literal must
+            // never escape Huml.Parse as anything other than HumlParseException.
+            throw new HumlParseException($"Invalid integer literal '{s}'.", line, col);
         }
     }
 

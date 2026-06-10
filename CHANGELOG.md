@@ -10,9 +10,23 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+### Changed
+
+- **Keyword literals are now case-sensitive** (spec + go-huml alignment): `TRUE`, `Null`, `NaN`, `Inf` etc. are unquoted-string parse errors; only lowercase `true`/`false`/`null`/`nan`/`inf` parse. Previously these were accepted case-insensitively.
+- **Trailing spaces on comment lines now throw `HumlParseException`** ("Trailing spaces are not allowed on any line, including … comment-only lines").
+- **A dash must be followed by a space to start a list item.** Root `-5`/`-inf` now parse as scalars (previously a one-element list — wrong AST shape); `list::\n  -1` is now a parse error.
+- **v0.1 `"""` multiline strings now strip all leading/trailing whitespace per content line**, per the v0.1 "Strip spaces" semantics (a missing version gate meant v0.2 preserve semantics applied).
+
 ### Fixed
 
+- **`FormatException` no longer escapes `Huml.Parse`** for digitless base prefixes (`key: 0x`, `0b2`, `0o8`): the lexer now requires at least one digit after `0x`/`0o`/`0b`, and `ParseInt` converts any residual conversion failure into `HumlParseException`.
+- **Underscores are now accepted in hex/octal/binary digits and exponent digits** (`0xCAFE_BABE`, `1e1_0`) per the spec tokenizer digit classes.
 - **Allocation regression on the deserialise hot path:** the polymorphic dispatch introduced in 0.2.0-alpha.4 called `GetCustomAttribute<HumlPolymorphicAttribute>()` on every `Deserialize` call, allocating ~180 bytes per call even for non-polymorphic types. Attribute lookups are now cached per type in a shared `PolymorphicMetadataCache` (also de-duplicating the derived-type registration cache between serialiser and deserialiser). The span deserialisation path is allocation-bounded again.
+
+### Added
+
+- `docs/spec-compliance-report.md` — full prose-spec compliance sweep (G1.3): every normative rule checked, 9 deviations fixed, 12 minor divergences documented with dispositions.
+- 10 new extension fixture rows covering the fixed behaviours; 5 uppercase-keyword rows flipped to `error: true` to match spec and reference implementation.
 
 ## [0.2.0-alpha.4] - 2026-06-08
 

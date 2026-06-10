@@ -77,8 +77,13 @@ internal ref struct Lexer
             if (ch == '"')
                 return ScanDoubleQuoteToken();
 
-            if (ch == '-' && _col == _lineIndent)
+            // List items are "- " (dash-space) per the spec tokenizer; a dash followed
+            // by anything else (e.g. "-5", "-inf") is a signed numeric, even at line start.
+            if (ch == '-' && _col == _lineIndent
+                && (_pos + 1 >= _source.Length || _source[_pos + 1] is ' ' or '\n' or '\r'))
+            {
                 return ScanListItem();
+            }
 
             if (ch == ':')
                 return ScanIndicator();
@@ -264,6 +269,12 @@ internal ref struct Lexer
             _pos++;
             _col++;
         }
+        // Trailing spaces are not allowed on any line, including comment lines.
+        if (_source[_pos - 1] == ' ')
+        {
+            throw new HumlParseException(
+                "Trailing whitespace is not allowed.", _line, _col - 1);
+        }
         // Skip newline (handles both \n and \r\n)
         AdvancePastNewline();
 
@@ -428,6 +439,13 @@ internal ref struct Lexer
         int stripIndent = keyIndent + 2;
         bool closed = false;
 
+        // Version gate: in v0.1, `"""` has "strip spaces" semantics — ALL leading and
+        // trailing whitespace on each content line is stripped. From v0.2, `"""` preserves
+        // spaces beyond the 2-space strip indent (backticks were the v0.1 preserve form).
+#pragma warning disable CS0618 // V0_1 obsolete
+        bool preserveSpaces = _effectiveSpecVersion >= HumlSpecVersion.V0_2;
+#pragma warning restore CS0618
+
         while (_pos < _source.Length)
         {
             // Check for closing """
@@ -478,10 +496,12 @@ internal ref struct Lexer
                 _col++;
             }
 
-            string lineContent = new string(_source.Slice(contentStart, _pos - contentStart));
+            var contentSpan = _source.Slice(contentStart, _pos - contentStart);
+            if (!preserveSpaces)
+                contentSpan = contentSpan.Trim(' ');
             if (!first)
                 sb.Append('\n');
-            sb.Append(lineContent);
+            sb.Append(contentSpan);
             first = false;
 
             // Skip newline (handles both \n and \r\n)
@@ -800,10 +820,11 @@ internal ref struct Lexer
                 _pos++;
                 _col++;
             }
+            // Keyword literals are lowercase and case-sensitive (spec + go-huml reference).
             var kwSpan = _source.Slice(start, _pos - start); // includes sign
-            if (kwSpan.Equals("inf".AsSpan(), StringComparison.OrdinalIgnoreCase) ||
-                kwSpan.Equals("+inf".AsSpan(), StringComparison.OrdinalIgnoreCase) ||
-                kwSpan.Equals("-inf".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            if (kwSpan.Equals("inf".AsSpan(), StringComparison.Ordinal) ||
+                kwSpan.Equals("+inf".AsSpan(), StringComparison.Ordinal) ||
+                kwSpan.Equals("-inf".AsSpan(), StringComparison.Ordinal))
             {
                 return new Token
                 {
@@ -854,28 +875,40 @@ internal ref struct Lexer
             if (prefix == 'x' || prefix == 'X')
             {
                 _pos += 2; _col += 2;
-                while (_pos < _source.Length && IsHexChar(_source[_pos]))
+                int digits = 0;
+                while (_pos < _source.Length && (IsHexChar(_source[_pos]) || _source[_pos] == '_'))
                 {
+                    if (_source[_pos] != '_') digits++;
                     _pos++; _col++;
                 }
+                if (digits == 0)
+                    ThrowParseError("Hex literal requires at least one digit after '0x'.");
                 return;
             }
             if (prefix == 'o' || prefix == 'O')
             {
                 _pos += 2; _col += 2;
-                while (_pos < _source.Length && IsOctalChar(_source[_pos]))
+                int digits = 0;
+                while (_pos < _source.Length && (IsOctalChar(_source[_pos]) || _source[_pos] == '_'))
                 {
+                    if (_source[_pos] != '_') digits++;
                     _pos++; _col++;
                 }
+                if (digits == 0)
+                    ThrowParseError("Octal literal requires at least one digit after '0o'.");
                 return;
             }
             if (prefix == 'b' || prefix == 'B')
             {
                 _pos += 2; _col += 2;
-                while (_pos < _source.Length && (_source[_pos] == '0' || _source[_pos] == '1'))
+                int digits = 0;
+                while (_pos < _source.Length && (_source[_pos] is '0' or '1' or '_'))
                 {
+                    if (_source[_pos] != '_') digits++;
                     _pos++; _col++;
                 }
+                if (digits == 0)
+                    ThrowParseError("Binary literal requires at least one digit after '0b'.");
                 return;
             }
         }
@@ -904,7 +937,7 @@ internal ref struct Lexer
             {
                 _pos++; _col++;
             }
-            while (_pos < _source.Length && IsDigit(_source[_pos]))
+            while (_pos < _source.Length && (IsDigit(_source[_pos]) || _source[_pos] == '_'))
             {
                 _pos++; _col++;
             }
@@ -939,11 +972,13 @@ internal ref struct Lexer
 
     private static TokenType? TryMatchKeyword(ReadOnlySpan<char> slice)
     {
-        if (slice.Equals("true".AsSpan(), StringComparison.OrdinalIgnoreCase))  return TokenType.Bool;
-        if (slice.Equals("false".AsSpan(), StringComparison.OrdinalIgnoreCase)) return TokenType.Bool;
-        if (slice.Equals("null".AsSpan(), StringComparison.OrdinalIgnoreCase))  return TokenType.Null;
-        if (slice.Equals("nan".AsSpan(), StringComparison.OrdinalIgnoreCase))   return TokenType.NaN;
-        if (slice.Equals("inf".AsSpan(), StringComparison.OrdinalIgnoreCase))   return TokenType.Inf;
+        // Keyword literals are lowercase and case-sensitive (spec + go-huml reference);
+        // "TRUE" is an unquoted string, i.e. a parse error, not a bool.
+        if (slice.Equals("true".AsSpan(), StringComparison.Ordinal))  return TokenType.Bool;
+        if (slice.Equals("false".AsSpan(), StringComparison.Ordinal)) return TokenType.Bool;
+        if (slice.Equals("null".AsSpan(), StringComparison.Ordinal))  return TokenType.Null;
+        if (slice.Equals("nan".AsSpan(), StringComparison.Ordinal))   return TokenType.NaN;
+        if (slice.Equals("inf".AsSpan(), StringComparison.Ordinal))   return TokenType.Inf;
         return null;
     }
 

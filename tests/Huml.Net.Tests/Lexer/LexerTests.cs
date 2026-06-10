@@ -68,11 +68,12 @@ public class LexerTests
     }
 
     [Fact]
-    public void Lex_key_scalar_bool_case_insensitive()
+    public void Lex_key_scalar_bool_case_sensitive()
     {
-        var tokens = LexAll("b: TRUE\n");
-        tokens[2].Type.Should().Be(TokenType.Bool);
-        tokens[2].Value.Should().Be("TRUE");
+        // Keyword literals are lowercase and case-sensitive (spec + go-huml reference):
+        // "TRUE" is an unquoted string, which is a parse error.
+        var act = () => LexAll("b: TRUE\n");
+        act.Should().Throw<HumlParseException>();
     }
 
     [Fact]
@@ -85,11 +86,11 @@ public class LexerTests
     }
 
     [Fact]
-    public void Lex_key_scalar_null_case_insensitive()
+    public void Lex_key_scalar_null_case_sensitive()
     {
-        var tokens = LexAll("n: NULL\n");
-        tokens[2].Type.Should().Be(TokenType.Null);
-        tokens[2].Value.Should().Be("NULL");
+        // "NULL" is an unquoted string, not the null literal — parse error.
+        var act = () => LexAll("n: NULL\n");
+        act.Should().Throw<HumlParseException>();
     }
 
     [Fact]
