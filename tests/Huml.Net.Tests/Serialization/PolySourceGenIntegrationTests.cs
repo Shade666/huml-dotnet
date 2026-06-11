@@ -27,7 +27,7 @@ public sealed class PolySourceGenIntegrationTests
     public void PSG03_serialise_derived_type_emits_discriminator_and_all_properties()
     {
         var circle = new SGCircle { Color = "red", Radius = 5.0 };
-        var huml = Huml.Serialize<SGShape>(circle, Options);
+        var huml = HumlSerializer.Serialize<SGShape>(circle, Options);
 
         huml.Should().Contain("\"_type\": \"circle\"");
         huml.Should().Contain("Color: \"red\"");
@@ -39,7 +39,7 @@ public sealed class PolySourceGenIntegrationTests
     {
         const string huml = "%HUML v0.2.0\n\"_type\": \"circle\"\nColor: \"red\"\nRadius: 5\n";
 
-        var shape = Huml.Deserialize<SGShape>(huml, Options);
+        var shape = HumlSerializer.Deserialize<SGShape>(huml, Options);
         shape.Should().NotBeNull();
 
         var circle = shape!.Should().BeOfType<SGCircle>().Subject;
@@ -51,8 +51,8 @@ public sealed class PolySourceGenIntegrationTests
     public void PSG05_round_trip_sgcircle_via_sgshape()
     {
         var original = new SGCircle { Color = "blue", Radius = 3.14 };
-        var huml = Huml.Serialize<SGShape>(original, Options);
-        var restored = Huml.Deserialize<SGShape>(huml, Options);
+        var huml = HumlSerializer.Serialize<SGShape>(original, Options);
+        var restored = HumlSerializer.Deserialize<SGShape>(huml, Options);
 
         restored.Should().NotBeNull();
         var circle = restored!.Should().BeOfType<SGCircle>().Subject;
@@ -64,12 +64,12 @@ public sealed class PolySourceGenIntegrationTests
     public void PSG06_round_trip_base_type_without_discriminator()
     {
         var original = new SGShape { Color = "green" };
-        var huml = Huml.Serialize<SGShape>(original, Options);
+        var huml = HumlSerializer.Serialize<SGShape>(original, Options);
 
         huml.Should().NotContain("_type");
         huml.Should().Contain("Color: \"green\"");
 
-        var restored = Huml.Deserialize<SGShape>(huml, Options);
+        var restored = HumlSerializer.Deserialize<SGShape>(huml, Options);
         restored.Should().NotBeNull();
         restored!.Should().BeOfType<SGShape>();
         restored.Color.Should().Be("green");

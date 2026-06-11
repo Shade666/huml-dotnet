@@ -12,6 +12,8 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ### Changed
 
+- **BREAKING: the static facade `Huml` is renamed to `HumlSerializer`.** The old name collided with the root `Huml` namespace, so `using Huml.Net; Huml.Deserialize(...)` failed to compile for any consumer outside the `Huml.Net.*` namespace tree (`CS0234`). Replace `Huml.Serialize/Deserialize/Parse/Populate` with `HumlSerializer.Serialize/Deserialize/Parse/Populate`. This is the only intentional breaking change in the beta.
+
 - **Keyword literals are now case-sensitive** (spec + go-huml alignment): `TRUE`, `Null`, `NaN`, `Inf` etc. are unquoted-string parse errors; only lowercase `true`/`false`/`null`/`nan`/`inf` parse. Previously these were accepted case-insensitively.
 - **Trailing spaces on comment lines now throw `HumlParseException`** ("Trailing spaces are not allowed on any line, including … comment-only lines").
 - **A dash must be followed by a space to start a list item.** Root `-5`/`-inf` now parse as scalars (previously a one-element list — wrong AST shape); `list::\n  -1` is now a parse error.
@@ -21,7 +23,7 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 Findings from the G3.2 adversarial security review (docs/internals/g3-security-review.md):
 
-- **Cyclic object graphs no longer crash the process.** `Huml.Serialize` recursion is now bounded by `HumlOptions.MaxRecursionDepth`; a self-referencing graph throws a catchable `HumlSerializeException` instead of an uncatchable `StackOverflowException`.
+- **Cyclic object graphs no longer crash the process.** `HumlSerializer.Serialize` recursion is now bounded by `HumlOptions.MaxRecursionDepth`; a self-referencing graph throws a catchable `HumlSerializeException` instead of an uncatchable `StackOverflowException`.
 - **User constructor / property-setter / getter exceptions now surface as the declared type.** A throwing constructor (parameterised or parameterless) or property setter during deserialisation now throws `HumlDeserializeException` (with the original as `InnerException`) instead of leaking `System.Reflection.TargetInvocationException`; a throwing getter during serialisation throws `HumlSerializeException`.
 - **`long.MinValue` (`-9223372036854775808`) now parses** — it was previously rejected as an overflow, breaking round-trips of the minimum `Int64`.
 - **A leading byte-order mark (U+FEFF) now produces a clear error** ("save as UTF-8 without BOM") instead of a generic "unexpected character".
@@ -41,7 +43,7 @@ Findings from the G3.2 adversarial security review (docs/internals/g3-security-r
 - **`key::1` (no space between `::` and an inline value) is now a parse error**, matching the spec tokenizer's literal `":: "`; any number of spaces is now permitted before a trailing comment after `::` (`key::  # note`), matching `(whitespace*, comment)?`.
 - **Empty vectors must be the literals `[]`/`{}`** — `[ ]` and `{  }` are now parse errors.
 - **A comment is now permitted after an opening multiline delimiter** (`key: """ # note`), per the spec tokenizer (also for v0.1 backticks).
-- **`FormatException` no longer escapes `Huml.Parse`** for digitless base prefixes (`key: 0x`, `0b2`, `0o8`): the lexer now requires at least one digit after `0x`/`0o`/`0b`, and `ParseInt` converts any residual conversion failure into `HumlParseException`.
+- **`FormatException` no longer escapes `HumlSerializer.Parse`** for digitless base prefixes (`key: 0x`, `0b2`, `0o8`): the lexer now requires at least one digit after `0x`/`0o`/`0b`, and `ParseInt` converts any residual conversion failure into `HumlParseException`.
 - **Underscores are now accepted in hex/octal/binary digits and exponent digits** (`0xCAFE_BABE`, `1e1_0`) per the spec tokenizer digit classes.
 - **Allocation regression on the deserialise hot path:** the polymorphic dispatch introduced in 0.2.0-alpha.4 called `GetCustomAttribute<HumlPolymorphicAttribute>()` on every `Deserialize` call, allocating ~180 bytes per call even for non-polymorphic types. Attribute lookups are now cached per type in a shared `PolymorphicMetadataCache` (also de-duplicating the derived-type registration cache between serialiser and deserialiser). The span deserialisation path is allocation-bounded again.
 
@@ -130,7 +132,7 @@ Findings from the G3.2 adversarial security review (docs/internals/g3-security-r
   call `.AsSpan()` and use the same single code path. Additionally, the upfront `\r\n`/`\r`
   normalisation (two `string.Replace` calls) is replaced with inline character-level normalisation
   in the lexer, eliminating two more intermediate string allocations on both string and span paths.
-- **`StringBuilder` pooling in `HumlSerializer`:** Both `Serialize` overloads now reuse a `[ThreadStatic]` `StringBuilder` across calls on the same thread, eliminating one `StringBuilder` allocation and one backing `char[]` growth per `Huml.Serialize` call on hot paths. A second `[ThreadStatic]` sentinel (`_serializationActive`) ensures re-entry from a `HumlConverter.Write` that calls `Huml.Serialize` internally falls back to a fresh `StringBuilder` rather than corrupting the pooled instance. No public API or emitted HUML format change.
+- **`StringBuilder` pooling in `HumlSerializer`:** Both `Serialize` overloads now reuse a `[ThreadStatic]` `StringBuilder` across calls on the same thread, eliminating one `StringBuilder` allocation and one backing `char[]` growth per `HumlSerializer.Serialize` call on hot paths. A second `[ThreadStatic]` sentinel (`_serializationActive`) ensures re-entry from a `HumlConverter.Write` that calls `HumlSerializer.Serialize` internally falls back to a fresh `StringBuilder` rather than corrupting the pooled instance. No public API or emitted HUML format change.
 
 ### Added
 
@@ -165,7 +167,7 @@ Findings from the G3.2 adversarial security review (docs/internals/g3-security-r
   `Deserialize(string,Type)`, `Populate<T>(string)`, `Populate<T>(ReadOnlySpan<char>)`) now
   carry `[RequiresUnreferencedCode]` and `[RequiresDynamicCode]`. Consumers publishing with
   `PublishTrimmed=true` or NativeAOT now receive compile-time warnings rather than silent
-  broken binaries. `Huml.Parse` is unannotated — it performs no reflection on user types.
+  broken binaries. `HumlSerializer.Parse` is unannotated — it performs no reflection on user types.
   `<IsTrimmable>true</IsTrimmable>` added to `Huml.Net.csproj` for net8.0/9.0/net10.0
   (conditioned on net6.0+ compatibility).
 - **Duplicate-key write validation:** `HumlOptions.ValidateDuplicateKeysOnWrite` (default `false`) causes `HumlSerializer` to throw `HumlSerializeException` when a dictionary contains two entries that produce the same key string (compared using `StringComparer.Ordinal`) during serialisation. The check fires per dictionary call frame, so nested dictionaries have independent key spaces. Keys differing only in casing are not treated as duplicates. Opt-in; default `false` preserves all existing behaviour.

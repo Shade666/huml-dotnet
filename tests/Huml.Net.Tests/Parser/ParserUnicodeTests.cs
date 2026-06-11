@@ -114,8 +114,8 @@ public class ParserUnicodeTests
     public void RoundTrip_UnicodeStringValues_Preserved()
     {
         var original = new UnicodePoco { Greeting = "مرحبا", Name = "太郎" };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<UnicodePoco>(huml);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<UnicodePoco>(huml);
         result.Greeting.Should().Be("مرحبا");
         result.Name.Should().Be("太郎");
     }
@@ -124,8 +124,8 @@ public class ParserUnicodeTests
     public void RoundTrip_Emoji_Preserved()
     {
         var original = new UnicodePoco { Greeting = "🚀🌍", Name = "launch" };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<UnicodePoco>(huml);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<UnicodePoco>(huml);
         result.Greeting.Should().Be("🚀🌍");
         result.Name.Should().Be("launch");
     }

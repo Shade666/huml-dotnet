@@ -68,7 +68,7 @@ public class HumlExtensionDataTests
     {
         // String values must be quoted in HUML v0.2; integers and booleans are bare.
         const string huml = "Name: \"Alice\"\nUnknown: 42\n";
-        var poco = Huml.Deserialize<NodeExtPoco>(huml, HumlOptions.LatestSupported);
+        var poco = HumlSerializer.Deserialize<NodeExtPoco>(huml, HumlOptions.LatestSupported);
 
         poco.Name.Should().Be("Alice");
         poco.Extras.Should().NotBeNull();
@@ -84,7 +84,7 @@ public class HumlExtensionDataTests
     public void EXT02_ObjDict_unmapped_scalar_captured()
     {
         const string huml = "Name: \"Bob\"\nUnknown: true\n";
-        var poco = Huml.Deserialize<ObjExtPoco>(huml, HumlOptions.LatestSupported);
+        var poco = HumlSerializer.Deserialize<ObjExtPoco>(huml, HumlOptions.LatestSupported);
 
         poco.Name.Should().Be("Bob");
         poco.Overflow.Should().NotBeNull();
@@ -97,7 +97,7 @@ public class HumlExtensionDataTests
     {
         // 'true' as a bool value for 'Extra'; Name is a quoted string
         const string huml = "Name: \"Carol\"\nExtra: true\n";
-        var poco = Huml.Deserialize<NodeExtPoco>(huml, HumlOptions.LatestSupported);
+        var poco = HumlSerializer.Deserialize<NodeExtPoco>(huml, HumlOptions.LatestSupported);
 
         poco.Name.Should().Be("Carol");
         poco.Extras.Should().NotBeNull();
@@ -111,7 +111,7 @@ public class HumlExtensionDataTests
     public void EXT04_no_unknown_keys_extension_null_or_empty()
     {
         const string huml = "Name: \"Dave\"\n";
-        var poco = Huml.Deserialize<NodeExtPoco>(huml, HumlOptions.LatestSupported);
+        var poco = HumlSerializer.Deserialize<NodeExtPoco>(huml, HumlOptions.LatestSupported);
 
         poco.Name.Should().Be("Dave");
         // Extension dict is either null (not initialised) or empty
@@ -130,7 +130,7 @@ public class HumlExtensionDataTests
             }
         };
 
-        var output = Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var output = HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
 
         var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         // Find index of the Name line and the ext line
@@ -151,7 +151,7 @@ public class HumlExtensionDataTests
             Overflow = new Dictionary<string, object?> { ["extra"] = "value" }
         };
 
-        var output = Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var output = HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
 
         var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         int nameIdx  = Array.FindIndex(lines, l => l.TrimStart().StartsWith("Name:", StringComparison.Ordinal));
@@ -167,9 +167,9 @@ public class HumlExtensionDataTests
     {
         const string huml = "Name: \"Grace\"\ntag: \"demo\"\n";
 
-        var first = Huml.Deserialize<NodeExtPoco>(huml, HumlOptions.LatestSupported);
-        var serialised = Huml.Serialize(first, HumlOptions.LatestSupported);
-        var second = Huml.Deserialize<NodeExtPoco>(serialised, HumlOptions.LatestSupported);
+        var first = HumlSerializer.Deserialize<NodeExtPoco>(huml, HumlOptions.LatestSupported);
+        var serialised = HumlSerializer.Serialize(first, HumlOptions.LatestSupported);
+        var second = HumlSerializer.Deserialize<NodeExtPoco>(serialised, HumlOptions.LatestSupported);
 
         first.Extras.Should().NotBeNull();
         second.Extras.Should().NotBeNull();
@@ -186,9 +186,9 @@ public class HumlExtensionDataTests
     {
         const string huml = "Name: \"Henry\"\nscore: 99\n";
 
-        var first = Huml.Deserialize<ObjExtPoco>(huml, HumlOptions.LatestSupported);
-        var serialised = Huml.Serialize(first, HumlOptions.LatestSupported);
-        var second = Huml.Deserialize<ObjExtPoco>(serialised, HumlOptions.LatestSupported);
+        var first = HumlSerializer.Deserialize<ObjExtPoco>(huml, HumlOptions.LatestSupported);
+        var serialised = HumlSerializer.Serialize(first, HumlOptions.LatestSupported);
+        var second = HumlSerializer.Deserialize<ObjExtPoco>(serialised, HumlOptions.LatestSupported);
 
         first.Overflow!["score"].Should().Be(99L);
         second.Overflow!["score"].Should().Be(99L);
@@ -198,7 +198,7 @@ public class HumlExtensionDataTests
     public void EXT09_nested_mapping_captured_ObjDict()
     {
         const string huml = "Name: \"Alice\"\nnested::\n  a: 1\n";
-        var poco = Huml.Deserialize<ObjExtPoco>(huml, HumlOptions.LatestSupported);
+        var poco = HumlSerializer.Deserialize<ObjExtPoco>(huml, HumlOptions.LatestSupported);
 
         poco.Overflow.Should().NotBeNull();
         poco.Overflow!.ContainsKey("nested").Should().BeTrue();
@@ -211,7 +211,7 @@ public class HumlExtensionDataTests
     public void EXT10_sequence_captured_ObjDict()
     {
         const string huml = "Name: \"Alice\"\nitems::\n  - \"foo\"\n  - \"bar\"\n";
-        var poco = Huml.Deserialize<ObjExtPoco>(huml, HumlOptions.LatestSupported);
+        var poco = HumlSerializer.Deserialize<ObjExtPoco>(huml, HumlOptions.LatestSupported);
 
         poco.Overflow.Should().NotBeNull();
         poco.Overflow!.ContainsKey("items").Should().BeTrue();
@@ -223,14 +223,14 @@ public class HumlExtensionDataTests
     [Fact]
     public void EXT11_multiple_extension_attrs_throws()
     {
-        var act = () => Huml.Deserialize<DualExtPoco>("Name: \"x\"\n", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<DualExtPoco>("Name: \"x\"\n", HumlOptions.LatestSupported);
         act.Should().Throw<InvalidOperationException>().WithMessage("*DualExtPoco*");
     }
 
     [Fact]
     public void EXT12_bad_type_throws()
     {
-        var act = () => Huml.Deserialize<BadTypePoco>("Name: \"x\"\n", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<BadTypePoco>("Name: \"x\"\n", HumlOptions.LatestSupported);
         act.Should().Throw<InvalidOperationException>().WithMessage("*not supported*");
     }
 
@@ -238,7 +238,7 @@ public class HumlExtensionDataTests
     public void EXT13_inherited_extension_data()
     {
         const string huml = "Value: 7\nExtra: \"inherited\"\n";
-        var poco = Huml.Deserialize<DerivedExtPoco>(huml, HumlOptions.LatestSupported);
+        var poco = HumlSerializer.Deserialize<DerivedExtPoco>(huml, HumlOptions.LatestSupported);
 
         poco.Value.Should().Be(7);
         poco.Extras.Should().NotBeNull();
@@ -257,7 +257,7 @@ public class HumlExtensionDataTests
             }
         };
 
-        var output = Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var output = HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         output.Should().Contain("\"needs quoting\":");
     }
 
@@ -265,9 +265,9 @@ public class HumlExtensionDataTests
     public void EXT15_null_extension_dict_no_nullref_on_serialise()
     {
         var poco = new NodeExtPoco { Name = "Null", Extras = null };
-        var act = () => Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         act.Should().NotThrow();
-        var result = Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         // Only the declared Name property should appear
         result.Should().Contain("Name:");
     }
@@ -276,8 +276,8 @@ public class HumlExtensionDataTests
     public void EXT16_no_regression_plain_poco()
     {
         var original = new PlainPoco { Name = "Plain" };
-        var serialised = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var roundTripped = Huml.Deserialize<PlainPoco>(serialised, HumlOptions.LatestSupported);
+        var serialised = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var roundTripped = HumlSerializer.Deserialize<PlainPoco>(serialised, HumlOptions.LatestSupported);
         roundTripped.Name.Should().Be("Plain");
     }
 }

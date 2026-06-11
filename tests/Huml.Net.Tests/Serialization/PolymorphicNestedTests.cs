@@ -42,8 +42,8 @@ public class PolymorphicNestedTests
     {
         var house = new Household { Pet = new Cat { Name = "Felix", Lives = 9 } };
 
-        var huml = Huml.Serialize(house);
-        var restored = Huml.Deserialize<Household>(huml, HumlOptions.Default);
+        var huml = HumlSerializer.Serialize(house);
+        var restored = HumlSerializer.Deserialize<Household>(huml, HumlOptions.Default);
 
         restored.Pet.Should().BeOfType<Cat>();
         ((Cat)restored.Pet).Lives.Should().Be(9);
@@ -58,8 +58,8 @@ public class PolymorphicNestedTests
             Animals = [new Dog { Name = "Rex", GoodBoy = true }, new Cat { Name = "Tom", Lives = 7 }],
         };
 
-        var huml = Huml.Serialize(house);
-        var restored = Huml.Deserialize<Household>(huml, HumlOptions.Default);
+        var huml = HumlSerializer.Serialize(house);
+        var restored = HumlSerializer.Deserialize<Household>(huml, HumlOptions.Default);
 
         restored.Animals.Should().HaveCount(2);
         restored.Animals[0].Should().BeOfType<Dog>();

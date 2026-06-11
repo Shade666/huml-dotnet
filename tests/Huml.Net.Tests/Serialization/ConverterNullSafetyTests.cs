@@ -49,7 +49,7 @@ public sealed class ConverterNullSafetyTests
         // The converter's Write method throws if called with null; if IN-04 is wrong,
         // WriteObject would call Write(context, null) and this test would throw.
         var dto = new DtoWithNullableString { Label = null };
-        var act = () => Huml.Serialize(dto, Opts);
+        var act = () => HumlSerializer.Serialize(dto, Opts);
         act.Should().NotThrow();
     }
 
@@ -57,7 +57,7 @@ public sealed class ConverterNullSafetyTests
     public void In04_null_reference_value_emits_null_keyword()
     {
         var dto = new DtoWithNullableString { Label = null };
-        var huml = Huml.Serialize(dto, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
         huml.Should().Contain("Label: null");
     }
 
@@ -65,7 +65,7 @@ public sealed class ConverterNullSafetyTests
     public void In04_non_null_reference_value_calls_converter_write()
     {
         var dto = new DtoWithNullableString { Label = "hello" };
-        var huml = Huml.Serialize(dto, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
         huml.Should().Contain("Label: \"hello\"");
     }
 
@@ -115,7 +115,7 @@ public sealed class ConverterNullSafetyTests
             },
         };
 
-        var act = () => Huml.Serialize(dto, Opts);
+        var act = () => HumlSerializer.Serialize(dto, Opts);
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*re-entry*");
     }

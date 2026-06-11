@@ -42,7 +42,7 @@ public class EnumSerializationTests
     [Fact]
     public void Serialize_EnumProperty_EmitsQuotedMemberName()
     {
-        var result = Huml.Serialize(new StatusPoco { State = Status.Active }, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Serialize(new StatusPoco { State = Status.Active }, HumlOptions.LatestSupported);
         result.Should().Contain("State: \"Active\"\n");
     }
 
@@ -51,7 +51,7 @@ public class EnumSerializationTests
     [Fact]
     public void Serialize_EnumWithHumlEnumValue_EmitsOverrideName()
     {
-        var result = Huml.Serialize(new PriorityPoco { Level = Priority.Low }, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Serialize(new PriorityPoco { Level = Priority.Low }, HumlOptions.LatestSupported);
         result.Should().Contain("Level: \"low-priority\"\n");
     }
 
@@ -61,7 +61,7 @@ public class EnumSerializationTests
     public void Serialize_EnumWithNamingPolicy_TransformsMemberName()
     {
         var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
-        var result = Huml.Serialize(new StatusPoco { State = Status.Active }, options);
+        var result = HumlSerializer.Serialize(new StatusPoco { State = Status.Active }, options);
         // Status.Active → KebabCase → "active" (single word, lowercase)
         result.Should().Contain("\"active\"");
     }
@@ -72,7 +72,7 @@ public class EnumSerializationTests
     public void Serialize_EnumWithHumlEnumValueAndPolicy_AttributeWins()
     {
         var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
-        var result = Huml.Serialize(new PriorityPoco { Level = Priority.High }, options);
+        var result = HumlSerializer.Serialize(new PriorityPoco { Level = Priority.High }, options);
         // [HumlEnumValue("high-priority")] wins over KebabCase transform of "High" → "high"
         result.Should().Contain("\"high-priority\"");
     }
@@ -83,7 +83,7 @@ public class EnumSerializationTests
     public void Serialize_UndefinedNumericEnumValue_ThrowsHumlSerializeException()
     {
         var poco = new StatusPoco { State = (Status)99 };
-        var act = () => Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         act.Should().Throw<HumlSerializeException>();
     }
 
@@ -93,7 +93,7 @@ public class EnumSerializationTests
     public void Serialize_FlagsEnumCombination_ThrowsHumlSerializeException()
     {
         var poco = new PermissionsPoco { Access = Permissions.Read | Permissions.Write };
-        var act = () => Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         act.Should().Throw<HumlSerializeException>();
     }
 
@@ -103,9 +103,9 @@ public class EnumSerializationTests
     public void Serialize_SingleNamedFlagsEnumMember_EmitsNameWithoutThrowing()
     {
         var poco = new PermissionsPoco { Access = Permissions.Read };
-        var act = () => Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         act.Should().NotThrow();
-        var result = Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         result.Should().Contain("\"Read\"");
     }
 
@@ -118,7 +118,7 @@ public class EnumSerializationTests
             %HUML v0.2.0
             State: "Active"
             """;
-        var result = Huml.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
         result.State.Should().Be(Status.Active);
     }
 
@@ -131,7 +131,7 @@ public class EnumSerializationTests
             %HUML v0.2.0
             State: "active"
             """;
-        var result = Huml.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
         result.State.Should().Be(Status.Active);
     }
 
@@ -144,7 +144,7 @@ public class EnumSerializationTests
             %HUML v0.2.0
             Level: "low-priority"
             """;
-        var result = Huml.Deserialize<PriorityPoco>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<PriorityPoco>(huml, HumlOptions.LatestSupported);
         result.Level.Should().Be(Priority.Low);
     }
 
@@ -157,7 +157,7 @@ public class EnumSerializationTests
             %HUML v0.2.0
             State: "NotARealStatus"
             """;
-        var act = () => Huml.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
         act.Should().Throw<HumlDeserializeException>();
     }
 
@@ -170,7 +170,7 @@ public class EnumSerializationTests
             %HUML v0.2.0
             State: 1
             """;
-        var result = Huml.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
         result.State.Should().Be(Status.Inactive);
     }
 
@@ -183,7 +183,7 @@ public class EnumSerializationTests
             %HUML v0.2.0
             State: null
             """;
-        var result = Huml.Deserialize<NullableEnumPoco>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<NullableEnumPoco>(huml, HumlOptions.LatestSupported);
         result.State.Should().BeNull();
     }
 
@@ -196,7 +196,7 @@ public class EnumSerializationTests
             %HUML v0.2.0
             State: null
             """;
-        var act = () => Huml.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
         act.Should().Throw<HumlDeserializeException>();
     }
 
@@ -210,7 +210,7 @@ public class EnumSerializationTests
             State: "active"
             """;
         var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
-        var result = Huml.Deserialize<StatusPoco>(huml, options);
+        var result = HumlSerializer.Deserialize<StatusPoco>(huml, options);
         // "active" matches Status.Active after KebabCase policy converts "Active" → "active"
         result.State.Should().Be(Status.Active);
     }
@@ -224,7 +224,7 @@ public class EnumSerializationTests
             %HUML v0.2.0
             State: 99
             """;
-        var result = Huml.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
         // Enum.ToObject silently returns an undefined value; this documents the contract.
         result.State.Should().Be((Status)99);
     }
@@ -235,8 +235,8 @@ public class EnumSerializationTests
     public void RoundTrip_EnumProperty_PreservesValueEquality()
     {
         var original = new StatusPoco { State = Status.Pending };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var result = Huml.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<StatusPoco>(huml, HumlOptions.LatestSupported);
         result.State.Should().Be(original.State);
     }
 
@@ -247,8 +247,8 @@ public class EnumSerializationTests
     {
         var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
         var original = new StatusPoco { State = Status.Inactive };
-        var huml = Huml.Serialize(original, options);
-        var result = Huml.Deserialize<StatusPoco>(huml, options);
+        var huml = HumlSerializer.Serialize(original, options);
+        var result = HumlSerializer.Deserialize<StatusPoco>(huml, options);
         result.State.Should().Be(original.State);
     }
 
@@ -258,8 +258,8 @@ public class EnumSerializationTests
     public void RoundTrip_EnumWithHumlEnumValue_PreservesValueEquality()
     {
         var original = new PriorityPoco { Level = Priority.High };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var result = Huml.Deserialize<PriorityPoco>(huml, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<PriorityPoco>(huml, HumlOptions.LatestSupported);
         result.Level.Should().Be(original.Level);
     }
 
@@ -269,8 +269,8 @@ public class EnumSerializationTests
     public void RoundTrip_ListOfEnum_PreservesAllElements()
     {
         var original = new ListEnumPoco { States = new List<Status> { Status.Active, Status.Pending, Status.Inactive } };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var result = Huml.Deserialize<ListEnumPoco>(huml, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<ListEnumPoco>(huml, HumlOptions.LatestSupported);
         result.States.Should().Equal(original.States);
     }
 
@@ -280,8 +280,8 @@ public class EnumSerializationTests
     public void RoundTrip_NullableEnumWithNull_PreservesNull()
     {
         var original = new NullableEnumPoco { State = null };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var result = Huml.Deserialize<NullableEnumPoco>(huml, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<NullableEnumPoco>(huml, HumlOptions.LatestSupported);
         result.State.Should().BeNull();
     }
 }

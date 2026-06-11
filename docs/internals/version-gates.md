@@ -95,14 +95,14 @@ Use `HumlOptions.LatestSupported` in tests when you want pinned v0.2 behaviour t
 `%HUML` header in the input:
 
 ```csharp
-var result = Huml.Parse(input, HumlOptions.LatestSupported);
+var result = HumlSerializer.Parse(input, HumlOptions.LatestSupported);
 ```
 
 Use `HumlOptions.Default` when header-aware behaviour is under test (the parser reads the
 `%HUML` header and applies the version declared there):
 
 ```csharp
-var result = Huml.Parse(input, HumlOptions.Default);
+var result = HumlSerializer.Parse(input, HumlOptions.Default);
 ```
 
 To force a specific version regardless of any header in the input, construct `HumlOptions`

@@ -25,7 +25,7 @@ public sealed class HumlCoerceScalarCastTests
             Value: 42
             """;
 
-        var result = Huml.Deserialize<WithInt>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithInt>(huml, Opts);
 
         result.Value.Should().Be(42);
     }
@@ -40,7 +40,7 @@ public sealed class HumlCoerceScalarCastTests
             Value: 255
             """;
 
-        var result = Huml.Deserialize<WithByte>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithByte>(huml, Opts);
 
         result.Value.Should().Be((byte)255);
     }
@@ -55,7 +55,7 @@ public sealed class HumlCoerceScalarCastTests
             Value: 2147483648
             """;
 
-        var act = () => Huml.Deserialize<WithInt>(huml, Opts);
+        var act = () => HumlSerializer.Deserialize<WithInt>(huml, Opts);
 
         act.Should().Throw<HumlDeserializeException>();
     }
@@ -70,7 +70,7 @@ public sealed class HumlCoerceScalarCastTests
             Value: 256
             """;
 
-        var act = () => Huml.Deserialize<WithByte>(huml, Opts);
+        var act = () => HumlSerializer.Deserialize<WithByte>(huml, Opts);
 
         act.Should().Throw<HumlDeserializeException>();
     }
@@ -85,7 +85,7 @@ public sealed class HumlCoerceScalarCastTests
             Value: 9223372036854775807
             """;
 
-        var result = Huml.Deserialize<WithULong>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithULong>(huml, Opts);
 
         result.Value.Should().Be((ulong)long.MaxValue);
     }

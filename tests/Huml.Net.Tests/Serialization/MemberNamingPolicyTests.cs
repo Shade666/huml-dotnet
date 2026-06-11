@@ -64,7 +64,7 @@ public class MemberNamingPolicyTests
     public void MNP01_KebabCase_MemberPolicy_NoGlobalPolicy_SerializesKebabKey()
     {
         PropertyDescriptor.ClearCache();
-        var result = Huml.Serialize(new MNP01Dto { FullName = "Alice" });
+        var result = HumlSerializer.Serialize(new MNP01Dto { FullName = "Alice" });
         result.Should().Contain("full-name:");
     }
 
@@ -73,7 +73,7 @@ public class MemberNamingPolicyTests
     {
         PropertyDescriptor.ClearCache();
         var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
-        var result = Huml.Serialize(new MNP02Dto { FullName = "Bob", MaxDepth = 5 }, options);
+        var result = HumlSerializer.Serialize(new MNP02Dto { FullName = "Bob", MaxDepth = 5 }, options);
         result.Should().Contain("full_name:");   // member policy wins for FullName
         result.Should().Contain("max-depth:");   // global kebab-case applies to MaxDepth
     }
@@ -82,7 +82,7 @@ public class MemberNamingPolicyTests
     public void MNP03_CamelCase_MemberPolicy_SerializesCamelKey()
     {
         PropertyDescriptor.ClearCache();
-        var result = Huml.Serialize(new MNP03Dto { FullName = "Carol" });
+        var result = HumlSerializer.Serialize(new MNP03Dto { FullName = "Carol" });
         result.Should().Contain("fullName:");
     }
 
@@ -90,7 +90,7 @@ public class MemberNamingPolicyTests
     public void MNP04_PascalCase_MemberPolicy_OnCamelCaseCSharpName_SerializesPascalKey()
     {
         PropertyDescriptor.ClearCache();
-        var result = Huml.Serialize(new MNP04Dto { camelProp = "test" });
+        var result = HumlSerializer.Serialize(new MNP04Dto { camelProp = "test" });
         result.Should().Contain("CamelProp:");
     }
 
@@ -99,7 +99,7 @@ public class MemberNamingPolicyTests
     {
         PropertyDescriptor.ClearCache();
         var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
-        var result = Huml.Serialize(new MNP05Dto { FullName = "Dave" }, options);
+        var result = HumlSerializer.Serialize(new MNP05Dto { FullName = "Dave" }, options);
         result.Should().Contain("full-name:");   // Unspecified defers to global kebab-case
     }
 
@@ -107,7 +107,7 @@ public class MemberNamingPolicyTests
     public void MNP06_ExplicitHumlPropertyName_WinsOverMemberNamingPolicy()
     {
         PropertyDescriptor.ClearCache();
-        var result = Huml.Serialize(new MNP06Dto { FullName = "Eve" });
+        var result = HumlSerializer.Serialize(new MNP06Dto { FullName = "Eve" });
         result.Should().Contain("explicit:");
         result.Should().NotContain("full-name:");
     }
@@ -117,9 +117,9 @@ public class MemberNamingPolicyTests
     {
         PropertyDescriptor.ClearCache();
         var original = new MNP07Dto { FullName = "Frank" };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
         // Serialised with member snake_case policy, deserialized with same options
-        var restored = Huml.Deserialize<MNP07Dto>(huml, HumlOptions.LatestSupported);
+        var restored = HumlSerializer.Deserialize<MNP07Dto>(huml, HumlOptions.LatestSupported);
         restored!.FullName.Should().Be("Frank");
     }
 
@@ -127,7 +127,7 @@ public class MemberNamingPolicyTests
     public void MNP08_NoAttribute_NullGlobalPolicy_UsesIdentityName()
     {
         PropertyDescriptor.ClearCache();
-        var result = Huml.Serialize(new MNP08Dto { FullName = "Grace" });
+        var result = HumlSerializer.Serialize(new MNP08Dto { FullName = "Grace" });
         result.Should().Contain("FullName:");
     }
 }

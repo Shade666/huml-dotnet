@@ -22,8 +22,8 @@ public sealed record HumlDocument(IReadOnlyList<HumlNode> Entries) : HumlNode
     /// Populated by <see cref="HumlParser"/> during parsing. Use this property to preserve
     /// the original spec version when round-tripping:
     /// <code>
-    /// var doc = Huml.Parse(input);
-    /// var output = Huml.Serialize(dto,
+    /// var doc = HumlSerializer.Parse(input);
+    /// var output = HumlSerializer.Serialize(dto,
     ///     new HumlOptions { SpecVersion = doc.DetectedVersion ?? HumlSpecVersion.V0_2 });
     /// </code>
     /// </remarks>

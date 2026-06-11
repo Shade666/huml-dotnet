@@ -20,19 +20,19 @@ dotnet add package Huml.Net
 
 ## 30-second example
 
-If you know `JsonSerializer`, you already know `Huml`:
+If you know `JsonSerializer`, you already know `HumlSerializer`:
 
 ```csharp
 using Huml.Net;
 
-var config = Huml.Deserialize<ServerConfig>("""
+var config = HumlSerializer.Deserialize<ServerConfig>("""
     %HUML v0.2.0
     Host: "localhost"
     Port: 8080
     Debug: true
     """);
 
-string roundTrip = Huml.Serialize(config);
+string roundTrip = HumlSerializer.Serialize(config);
 
 public class ServerConfig
 {
@@ -51,9 +51,9 @@ The mental model is the same; the table maps what you know to its Huml.Net equiv
 
 | System.Text.Json | Huml.Net | Notes |
 | ---------------- | -------- | ----- |
-| `JsonSerializer.Serialize` / `Deserialize` | `Huml.Serialize` / `Huml.Deserialize` | Same static-facade shape. |
-| `JsonSerializer.Deserialize<T>(ReadOnlySpan<char>)` | `Huml.Deserialize<T>(ReadOnlySpan<char>)` | Zero-copy span path (`ref struct` lexer/parser). |
-| `JsonDocument.Parse` | `Huml.Parse` | Returns the `HumlDocument` AST for validation/inspection. |
+| `JsonSerializer.Serialize` / `Deserialize` | `HumlSerializer.Serialize` / `HumlSerializer.Deserialize` | Same static-facade shape. |
+| `JsonSerializer.Deserialize<T>(ReadOnlySpan<char>)` | `HumlSerializer.Deserialize<T>(ReadOnlySpan<char>)` | Zero-copy span path (`ref struct` lexer/parser). |
+| `JsonDocument.Parse` | `HumlSerializer.Parse` | Returns the `HumlDocument` AST for validation/inspection. |
 | `[JsonPropertyName]` | `[HumlProperty]` | Plus `OmitIfDefault` and per-member inline control. |
 | `[JsonIgnore]` | `[HumlIgnore]` | |
 | `[JsonRequired]` / `required` | `[HumlRequired]` / `required` | |
@@ -65,7 +65,7 @@ The mental model is the same; the table maps what you know to its Huml.Net equiv
 | `JsonSerializerContext` (source gen) | `HumlGeneratedContext` (source gen) | Reflection-free metadata for AOT/trim. |
 | `JsonNumberHandling` | `[HumlNumberHandling]` / `HumlOptions.NumberHandling` | |
 | `JsonSerializerOptions` | `HumlOptions` | Plus presets: `Default`, `LatestSupported`, `Strict`. |
-| Populate (`PopulateObject`, .NET 9+) | `Huml.Populate<T>` | Overlay a document onto an existing instance. |
+| Populate (`PopulateObject`, .NET 9+) | `HumlSerializer.Populate<T>` | Overlay a document onto an existing instance. |
 | `Utf8JsonReader` / `Utf8JsonWriter` streaming | — | **Not provided** — streaming is out of scope by design. |
 | Mutable `JsonNode` DOM | — | **Not provided** — the `HumlDocument` AST is read-only. |
 
@@ -73,7 +73,7 @@ The mental model is the same; the table maps what you know to its Huml.Net equiv
 
 **Spec compliance**
 - Full HUML v0.1 and v0.2 spec compliance, validated against the `huml-lang/tests` fixture suite
-- `System.Text.Json`-style static `Huml` facade (`Serialize`, `Deserialize`, `Parse`, `Populate`)
+- `System.Text.Json`-style static `HumlSerializer` facade (`Serialize`, `Deserialize`, `Parse`, `Populate`)
 
 **Serialisation**
 - Reflection-based serialisation with declaration-order property emission (base-class first)
@@ -89,7 +89,7 @@ The mental model is the same; the table maps what you know to its Huml.Net equiv
 - Extension data — `[HumlExtensionData]` captures unknown keys into a `Dictionary<string, HumlNode>` overflow bucket
 - Collection dispatch: `T[]`, `List<T>`, `IEnumerable<T>`, `HashSet<T>`, `SortedSet<T>`, `ISet<T>`, `IReadOnlySet<T>`, `Dictionary<string,T>`, `IDictionary<string,T>`
 - Unknown-key handling via `HumlOptions.UnmappedMemberHandling` (`Skip` / `Disallow`)
-- `Huml.Populate<T>()` overlays a HUML document onto an existing object instance
+- `HumlSerializer.Populate<T>()` overlays a HUML document onto an existing object instance
 
 **Attributes**
 - `[HumlProperty]` — key name override and `OmitIfDefault`

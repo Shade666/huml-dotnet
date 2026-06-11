@@ -84,7 +84,7 @@ public sealed class TypeInfoResolverActivationTests
         var resolver = new TestResolver<TrackingDto>(typeInfo);
         var opts = BuildOptions(resolver);
 
-        var result = Huml.Serialize(new TrackingDto { Name = "Alice" }, opts);
+        var result = HumlSerializer.Serialize(new TrackingDto { Name = "Alice" }, opts);
 
         result.Should().Contain("INJECTED");
         result.Should().NotContain("Alice");
@@ -108,7 +108,7 @@ public sealed class TypeInfoResolverActivationTests
         var resolver = new TestResolver<TrackingDto>(typeInfo);
         var opts = BuildOptions(resolver);
 
-        var result = Huml.Deserialize<TrackingDto>("%HUML v0.2.0\nName: \"Alice\"\n", opts);
+        var result = HumlSerializer.Deserialize<TrackingDto>("%HUML v0.2.0\nName: \"Alice\"\n", opts);
 
         result.Name.Should().Be("DELEGATE_SET");
     }
@@ -124,8 +124,8 @@ public sealed class TypeInfoResolverActivationTests
         var opts = BuildOptions(resolver);
 
         var dto = new TrackingDto { Name = "Bob", Count = 5 };
-        var huml = Huml.Serialize(dto, opts);
-        var result = Huml.Deserialize<TrackingDto>(huml, opts);
+        var huml = HumlSerializer.Serialize(dto, opts);
+        var result = HumlSerializer.Deserialize<TrackingDto>(huml, opts);
 
         result.Name.Should().Be("Bob");
         result.Count.Should().Be(5);
@@ -139,8 +139,8 @@ public sealed class TypeInfoResolverActivationTests
         var opts = HumlOptions.LatestSupported;
 
         var dto = new TrackingDto { Name = "Carol", Count = 3 };
-        var huml = Huml.Serialize(dto, opts);
-        var result = Huml.Deserialize<TrackingDto>(huml, opts);
+        var huml = HumlSerializer.Serialize(dto, opts);
+        var result = HumlSerializer.Deserialize<TrackingDto>(huml, opts);
 
         result.Name.Should().Be("Carol");
         result.Count.Should().Be(3);
@@ -168,7 +168,7 @@ public sealed class TypeInfoResolverActivationTests
         var resolver = new TestResolver<TrackingDto>(typeInfo);
         var opts = BuildOptions(resolver);
 
-        Huml.Serialize(new TrackingDto { Name = "Test" }, opts);
+        HumlSerializer.Serialize(new TrackingDto { Name = "Test" }, opts);
 
         callSequence.Should().BeEquivalentTo(SerializingThenSerialized, opts => opts.WithStrictOrdering());
     }
@@ -195,7 +195,7 @@ public sealed class TypeInfoResolverActivationTests
         var resolver = new TestResolver<TrackingDto>(typeInfo);
         var opts = BuildOptions(resolver);
 
-        Huml.Serialize(new TrackingDto { Name = "Test" }, opts);
+        HumlSerializer.Serialize(new TrackingDto { Name = "Test" }, opts);
 
         callSequence.Should().Contain("serialized");
         callSequence[1].Should().Be("serialized");
@@ -223,7 +223,7 @@ public sealed class TypeInfoResolverActivationTests
         var resolver = new TestResolver<TrackingDto>(typeInfo);
         var opts = BuildOptions(resolver);
 
-        Huml.Deserialize<TrackingDto>("%HUML v0.2.0\nName: \"X\"\n", opts);
+        HumlSerializer.Deserialize<TrackingDto>("%HUML v0.2.0\nName: \"X\"\n", opts);
 
         callSequence.Should().BeEquivalentTo(DeserializingThenDeserialized, opts => opts.WithStrictOrdering());
     }
@@ -250,7 +250,7 @@ public sealed class TypeInfoResolverActivationTests
         var resolver = new TestResolver<TrackingDto>(typeInfo);
         var opts = BuildOptions(resolver);
 
-        Huml.Deserialize<TrackingDto>("%HUML v0.2.0\nName: \"X\"\n", opts);
+        HumlSerializer.Deserialize<TrackingDto>("%HUML v0.2.0\nName: \"X\"\n", opts);
 
         callSequence.Should().Contain("deserialized");
         callSequence[1].Should().Be("deserialized");
@@ -282,7 +282,7 @@ public sealed class TypeInfoResolverActivationTests
             UnmappedMemberHandling = UnmappedMemberHandling.Disallow
         };
 
-        var act = () => Huml.Deserialize<TrackingDto>("%HUML v0.2.0\nName: \"Alice\"\nCount: 99\n", opts);
+        var act = () => HumlSerializer.Deserialize<TrackingDto>("%HUML v0.2.0\nName: \"Alice\"\nCount: 99\n", opts);
 
         act.Should().NotThrow();
     }

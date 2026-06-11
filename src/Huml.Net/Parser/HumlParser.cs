@@ -74,7 +74,7 @@ internal ref struct HumlParser
         // #pragma warning restore CS0618
 
         // Consume optional %HUML version directive at the start of the document.
-        // The directive is always emitted by HumlSerializer; parsers must accept it.
+        // The directive is always emitted by HumlSerializerImpl; parsers must accept it.
         // When VersionSource.Header is active, parse the version string and apply it.
         HumlSpecVersion? detectedVersion = null;
 
@@ -378,7 +378,7 @@ internal ref struct HumlParser
         catch (Exception ex) when (ex is FormatException or ArgumentException)
         {
             // Defence in depth: the lexer validates digits, but a malformed literal must
-            // never escape Huml.Parse as anything other than HumlParseException.
+            // never escape HumlSerializer.Parse as anything other than HumlParseException.
             throw new HumlParseException($"Invalid integer literal '{s}'.", line, col);
         }
     }

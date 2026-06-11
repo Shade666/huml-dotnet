@@ -34,7 +34,7 @@ public sealed class HumlUnmappedMemberHandlingTests
             """;
 
         var opts = new HumlOptions { UnmappedMemberHandling = UnmappedMemberHandling.Skip };
-        var act = () => Huml.Deserialize<Simple>(huml, opts);
+        var act = () => HumlSerializer.Deserialize<Simple>(huml, opts);
 
         act.Should().NotThrow();
     }
@@ -51,7 +51,7 @@ public sealed class HumlUnmappedMemberHandlingTests
             """;
 
         var opts = new HumlOptions { UnmappedMemberHandling = UnmappedMemberHandling.Disallow };
-        var act = () => Huml.Deserialize<Simple>(huml, opts);
+        var act = () => HumlSerializer.Deserialize<Simple>(huml, opts);
 
         act.Should().Throw<HumlDeserializeException>();
     }
@@ -68,7 +68,7 @@ public sealed class HumlUnmappedMemberHandlingTests
             """;
 
         var opts = new HumlOptions { UnmappedMemberHandling = UnmappedMemberHandling.Disallow };
-        var act = () => Huml.Deserialize<Simple>(huml, opts);
+        var act = () => HumlSerializer.Deserialize<Simple>(huml, opts);
 
         act.Should().Throw<HumlDeserializeException>()
             .WithMessage("*Unknown*");
@@ -85,7 +85,7 @@ public sealed class HumlUnmappedMemberHandlingTests
             """;
 
         var opts = new HumlOptions { UnmappedMemberHandling = UnmappedMemberHandling.Disallow };
-        var result = Huml.Deserialize<Simple>(huml, opts);
+        var result = HumlSerializer.Deserialize<Simple>(huml, opts);
 
         result.Name.Should().Be("Alice");
     }
@@ -102,7 +102,7 @@ public sealed class HumlUnmappedMemberHandlingTests
             """;
 
         var opts = new HumlOptions { UnmappedMemberHandling = UnmappedMemberHandling.Disallow };
-        var act = () => Huml.Deserialize<WithExtensionData>(huml, opts);
+        var act = () => HumlSerializer.Deserialize<WithExtensionData>(huml, opts);
 
         act.Should().NotThrow();
     }

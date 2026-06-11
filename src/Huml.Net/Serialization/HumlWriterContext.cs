@@ -36,7 +36,7 @@ public sealed class HumlWriterContext
     /// </remarks>
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     public void AppendSerializedValue(object? value)
-        => HumlSerializer.SerializeValueInternal(_sb, value, _depth, Options);
+        => HumlSerializerImpl.SerializeValueInternal(_sb, value, _depth, Options);
 
     /// <summary>
     /// Appends a raw HUML fragment verbatim. Use when the converter produces custom HUML

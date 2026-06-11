@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Huml.Net.Exceptions;
 using Huml.Net.Versioning;
-using HumlFacade = Huml.Net.Huml;
+using HumlFacade = Huml.Net.HumlSerializer;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Huml.Net.Fuzz — deterministic corpus-seeded mutation fuzzer for Huml.Parse.

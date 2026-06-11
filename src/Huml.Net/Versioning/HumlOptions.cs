@@ -167,7 +167,7 @@ public sealed class HumlOptions
     public HumlNumberHandling NumberHandling { get; init; } = HumlNumberHandling.Strict;
 
     /// <summary>
-    /// When <c>true</c>, <see cref="T:Huml.Net.Serialization.HumlSerializer"/> throws
+    /// When <c>true</c>, <see cref="T:Huml.Net.Serialization.HumlSerializerImpl"/> throws
     /// <see cref="T:Huml.Net.Exceptions.HumlSerializeException"/> if two entries in the same
     /// dictionary produce the same key string (compared using
     /// <see cref="System.StringComparer.Ordinal"/>) during serialisation.

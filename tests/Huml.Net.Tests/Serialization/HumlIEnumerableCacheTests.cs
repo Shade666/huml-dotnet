@@ -34,7 +34,7 @@ public sealed class HumlIEnumerableCacheTests
               - 30
             """;
 
-        var result = Huml.Deserialize<WithIReadOnlyList>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithIReadOnlyList>(huml, Opts);
 
         result.Values.Should().BeAssignableTo<IReadOnlyList<int>>();
         result.Values.Should().HaveCount(3);
@@ -52,8 +52,8 @@ public sealed class HumlIEnumerableCacheTests
             """;
 
         // Second call exercises the cache hit path.
-        var r1 = Huml.Deserialize<WithIReadOnlyList>(huml, Opts);
-        var r2 = Huml.Deserialize<WithIReadOnlyList>(huml, Opts);
+        var r1 = HumlSerializer.Deserialize<WithIReadOnlyList>(huml, Opts);
+        var r2 = HumlSerializer.Deserialize<WithIReadOnlyList>(huml, Opts);
 
         r1.Values.Should().BeEquivalentTo(r2.Values);
     }
@@ -70,7 +70,7 @@ public sealed class HumlIEnumerableCacheTests
               - "beta"
             """;
 
-        var result = Huml.Deserialize<WithICollection>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithICollection>(huml, Opts);
 
         result.Tags.Should().BeAssignableTo<ICollection<string>>();
         result.Tags.Should().BeEquivalentTo(ExpectedTags);

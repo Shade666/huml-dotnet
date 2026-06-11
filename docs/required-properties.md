@@ -25,7 +25,7 @@ public class DatabaseConfig
 
 // Throws: HumlDeserializeException:
 //   "Missing required member(s) on type 'DatabaseConfig': 'ConnectionString', 'DatabaseName'."
-var cfg = Huml.Deserialize<DatabaseConfig>("""
+var cfg = HumlSerializer.Deserialize<DatabaseConfig>("""
     %HUML v0.2.0
     CommandTimeout: 60
     """);
@@ -47,7 +47,7 @@ public class ApiConfig
     public int RetryCount { get; set; } = 3;
 }
 
-var config = Huml.Deserialize<ApiConfig>("""
+var config = HumlSerializer.Deserialize<ApiConfig>("""
     %HUML v0.2.0
     ApiKey: "secret-key"
     BaseUrl: "https://api.example.com"
@@ -68,7 +68,7 @@ Keys are listed in property declaration order, matching the source type.
 
 ## Populate Exemption
 
-`Huml.Populate<T>()` intentionally does **not** enforce required members. Populate implements
+`HumlSerializer.Populate<T>()` intentionally does **not** enforce required members. Populate implements
 overlay/partial-update semantics — only the keys present in the document are applied to the
 existing instance. Required member checking is skipped to allow legitimate partial overlays.
 

@@ -57,12 +57,12 @@ public class SharedSuiteTests
     {
         if (expectError)
         {
-            var act = () => Huml.Parse(input, V01Options);
+            var act = () => HumlSerializer.Parse(input, V01Options);
             act.Should().Throw<HumlParseException>(because: $"fixture '{name}' expects a parse error");
         }
         else
         {
-            var act = () => Huml.Parse(input, V01Options);
+            var act = () => HumlSerializer.Parse(input, V01Options);
             act.Should().NotThrow(because: $"fixture '{name}' expects successful parse");
         }
     }
@@ -75,12 +75,12 @@ public class SharedSuiteTests
 
         if (expectError)
         {
-            var act = () => Huml.Parse(input, options);
+            var act = () => HumlSerializer.Parse(input, options);
             act.Should().Throw<HumlParseException>(because: $"fixture '{name}' expects a parse error");
         }
         else
         {
-            var act = () => Huml.Parse(input, options);
+            var act = () => HumlSerializer.Parse(input, options);
             act.Should().NotThrow(because: $"fixture '{name}' expects successful parse");
         }
     }

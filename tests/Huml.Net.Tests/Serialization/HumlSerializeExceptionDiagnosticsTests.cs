@@ -25,7 +25,7 @@ public sealed class HumlSerializeExceptionDiagnosticsTests
     public void Diag01_exception_message_includes_property_name()
     {
         var dto = new WithDelegate();
-        var act = () => Huml.Serialize(dto, Opts);
+        var act = () => HumlSerializer.Serialize(dto, Opts);
 
         act.Should().Throw<HumlSerializeException>()
             .WithMessage("*Handler*");
@@ -37,7 +37,7 @@ public sealed class HumlSerializeExceptionDiagnosticsTests
     public void Diag02_exception_message_includes_type_name()
     {
         var dto = new WithDelegate();
-        var act = () => Huml.Serialize(dto, Opts);
+        var act = () => HumlSerializer.Serialize(dto, Opts);
 
         act.Should().Throw<HumlSerializeException>()
             .WithMessage("*WithDelegate*");
@@ -49,7 +49,7 @@ public sealed class HumlSerializeExceptionDiagnosticsTests
     public void Diag03_exception_message_matches_canonical_format()
     {
         var dto = new WithDelegate();
-        var act = () => Huml.Serialize(dto, Opts);
+        var act = () => HumlSerializer.Serialize(dto, Opts);
 
         act.Should().Throw<HumlSerializeException>()
             .WithMessage("Cannot serialize property 'Handler' on type 'WithDelegate':*");
@@ -61,7 +61,7 @@ public sealed class HumlSerializeExceptionDiagnosticsTests
     public void Diag04_unsupported_type_in_sequence_item_still_throws()
     {
         var dto = new WithDelegateInList();
-        var act = () => Huml.Serialize(dto, Opts);
+        var act = () => HumlSerializer.Serialize(dto, Opts);
 
         act.Should().Throw<HumlSerializeException>();
     }

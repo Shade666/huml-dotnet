@@ -40,8 +40,8 @@ public sealed class SourceGeneratorIntegrationTests
     public void SG05_round_trip_via_source_generated_context()
     {
         var original = new SGDto { Name = "Alice", Age = 30 };
-        var huml = Huml.Serialize(original, SGOptions);
-        var result = Huml.Deserialize<SGDto>(huml, SGOptions);
+        var huml = HumlSerializer.Serialize(original, SGOptions);
+        var result = HumlSerializer.Deserialize<SGDto>(huml, SGOptions);
         result.Name.Should().Be("Alice");
         result.Age.Should().Be(30);
     }

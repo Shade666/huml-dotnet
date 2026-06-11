@@ -95,7 +95,7 @@ parsed document:
 ```csharp
 using Huml.Net;
 
-var doc = Huml.Parse("""
+var doc = HumlSerializer.Parse("""
     %HUML v0.1.0
     Key: "value"
     """);
@@ -109,10 +109,10 @@ It is `null` when no header is present or when a `HumlDocument` is constructed d
 Use `DetectedVersion` to preserve the original spec version when round-tripping a document:
 
 ```csharp
-var doc  = Huml.Parse(humlText);
+var doc  = HumlSerializer.Parse(humlText);
 var opts = new HumlOptions { SpecVersion = doc.DetectedVersion ?? HumlSpecVersion.V0_2 };
 
 // Round-trip: deserialise with the detected version, then re-serialise with the same version
-var dto    = Huml.Deserialize<MyDto>(humlText, opts);
-var output = Huml.Serialize(dto, opts);
+var dto    = HumlSerializer.Deserialize<MyDto>(humlText, opts);
+var output = HumlSerializer.Serialize(dto, opts);
 ```

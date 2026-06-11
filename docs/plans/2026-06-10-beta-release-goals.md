@@ -64,7 +64,7 @@ Multi-agent review of the full pipeline in slices: Lexer, Parser, Deserialiser (
 
 ### Pass 2 — fuzzing & property-based testing (absorbs 999.44)
 
-- SharpFuzz harness over `Huml.Parse`, seeded with the fixture corpus, run to saturation locally. Any crash, hang, or non-`HumlParseException` escape is a bug.
+- SharpFuzz harness over `HumlSerializer.Parse`, seeded with the fixture corpus, run to saturation locally. Any crash, hang, or non-`HumlParseException` escape is a bug.
 - Property-based round-trip tests: `Deserialize(Serialize(x)) == x` for generated object graphs; parse → serialise → parse stability for valid documents.
 - Time/memory budget assertions on pathological inputs (nesting at the depth limit, megabyte-scale scalars, thousands of keys).
 

@@ -98,7 +98,7 @@ internal static class EnumNameCache
             fromHuml[humlName] = value;
             // TryAdd collision guard (WR-01): two members with case-colliding HUML names are an error.
             // Surfaced as HumlDeserializeException (not a raw InvalidOperationException) because this
-            // build runs lazily inside Huml.Deserialize and must honour its declared exception contract.
+            // build runs lazily inside HumlSerializer.Deserialize and must honour its declared exception contract.
             if (!fromHumlCI.TryAdd(humlName, value))
                 throw new HumlDeserializeException(
                     $"Enum type '{enumType.Name}' has two members whose HUML names collide " +

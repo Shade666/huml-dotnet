@@ -48,7 +48,7 @@ public class HumlRequiredTests
     {
         // Name absent — required via [HumlRequired]
         var input = "%HUML v0.2\nCount: 0\n";
-        var act = () => Huml.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
         act.Should().Throw<HumlDeserializeException>();
     }
 
@@ -57,7 +57,7 @@ public class HumlRequiredTests
     {
         // Name absent — required via C# required modifier
         var input = "%HUML v0.2\nCount: 0\n";
-        var act = () => Huml.Deserialize<RequiredModPoco>(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<RequiredModPoco>(input, HumlOptions.LatestSupported);
         act.Should().Throw<HumlDeserializeException>();
     }
 
@@ -66,7 +66,7 @@ public class HumlRequiredTests
     {
         // Name absent — both [HumlRequired] and required modifier; dummy key makes document non-empty
         var input = "%HUML v0.2\nDummy: 0\n";
-        var act = () => Huml.Deserialize<BothRequiredPoco>(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<BothRequiredPoco>(input, HumlOptions.LatestSupported);
         var ex = act.Should().Throw<HumlDeserializeException>().Which;
         ex.Message.Should().Contain("'Name'");
         // 'Name' must appear exactly once — not doubled
@@ -78,7 +78,7 @@ public class HumlRequiredTests
     {
         // First and Second both absent; Optional has a quoted string value
         var input = "%HUML v0.2\nOptional: \"hello\"\n";
-        var act = () => Huml.Deserialize<MultiRequiredPoco>(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<MultiRequiredPoco>(input, HumlOptions.LatestSupported);
         var ex = act.Should().Throw<HumlDeserializeException>().Which;
         ex.Message.Should().Contain("'First'");
         ex.Message.Should().Contain("'Second'");
@@ -89,9 +89,9 @@ public class HumlRequiredTests
     {
         // String values must be quoted in HUML v0.2
         var input = "%HUML v0.2\nName: \"Alice\"\nCount: 42\n";
-        var act = () => Huml.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
         act.Should().NotThrow();
-        var result = Huml.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
         result.Name.Should().Be("Alice");
         result.Count.Should().Be(42);
     }
@@ -102,7 +102,7 @@ public class HumlRequiredTests
         // Name absent from HUML — Populate must not throw (D-09)
         var existing = new RequiredAttrPoco { Name = "Pre-existing" };
         var input = "%HUML v0.2\nCount: 7\n";
-        var act = () => Huml.Populate<RequiredAttrPoco>(input.AsSpan(), existing, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Populate<RequiredAttrPoco>(input.AsSpan(), existing, HumlOptions.LatestSupported);
         act.Should().NotThrow();
         existing.Count.Should().Be(7);
         existing.Name.Should().Be("Pre-existing");
@@ -113,7 +113,7 @@ public class HumlRequiredTests
     {
         // Both First and Second absent; dummy key makes document non-empty
         var input = "%HUML v0.2\nDummy: 0\n";
-        var act = () => Huml.Deserialize<MultiRequiredPoco>(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<MultiRequiredPoco>(input, HumlOptions.LatestSupported);
         var ex = act.Should().Throw<HumlDeserializeException>().Which;
         // "First" must appear before "Second" in the message
         ex.Message.IndexOf("'First'", StringComparison.Ordinal)
@@ -125,9 +125,9 @@ public class HumlRequiredTests
     {
         // Count absent — not required, must not throw; string value must be quoted in HUML v0.2
         var input = "%HUML v0.2\nName: \"Bob\"\n";
-        var act = () => Huml.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
         act.Should().NotThrow();
-        var result = Huml.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
         result.Count.Should().Be(0); // default value
     }
 
@@ -135,10 +135,10 @@ public class HumlRequiredTests
     public void REQ9_ROUNDTRIP_required_property_round_trips_correctly()
     {
         var original = new RequiredAttrPoco { Name = "RoundTrip", Count = 99 };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var act = () => Huml.Deserialize<RequiredAttrPoco>(huml, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<RequiredAttrPoco>(huml, HumlOptions.LatestSupported);
         act.Should().NotThrow();
-        var result = Huml.Deserialize<RequiredAttrPoco>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<RequiredAttrPoco>(huml, HumlOptions.LatestSupported);
         result.Name.Should().Be("RoundTrip");
         result.Count.Should().Be(99);
     }
@@ -148,7 +148,7 @@ public class HumlRequiredTests
     {
         // Name absent — single missing required member; Count present makes document non-empty
         var input = "%HUML v0.2\nCount: 0\n";
-        var act = () => Huml.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<RequiredAttrPoco>(input, HumlOptions.LatestSupported);
         var ex = act.Should().Throw<HumlDeserializeException>().Which;
         ex.Message.Should().Be("Missing required member(s) on type 'RequiredAttrPoco': 'Name'.");
     }

@@ -29,13 +29,13 @@ public class ServerConfig
 var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
 
 // Serialise — emits kebab-case keys
-string huml = Huml.Serialize(new ServerConfig { HostName = "db.example.com", MaxConnections = 100 }, options);
+string huml = HumlSerializer.Serialize(new ServerConfig { HostName = "db.example.com", MaxConnections = 100 }, options);
 // %HUML v0.2.0
 // host-name: "db.example.com"
 // max-connections: 100
 
 // Deserialise — reads kebab-case keys
-var config = Huml.Deserialize<ServerConfig>(huml, options);
+var config = HumlSerializer.Deserialize<ServerConfig>(huml, options);
 // config.HostName == "db.example.com"
 ```
 

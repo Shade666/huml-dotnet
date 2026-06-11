@@ -8,17 +8,17 @@ Huml.Net 0.2.0-alpha.2 adds compile-time safety annotations for applications pub
 The following public API methods carry both `[RequiresUnreferencedCode]` and
 `[RequiresDynamicCode]`:
 
-- `Huml.Serialize<T>(T, HumlOptions?)`
-- `Huml.Serialize(object?, Type, HumlOptions?)`
-- `Huml.Deserialize<T>(string, HumlOptions?)`
-- `Huml.Deserialize<T>(ReadOnlySpan<char>, HumlOptions?)`
-- `Huml.Deserialize(string, Type, HumlOptions?)`
-- `Huml.Populate<T>(string, T, HumlOptions?)`
-- `Huml.Populate<T>(ReadOnlySpan<char>, T, HumlOptions?)`
+- `HumlSerializer.Serialize<T>(T, HumlOptions?)`
+- `HumlSerializer.Serialize(object?, Type, HumlOptions?)`
+- `HumlSerializer.Deserialize<T>(string, HumlOptions?)`
+- `HumlSerializer.Deserialize<T>(ReadOnlySpan<char>, HumlOptions?)`
+- `HumlSerializer.Deserialize(string, Type, HumlOptions?)`
+- `HumlSerializer.Populate<T>(string, T, HumlOptions?)`
+- `HumlSerializer.Populate<T>(ReadOnlySpan<char>, T, HumlOptions?)`
 
-## Huml.Parse Is Exempt
+## HumlSerializer.Parse Is Exempt
 
-`Huml.Parse(string, HumlOptions?)` does **not** carry these annotations. The lexer/parser
+`HumlSerializer.Parse(string, HumlOptions?)` does **not** carry these annotations. The lexer/parser
 pipeline performs no reflection on user types — it produces only a `HumlDocument` AST. It is
 safe to call from trimmed or AOT-compiled applications.
 
@@ -28,8 +28,8 @@ When you publish with `PublishTrimmed=true` or `<PublishAot>true</PublishAot>`, 
 toolchain emits a warning for each call site:
 
 ```
-ILLink warning IL2026: Huml.Serialize<T> requires unreferenced code...
-ILLink warning IL3050: Huml.Serialize<T> requires dynamic code...
+ILLink warning IL2026: HumlSerializer.Serialize<T> requires unreferenced code...
+ILLink warning IL3050: HumlSerializer.Serialize<T> requires dynamic code...
 ```
 
 This is a *compile-time warning*, not a runtime failure. The warnings alert you that
@@ -44,7 +44,7 @@ targeted pragma:
 
 ```csharp
 #pragma warning disable IL2026, IL3050
-var result = Huml.Deserialize<MyDto>(humlText);
+var result = HumlSerializer.Deserialize<MyDto>(humlText);
 #pragma warning restore IL2026, IL3050
 ```
 

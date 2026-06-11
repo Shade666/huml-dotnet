@@ -23,7 +23,7 @@ Huml.Net.Exceptions.HumlSerializeException
 Huml.Net.Exceptions.HumlUnsupportedVersionException
     ctor (String)
     property String DeclaredVersion
-Huml.Net.Huml
+Huml.Net.HumlSerializer
     method HumlDocument Parse(String, HumlOptions)
     method Object Deserialize(String, Type, HumlOptions)
     method String Serialize(Object, Type, HumlOptions)

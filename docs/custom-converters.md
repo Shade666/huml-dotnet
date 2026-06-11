@@ -61,7 +61,7 @@ var options = new HumlOptions
     Converters = new List<HumlConverter> { new DateTimeOffsetConverter() }
 };
 
-var dto = Huml.Deserialize<MyDto>(humlText, options);
+var dto = HumlSerializer.Deserialize<MyDto>(humlText, options);
 ```
 
 ## Priority Order

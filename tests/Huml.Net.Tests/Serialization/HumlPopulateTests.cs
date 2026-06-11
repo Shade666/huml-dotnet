@@ -84,7 +84,7 @@ public class HumlPopulateTests
         var existing = new ConfigPoco { Host = "localhost", Port = 8080 };
         const string huml = "%HUML v0.2.0\nHost: \"prod.example.com\"\n";
 
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Host.Should().Be("prod.example.com");
         existing.Port.Should().Be(8080);
@@ -97,7 +97,7 @@ public class HumlPopulateTests
         var existing = new ConfigPoco { Host = "localhost", Port = 9999 };
         const string huml = "%HUML v0.2.0\nVerbose: true\n";
 
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Port.Should().Be(9999);
         existing.Verbose.Should().Be(true);
@@ -110,7 +110,7 @@ public class HumlPopulateTests
         var existing = new ConfigPoco { Tags = new List<string> { "old" } };
         const string huml = "%HUML v0.2.0\nTags::\n  - \"new1\"\n  - \"new2\"\n";
 
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Tags.Should().NotBeNull();
         existing.Tags!.Should().HaveCount(2);
@@ -125,7 +125,7 @@ public class HumlPopulateTests
         var existing = new ConfigPoco { Labels = new Dictionary<string, string> { ["k"] = "v" } };
         const string huml = "%HUML v0.2.0\nLabels::\n  a: \"b\"\n";
 
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Labels.Should().NotBeNull();
         existing.Labels!.Should().HaveCount(1);
@@ -137,7 +137,7 @@ public class HumlPopulateTests
     public void Populate_NullExisting_ThrowsArgumentNullException()
     {
         ConfigPoco? existing = null;
-        var act = () => Huml.Populate<ConfigPoco>("@@invalid@@", existing!);
+        var act = () => HumlSerializer.Populate<ConfigPoco>("@@invalid@@", existing!);
 
         act.Should().Throw<ArgumentNullException>();
     }
@@ -146,7 +146,7 @@ public class HumlPopulateTests
     [Fact]
     public void Populate_StructT_ThrowsArgumentException()
     {
-        var act = () => Huml.Populate<TestStruct>("%HUML v0.2.0\n", new TestStruct());
+        var act = () => HumlSerializer.Populate<TestStruct>("%HUML v0.2.0\n", new TestStruct());
 
         act.Should().Throw<ArgumentException>().WithMessage("*value type*");
     }
@@ -156,7 +156,7 @@ public class HumlPopulateTests
     {
         var existing = new InitOnlyPoco();
         const string huml = "%HUML v0.2.0\nValue: \"updated\"\n";
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Value.Should().Be("updated");
     }
@@ -168,7 +168,7 @@ public class HumlPopulateTests
         var existing = new ReadOnlyPoco();
         const string huml = "%HUML v0.2.0\nName: \"overridden\"\n";
 
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Name.Should().Be("default");
     }
@@ -180,7 +180,7 @@ public class HumlPopulateTests
         var existing = new IgnoredPoco { Kept = "yes", Hidden = "secret" };
         const string huml = "%HUML v0.2.0\nKept: \"updated\"\nHidden: \"overwritten\"\n";
 
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Kept.Should().Be("updated");
         existing.Hidden.Should().Be("secret");
@@ -193,7 +193,7 @@ public class HumlPopulateTests
         var existing = new ConverterPoco { Name = "original" };
         const string huml = "%HUML v0.2.0\nName: \"hello\"\n";
 
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Name.Should().Be("HELLO");
     }
@@ -203,7 +203,7 @@ public class HumlPopulateTests
     public void Populate_InvalidHuml_ThrowsHumlParseException()
     {
         var existing = new ConfigPoco();
-        var act = () => Huml.Populate<ConfigPoco>("@@invalid@@", existing);
+        var act = () => HumlSerializer.Populate<ConfigPoco>("@@invalid@@", existing);
 
         act.Should().Throw<HumlParseException>();
     }
@@ -215,7 +215,7 @@ public class HumlPopulateTests
         var existing = new ConfigPoco { Host = "before" };
         const string huml = "%HUML v0.2.0\nHost: \"after\"\n";
 
-        Huml.Populate(huml, existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate(huml, existing, HumlOptions.LatestSupported);
 
         existing.Host.Should().Be("after");
     }
@@ -227,7 +227,7 @@ public class HumlPopulateTests
         var existing = new ConfigPoco { Port = 1234 };
         const string huml = "%HUML v0.2.0\nPort: 5678\n";
 
-        Huml.Populate<ConfigPoco>(huml.AsSpan(), existing, HumlOptions.LatestSupported);
+        HumlSerializer.Populate<ConfigPoco>(huml.AsSpan(), existing, HumlOptions.LatestSupported);
 
         existing.Port.Should().Be(5678);
     }

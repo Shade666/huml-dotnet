@@ -40,7 +40,7 @@ public sealed class HumlOptionsLatestAutoDetectTests
             Name: "test"
             """;
 
-        var act = () => Huml.Parse(huml, HumlOptions.LatestSupportedAutoDetect);
+        var act = () => HumlSerializer.Parse(huml, HumlOptions.LatestSupportedAutoDetect);
 
         act.Should().NotThrow<HumlUnsupportedVersionException>();
     }

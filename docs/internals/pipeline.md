@@ -122,11 +122,11 @@ Key implementation details:
 - **Naming policy:** `HumlOptions.PropertyNamingPolicy` transforms .NET property names at descriptor build time. The resulting HUML key is used for both the serialised output and the deserialise lookup dictionary key, ensuring round-trip symmetry.
 - **Converter dispatch:** Before built-in type dispatch, `DeserializeNode()` checks for a property-level `[HumlConverter]` attribute, then a type-level `[HumlConverter]` attribute, then `HumlOptions.Converters`. The first matching converter's `Read(HumlNode)` method is called.
 - **Collection dispatch:** Handles `T[]`, `List<T>`, `IEnumerable<T>`, and `Dictionary<string,T>`.
-- **Populate path:** `Huml.Populate<T>()` reuses `PopulateMappingEntries()` — the same property-assignment logic as `Deserialize<T>()` but targeting an existing instance rather than a freshly constructed one. Only properties present in the HUML document are assigned.
+- **Populate path:** `HumlSerializer.Populate<T>()` reuses `PopulateMappingEntries()` — the same property-assignment logic as `Deserialize<T>()` but targeting an existing instance rather than a freshly constructed one. Only properties present in the HUML document are assigned.
 - **`init`-only properties:** Detected via the `IsInitOnly` flag on `PropertyDescriptor`.
   `PropertyInfo.SetValue` is used to assign the value after the object is constructed —
   `init` semantics are enforced by the C# compiler at compile time, but CLR reflection
-  can write to init-only backing fields after construction. `Huml.Populate<T>()` also
+  can write to init-only backing fields after construction. `HumlSerializer.Populate<T>()` also
   writes init-only properties on the supplied instance.
 
 ## Where Things Live

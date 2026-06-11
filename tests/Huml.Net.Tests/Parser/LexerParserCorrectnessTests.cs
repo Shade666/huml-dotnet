@@ -30,7 +30,7 @@ public sealed class LexerParserCorrectnessTests
             ```
             """;
 
-        var doc = Huml.Parse(input, V01);
+        var doc = HumlSerializer.Parse(input, V01);
         var mapping = doc.Entries.OfType<HumlMapping>().Single();
         var scalar = (HumlScalar)mapping.Value;
         scalar.Value.Should().Be("hello\nworld");
@@ -47,7 +47,7 @@ public sealed class LexerParserCorrectnessTests
             ```
             """;
 
-        var doc = Huml.Parse(input, V01);
+        var doc = HumlSerializer.Parse(input, V01);
         var mapping = doc.Entries.OfType<HumlMapping>().Single();
         var scalar = (HumlScalar)mapping.Value;
         // keyIndent=0, strip=2 → 4 spaces → "  indented" (2 remaining)
@@ -60,7 +60,7 @@ public sealed class LexerParserCorrectnessTests
         // Key at column 0 → strip 2 spaces from content lines.
         const string input = "text: ```\n  line\n```\n";
 
-        var act = () => Huml.Parse(input, V01);
+        var act = () => HumlSerializer.Parse(input, V01);
         act.Should().NotThrow();
     }
 
@@ -73,7 +73,7 @@ public sealed class LexerParserCorrectnessTests
         // A blank line with trailing spaces inside a block should throw.
         const string input = "key: value\n   \nnext: value\n";
 
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().Throw<HumlParseException>();
     }
 
@@ -82,7 +82,7 @@ public sealed class LexerParserCorrectnessTests
     {
         const string input = "%HUML v0.2.0\nkey: \"value\"\n\nnext: \"other\"\n";
 
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().NotThrow();
     }
 
@@ -94,7 +94,7 @@ public sealed class LexerParserCorrectnessTests
         // 0x10000000000000000 (17 hex digits = 2^64) overflows int64.
         const string input = "%HUML v0.2.0\nvalue: 0x10000000000000000\n";
 
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().Throw<HumlParseException>()
             .WithMessage("*overflows*");
     }
@@ -104,7 +104,7 @@ public sealed class LexerParserCorrectnessTests
     {
         const string input = "%HUML v0.2.0\nvalue: 0xFF\n";
 
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().NotThrow();
     }
 
@@ -114,7 +114,7 @@ public sealed class LexerParserCorrectnessTests
         // 9999999999999999999 > Int64.MaxValue (9223372036854775807)
         const string input = "%HUML v0.2.0\nvalue: 9999999999999999999\n";
 
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().Throw<HumlParseException>()
             .WithMessage("*overflows*");
     }
@@ -127,7 +127,7 @@ public sealed class LexerParserCorrectnessTests
     {
         const string input = "%HUML v0.2.0\n\"name\": \"Alice\"\n";
 
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().NotThrow();
     }
 
@@ -136,7 +136,7 @@ public sealed class LexerParserCorrectnessTests
     {
         const string input = "%HUML v0.2.0\nkey: \"hello: world\"\n";
 
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().NotThrow();
     }
 
@@ -151,7 +151,7 @@ public sealed class LexerParserCorrectnessTests
         const string input = "%HUML v0.2.0\nvalue: 1.2\n";
 
         // Valid float — just verifying the happy path doesn't regress.
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().NotThrow();
     }
 
@@ -160,7 +160,7 @@ public sealed class LexerParserCorrectnessTests
     {
         const string input = "%HUML v0.2.0\nvalue: 1_000.5\n";
 
-        var act = () => Huml.Parse(input, V02);
+        var act = () => HumlSerializer.Parse(input, V02);
         act.Should().NotThrow();
     }
 }

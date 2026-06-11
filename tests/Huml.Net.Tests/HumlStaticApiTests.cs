@@ -26,7 +26,7 @@ public class HumlStaticApiTests
     {
         var poco = new RoundTripPoco { Name = "Alice", Age = 42 };
 
-        var result = Huml.Serialize(poco);
+        var result = HumlSerializer.Serialize(poco);
 
         result.Should().Contain("Name: \"Alice\"");
         result.Should().Contain("Age: 42");
@@ -39,7 +39,7 @@ public class HumlStaticApiTests
     {
         var poco = new RoundTripPoco { Name = "Alice", Age = 42 };
 
-        var result = Huml.Serialize(poco, typeof(RoundTripPoco));
+        var result = HumlSerializer.Serialize(poco, typeof(RoundTripPoco));
 
         result.Should().StartWith("%HUML v0.2.0");
         result.Should().Contain("Name: \"Alice\"");
@@ -51,7 +51,7 @@ public class HumlStaticApiTests
     public void Deserialize_String_RoundTripsPocoToEqualPropertyValues()
     {
         // Use AutoDetect so the parser reads the version from the %HUML header
-        var result = Huml.Deserialize<RoundTripPoco>(KnownHuml, HumlOptions.AutoDetect);
+        var result = HumlSerializer.Deserialize<RoundTripPoco>(KnownHuml, HumlOptions.AutoDetect);
 
         result.Name.Should().Be("Alice");
         result.Age.Should().Be(42);
@@ -63,7 +63,7 @@ public class HumlStaticApiTests
     public void Deserialize_Span_RoundTripsPocoToEqualPropertyValues()
     {
         // Use AutoDetect so the parser reads the version from the %HUML header
-        var result = Huml.Deserialize<RoundTripPoco>(KnownHuml.AsSpan(), HumlOptions.AutoDetect);
+        var result = HumlSerializer.Deserialize<RoundTripPoco>(KnownHuml.AsSpan(), HumlOptions.AutoDetect);
 
         result.Name.Should().Be("Alice");
         result.Age.Should().Be(42);
@@ -75,7 +75,7 @@ public class HumlStaticApiTests
     public void Deserialize_Untyped_ReturnsCastableObjectWithCorrectProperties()
     {
         // Use AutoDetect so the parser reads the version from the %HUML header
-        var result = Huml.Deserialize(KnownHuml, typeof(RoundTripPoco), HumlOptions.AutoDetect);
+        var result = HumlSerializer.Deserialize(KnownHuml, typeof(RoundTripPoco), HumlOptions.AutoDetect);
 
         var cast = result.Should().BeOfType<RoundTripPoco>().Subject;
         cast.Name.Should().Be("Alice");
@@ -87,7 +87,7 @@ public class HumlStaticApiTests
     [Fact]
     public void Parse_ValidInput_ReturnsHumlDocumentWithNonEmptyEntries()
     {
-        var result = Huml.Parse("key: true\n");
+        var result = HumlSerializer.Parse("key: true\n");
 
         result.Should().BeOfType<HumlDocument>();
         result.Entries.Should().NotBeEmpty();
@@ -96,7 +96,7 @@ public class HumlStaticApiTests
     [Fact]
     public void Parse_TabIndentedInput_ThrowsHumlParseException()
     {
-        var act = () => Huml.Parse("\tkey: true\n");
+        var act = () => HumlSerializer.Parse("\tkey: true\n");
 
         act.Should().Throw<HumlParseException>();
     }
@@ -106,7 +106,7 @@ public class HumlStaticApiTests
     [Fact]
     public void Deserialize_InvalidHuml_ThrowsHumlParseException()
     {
-        var act = () => Huml.Deserialize<RoundTripPoco>("\tkey: true");
+        var act = () => HumlSerializer.Deserialize<RoundTripPoco>("\tkey: true");
 
         act.Should().Throw<HumlParseException>();
     }

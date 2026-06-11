@@ -14,13 +14,13 @@ public class HumlSerializerAllocationTests
         var options = HumlOptions.LatestSupported;
 
         // JIT warmup
-        Huml.Serialize(value, options);
-        Huml.Serialize(value, options);
+        HumlSerializer.Serialize(value, options);
+        HumlSerializer.Serialize(value, options);
 
         // Measure both serialisations (min-of-N guards against tiering/GC noise)
         string result1 = "", result2 = "";
-        long alloc1 = AllocationProbe.Measure(() => result1 = Huml.Serialize(value, options));
-        long alloc2 = AllocationProbe.Measure(() => result2 = Huml.Serialize(value, options));
+        long alloc1 = AllocationProbe.Measure(() => result1 = HumlSerializer.Serialize(value, options));
+        long alloc2 = AllocationProbe.Measure(() => result2 = HumlSerializer.Serialize(value, options));
 
         result1.Should().Be(result2);
         // Second call should not allocate significantly more than first (indent strings are static).
@@ -37,7 +37,7 @@ public class HumlSerializerAllocationTests
         // We cannot easily nest 65 POCOs, so we verify the Indent method indirectly
         // by checking that a normally nested document serializes correctly (correctness guard).
         var value = new { a = new { b = new { c = "deep" } } };
-        var result = Huml.Serialize(value, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Serialize(value, HumlOptions.LatestSupported);
         // depth 2 key "c" should have 4 spaces (2 * 2)
         result.Should().Contain("    c: \"deep\"");
     }
@@ -46,7 +46,7 @@ public class HumlSerializerAllocationTests
     public void Indent_cache_produces_correct_spaces_at_each_depth()
     {
         var value = new { top = "zero", nested = new { mid = "one" } };
-        var result = Huml.Serialize(value, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Serialize(value, HumlOptions.LatestSupported);
 
         // depth 0: "top" has no leading spaces
         result.Should().Contain("top: \"zero\"");

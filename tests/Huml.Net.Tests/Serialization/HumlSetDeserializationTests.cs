@@ -49,7 +49,7 @@ public sealed class HumlSetDeserializationTests
               - 3
             """;
 
-        var result = Huml.Deserialize<WithHashSet>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithHashSet>(huml, Opts);
 
         result.Values.Should().BeOfType<HashSet<int>>();
         result.Values.Should().BeEquivalentTo(ExpectedInts);
@@ -63,7 +63,7 @@ public sealed class HumlSetDeserializationTests
             Values:: []
             """;
 
-        var result = Huml.Deserialize<WithHashSet>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithHashSet>(huml, Opts);
 
         result.Values.Should().BeOfType<HashSet<int>>();
         result.Values.Should().BeEmpty();
@@ -81,7 +81,7 @@ public sealed class HumlSetDeserializationTests
               - "beta"
             """;
 
-        var result = Huml.Deserialize<WithISet>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithISet>(huml, Opts);
 
         result.Tags.Should().BeOfType<HashSet<string>>();
         result.Tags.Should().BeEquivalentTo(ExpectedStrings);
@@ -101,7 +101,7 @@ public sealed class HumlSetDeserializationTests
               - "z"
             """;
 
-        var result = Huml.Deserialize<WithIReadOnlySet>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithIReadOnlySet>(huml, Opts);
 
         result.Labels.Should().BeAssignableTo<IReadOnlySet<string>>();
         result.Labels.Should().BeOfType<HashSet<string>>();
@@ -123,7 +123,7 @@ public sealed class HumlSetDeserializationTests
               - 5
             """;
 
-        var result = Huml.Deserialize<WithDuplicates>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithDuplicates>(huml, Opts);
 
         result.Numbers.Should().HaveCount(2);
         result.Numbers.Should().Contain(5);

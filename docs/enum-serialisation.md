@@ -15,11 +15,11 @@ public class Config
     public LogLevel Level { get; set; }
 }
 
-string huml = Huml.Serialize(new Config { Level = LogLevel.Warning });
+string huml = HumlSerializer.Serialize(new Config { Level = LogLevel.Warning });
 // %HUML v0.2.0
 // Level: "Warning"
 
-var config = Huml.Deserialize<Config>("""
+var config = HumlSerializer.Deserialize<Config>("""
     %HUML v0.2.0
     Level: "Warning"
     """);
@@ -43,7 +43,7 @@ public enum LogLevel
 ```
 
 ```csharp
-string huml = Huml.Serialize(new Config { Level = LogLevel.Warning });
+string huml = HumlSerializer.Serialize(new Config { Level = LogLevel.Warning });
 // Level: "warning"
 ```
 
@@ -76,7 +76,7 @@ in C#; a string value is looked up normally.
 ```csharp
 public class Config { public LogLevel? Level { get; set; } }
 
-var config = Huml.Deserialize<Config>("""
+var config = HumlSerializer.Deserialize<Config>("""
     %HUML v0.2.0
     Level: null
     """);

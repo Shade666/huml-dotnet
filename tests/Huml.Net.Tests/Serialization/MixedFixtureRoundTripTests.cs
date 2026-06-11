@@ -168,7 +168,7 @@ public class MixedFixtureRoundTripTests
     public void V02_MixedDocument_ParsesWithoutError()
     {
         var huml = LoadFixture("v0.2", "mixed.huml");
-        var act = () => Huml.Parse(huml, HumlOptions.AutoDetect);
+        var act = () => HumlSerializer.Parse(huml, HumlOptions.AutoDetect);
         act.Should().NotThrow();
     }
 
@@ -176,7 +176,7 @@ public class MixedFixtureRoundTripTests
     public void V01_MixedDocument_ParsesWithoutError()
     {
         var huml = LoadFixture("v0.1", "mixed.huml");
-        var act = () => Huml.Parse(huml, V01Options);
+        var act = () => HumlSerializer.Parse(huml, V01Options);
         act.Should().NotThrow();
     }
 
@@ -196,8 +196,8 @@ public class MixedFixtureRoundTripTests
             QuuxUnderscore = 1000000,       // 1_000_000
             WaldoLarge    = 9223372036854775807L, // Int64.MaxValue
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<IntegersPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<IntegersPoco>(huml, HumlOptions.AutoDetect);
         result.BarPositive.Should().Be(1234567);
         result.BazNegative.Should().Be(-987654);
         result.QuxZero.Should().Be(0);
@@ -221,8 +221,8 @@ public class MixedFixtureRoundTripTests
             GarplyLargeExp = 6.022e+23,
             GraultPrecision = 0.123456789,
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<FloatsPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<FloatsPoco>(huml, HumlOptions.AutoDetect);
         result.BarSimple.Should().Be(123.456);
         result.BazNeg.Should().Be(-78.9);
         result.CorgeZero.Should().Be(0.0);
@@ -245,8 +245,8 @@ public class MixedFixtureRoundTripTests
             QuuxPath       = @"C:\path\to\file.txt",
             QuxEscaped     = "Hello \"World\" with 'quotes'",
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<StringsPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<StringsPoco>(huml, HumlOptions.AutoDetect);
         result.BarEmpty.Should().Be("");
         result.BazSpaces.Should().Be("   spaces   ");
         result.CorgeUnicode.Should().Be("Unicode: \u03b1\u03b2\u03b3\u03b4\u03b5 \u4e2d\u6587 \U0001F680");
@@ -268,8 +268,8 @@ public class MixedFixtureRoundTripTests
             QuuxFALSE     = false,
             GraultFalseCase = false,
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<BooleansPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<BooleansPoco>(huml, HumlOptions.AutoDetect);
         result.BarTrue.Should().BeTrue();
         result.BazFalse.Should().BeFalse();
         result.QuxTRUE.Should().BeTrue();
@@ -287,8 +287,8 @@ public class MixedFixtureRoundTripTests
             BazNULL = null,
             QuxNull = null,
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<NullsPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<NullsPoco>(huml, HumlOptions.AutoDetect);
         result.BarNull.Should().BeNull();
         result.BazNULL.Should().BeNull();
         result.QuxNull.Should().BeNull();
@@ -307,8 +307,8 @@ public class MixedFixtureRoundTripTests
             CorgeBool  = false,
             GraultNull = null,
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<BasicScalarsPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<BasicScalarsPoco>(huml, HumlOptions.AutoDetect);
         result.FooString.Should().Be("bar_value");
         result.BarString.Should().Be("baz with spaces");
         result.BazInt.Should().Be(42);
@@ -336,8 +336,8 @@ public class MixedFixtureRoundTripTests
                 },
             },
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<FooDictPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<FooDictPoco>(huml, HumlOptions.AutoDetect);
         result.BarKey.Should().Be("bar_value");
         result.BazKey.Should().Be(789);
         result.QuxNested.Should().NotBeNull();
@@ -356,8 +356,8 @@ public class MixedFixtureRoundTripTests
             EmptyList = new List<string>(),
             EmptyDict = new Dictionary<string, string>(),
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<EmptyCollectionsPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<EmptyCollectionsPoco>(huml, HumlOptions.AutoDetect);
         result.EmptyList.Should().NotBeNull();
         result.EmptyList!.Should().BeEmpty();
         result.EmptyDict.Should().NotBeNull();
@@ -380,8 +380,8 @@ public class MixedFixtureRoundTripTests
                 ["special!@#$%"]         = "special_chars",
             },
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<SpecialKeysWrapper>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<SpecialKeysWrapper>(huml, HumlOptions.AutoDetect);
         result.Keys.Should().NotBeNull();
         result.Keys!.Should().ContainKey("key with spaces").WhoseValue.Should().Be("spaced_value");
         result.Keys.Should().ContainKey("key-with-dashes").WhoseValue.Should().Be("dashed_value");
@@ -406,8 +406,8 @@ public class MixedFixtureRoundTripTests
                 ["123"]   = "numeric_string_key",
             },
         };
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<EdgeCaseKeysWrapper>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<EdgeCaseKeysWrapper>(huml, HumlOptions.AutoDetect);
         result.Keys.Should().NotBeNull();
         result.Keys!.Should().ContainKey("").WhoseValue.Should().Be("empty_key");
         result.Keys.Should().ContainKey(" ").WhoseValue.Should().Be("space_key");
@@ -423,8 +423,8 @@ public class MixedFixtureRoundTripTests
     {
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
         var original = new InlineIntListPoco { Tags = new List<int> { 1, 2, 3, 4, 5 } };
-        var huml = Huml.Serialize(original, opts);
-        var result = Huml.Deserialize<InlineIntListPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original, opts);
+        var result = HumlSerializer.Deserialize<InlineIntListPoco>(huml, HumlOptions.AutoDetect);
         result.Tags.Should().Equal(1, 2, 3, 4, 5);
     }
 
@@ -433,8 +433,8 @@ public class MixedFixtureRoundTripTests
     {
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
         var original = new InlineStringListPoco { Items = new List<string> { "alpha", "beta", "gamma" } };
-        var huml = Huml.Serialize(original, opts);
-        var result = Huml.Deserialize<InlineStringListPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original, opts);
+        var result = HumlSerializer.Deserialize<InlineStringListPoco>(huml, HumlOptions.AutoDetect);
         result.Items.Should().Equal("alpha", "beta", "gamma");
     }
 
@@ -443,8 +443,8 @@ public class MixedFixtureRoundTripTests
     {
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
         var original = new InlineBoolListPoco { Flags = new List<bool> { true, false, true } };
-        var huml = Huml.Serialize(original, opts);
-        var result = Huml.Deserialize<InlineBoolListPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original, opts);
+        var result = HumlSerializer.Deserialize<InlineBoolListPoco>(huml, HumlOptions.AutoDetect);
         result.Flags.Should().Equal(true, false, true);
     }
 
@@ -456,8 +456,8 @@ public class MixedFixtureRoundTripTests
         {
             Counts = new Dictionary<string, int> { ["a"] = 1, ["b"] = 2, ["c"] = 3 },
         };
-        var huml = Huml.Serialize(original, opts);
-        var result = Huml.Deserialize<InlineDictCountsPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original, opts);
+        var result = HumlSerializer.Deserialize<InlineDictCountsPoco>(huml, HumlOptions.AutoDetect);
         result.Counts.Should().ContainKey("a").WhoseValue.Should().Be(1);
         result.Counts.Should().ContainKey("b").WhoseValue.Should().Be(2);
         result.Counts.Should().ContainKey("c").WhoseValue.Should().Be(3);
@@ -468,8 +468,8 @@ public class MixedFixtureRoundTripTests
     {
         // [HumlProperty(Inline = InlineMode.Inline)] forces inline even with default (multiline) options
         var original = new InlineAttrPoco { Tags = new List<int> { 10, 20, 30 } };
-        var huml = Huml.Serialize(original); // default multiline, but attribute forces inline
-        var result = Huml.Deserialize<InlineAttrPoco>(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original); // default multiline, but attribute forces inline
+        var result = HumlSerializer.Deserialize<InlineAttrPoco>(huml, HumlOptions.AutoDetect);
         result.Tags.Should().Equal(10, 20, 30);
     }
 
@@ -478,8 +478,8 @@ public class MixedFixtureRoundTripTests
     {
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
         var original = new InlineMixedStringListPoco { Items = new List<string> { "1", "mixed", "true" } };
-        var huml = Huml.Serialize(original, opts);
-        var act = () => Huml.Parse(huml, HumlOptions.AutoDetect);
+        var huml = HumlSerializer.Serialize(original, opts);
+        var act = () => HumlSerializer.Parse(huml, HumlOptions.AutoDetect);
         act.Should().NotThrow();
     }
 }

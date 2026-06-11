@@ -25,8 +25,8 @@ public class SequenceVectorItemTests
     {
         var holder = new Holder { Items = [new Child("a", 1), new Child("b", 2)] };
 
-        var huml = Huml.Serialize(holder);
-        var restored = Huml.Deserialize<Holder>(huml, HumlOptions.Default);
+        var huml = HumlSerializer.Serialize(holder);
+        var restored = HumlSerializer.Deserialize<Holder>(huml, HumlOptions.Default);
 
         restored.Items.Should().HaveCount(2);
         restored.Items[0].Should().Be(new Child("a", 1));
@@ -38,7 +38,7 @@ public class SequenceVectorItemTests
     {
         var holder = new Holder { Items = [new Child("a", 1)] };
 
-        var huml = Huml.Serialize(holder);
+        var huml = HumlSerializer.Serialize(holder);
 
         huml.Should().Contain("- ::", because: "vector list items use the '- ::' form");
         foreach (var line in huml.Split('\n'))
@@ -53,8 +53,8 @@ public class SequenceVectorItemTests
             ["outer"] = [new Dictionary<string, int> { ["x"] = 1 }, new Dictionary<string, int> { ["y"] = 2 }],
         };
 
-        var huml = Huml.Serialize(value);
-        var restored = Huml.Deserialize<Dictionary<string, IList<Dictionary<string, int>>>>(huml, HumlOptions.Default);
+        var huml = HumlSerializer.Serialize(value);
+        var restored = HumlSerializer.Deserialize<Dictionary<string, IList<Dictionary<string, int>>>>(huml, HumlOptions.Default);
 
         restored["outer"].Should().HaveCount(2);
         restored["outer"][0]["x"].Should().Be(1);
@@ -66,8 +66,8 @@ public class SequenceVectorItemTests
     {
         var holder = new ListsHolder { Rows = [[1, 2], [3]] };
 
-        var huml = Huml.Serialize(holder);
-        var restored = Huml.Deserialize<ListsHolder>(huml, HumlOptions.Default);
+        var huml = HumlSerializer.Serialize(holder);
+        var restored = HumlSerializer.Deserialize<ListsHolder>(huml, HumlOptions.Default);
 
         restored.Rows.Should().HaveCount(2);
         restored.Rows[0].Should().Equal(1, 2);
@@ -84,10 +84,10 @@ public class SequenceVectorItemTests
     {
         var holder = new ListsHolder { Rows = [[]] };
 
-        var huml = Huml.Serialize(holder);
+        var huml = HumlSerializer.Serialize(holder);
 
         huml.Should().Contain("- :: []", because: "an empty vector item must not produce an ambiguous bare '::'");
-        var act = () => Huml.Deserialize<ListsHolder>(huml, HumlOptions.Default);
+        var act = () => HumlSerializer.Deserialize<ListsHolder>(huml, HumlOptions.Default);
         act.Should().NotThrow();
     }
 
@@ -96,10 +96,10 @@ public class SequenceVectorItemTests
     {
         var holder = new EmptyPocoHolder { Items = [new EmptyPoco()] };
 
-        var huml = Huml.Serialize(holder);
+        var huml = HumlSerializer.Serialize(holder);
 
         huml.Should().Contain("- :: {}", because: "a POCO with no serialisable members is an empty dict item");
-        var act = () => Huml.Parse(huml, HumlOptions.Default);
+        var act = () => HumlSerializer.Parse(huml, HumlOptions.Default);
         act.Should().NotThrow();
     }
 
@@ -114,10 +114,10 @@ public class SequenceVectorItemTests
     public void Ast_document_with_vector_list_items_round_trips()
     {
         const string input = "items::\n  - ::\n    a: 1\n  - ::\n    a: 2";
-        var doc = Huml.Parse(input, HumlOptions.LatestSupported);
+        var doc = HumlSerializer.Parse(input, HumlOptions.LatestSupported);
 
-        var emitted = Huml.Serialize(doc);
-        var act = () => Huml.Parse(emitted, HumlOptions.Default);
+        var emitted = HumlSerializer.Serialize(doc);
+        var act = () => HumlSerializer.Parse(emitted, HumlOptions.Default);
 
         act.Should().NotThrow(because: $"re-emitted AST must be valid HUML (got: {emitted})");
     }

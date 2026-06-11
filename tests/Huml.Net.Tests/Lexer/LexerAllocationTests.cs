@@ -60,16 +60,16 @@ public class LexerAllocationTests
         // Run several times to ensure all lazy-initialised caches (PropertyDescriptor,
         // EnumNameCache, ConverterCache, etc.) are fully saturated before measuring.
         for (int i = 0; i < 5; i++)
-            _ = Huml.Deserialize<AllocationPoco>(span, options);
+            _ = HumlSerializer.Deserialize<AllocationPoco>(span, options);
         GC.Collect(2, GCCollectionMode.Forced, true, true);
         // One post-GC call to reprime the thread's allocation buffer (TLAB) after compaction.
         // Without this, the first post-compaction allocation pays a TLAB-initialisation cost
         // (~2 KiB on .NET 8/9) that pollutes the measurement on older runtimes.
-        _ = Huml.Deserialize<AllocationPoco>(span, options);
+        _ = HumlSerializer.Deserialize<AllocationPoco>(span, options);
 
         // Capture the source in a local copy the lambda can use (ref struct spans cannot
         // be captured); the string overload exercises the same downstream path budget.
-        long allocated = AllocationProbe.Measure(() => _ = Huml.Deserialize<AllocationPoco>(source.AsSpan(), options));
+        long allocated = AllocationProbe.Measure(() => _ = HumlSerializer.Deserialize<AllocationPoco>(source.AsSpan(), options));
 
         // A full string copy of the input would be source.Length * sizeof(char) = 72 bytes.
         // Allow budget for the POCO + AST nodes (typically ~200-600 bytes warm) but not a

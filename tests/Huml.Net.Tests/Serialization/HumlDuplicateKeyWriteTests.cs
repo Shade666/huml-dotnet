@@ -26,7 +26,7 @@ public class HumlDuplicateKeyWriteTests
         var dict = new DuplicateKeyDictionary("foo");
         var options = new HumlOptions { ValidateDuplicateKeysOnWrite = false };
 
-        var act = () => Huml.Serialize(dict, options);
+        var act = () => HumlSerializer.Serialize(dict, options);
 
         act.Should().NotThrow();
     }
@@ -39,7 +39,7 @@ public class HumlDuplicateKeyWriteTests
         var dict = new DuplicateKeyDictionary("foo");
         var options = new HumlOptions { ValidateDuplicateKeysOnWrite = true };
 
-        var act = () => Huml.Serialize(dict, options);
+        var act = () => HumlSerializer.Serialize(dict, options);
 
         var ex = act.Should().Throw<HumlSerializeException>().Which;
         ex.Message.Should().Contain("foo");
@@ -53,7 +53,7 @@ public class HumlDuplicateKeyWriteTests
         var dict = new DuplicateKeyDictionary("foo", "FOO");
         var options = new HumlOptions { ValidateDuplicateKeysOnWrite = true };
 
-        var act = () => Huml.Serialize(dict, options);
+        var act = () => HumlSerializer.Serialize(dict, options);
 
         act.Should().NotThrow();
     }
@@ -66,7 +66,7 @@ public class HumlDuplicateKeyWriteTests
         var dict = new Dictionary<string, string> { ["only"] = "one" };
         var options = new HumlOptions { ValidateDuplicateKeysOnWrite = true };
 
-        var act = () => Huml.Serialize(dict, options);
+        var act = () => HumlSerializer.Serialize(dict, options);
 
         act.Should().NotThrow();
     }
@@ -79,7 +79,7 @@ public class HumlDuplicateKeyWriteTests
         var dict = new Dictionary<string, string>();
         var options = new HumlOptions { ValidateDuplicateKeysOnWrite = true };
 
-        var act = () => Huml.Serialize(dict, options);
+        var act = () => HumlSerializer.Serialize(dict, options);
 
         act.Should().NotThrow();
     }
@@ -93,7 +93,7 @@ public class HumlDuplicateKeyWriteTests
         var outer = new Dictionary<string, object> { ["outer"] = inner };
         var options = new HumlOptions { ValidateDuplicateKeysOnWrite = true };
 
-        var act = () => Huml.Serialize(outer, options);
+        var act = () => HumlSerializer.Serialize(outer, options);
 
         var ex = act.Should().Throw<HumlSerializeException>().Which;
         ex.Message.Should().Contain("inner-key");

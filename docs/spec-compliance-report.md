@@ -11,7 +11,7 @@
 
 | # | Rule (spec) | Was | Now |
 |---|------------|-----|-----|
-| F1 | Parse failures must surface as `HumlParseException` (API contract) | `key: 0x` / `0b2` / `0o8` leaked `System.FormatException` from `Huml.Parse` | Lexer requires ≥1 digit after a base prefix; `ParseInt` catches `FormatException`/`ArgumentException` as defence in depth |
+| F1 | Parse failures must surface as `HumlParseException` (API contract) | `key: 0x` / `0b2` / `0o8` leaked `System.FormatException` from `HumlSerializer.Parse` | Lexer requires ≥1 digit after a base prefix; `ParseInt` catches `FormatException`/`ArgumentException` as defence in depth |
 | F2 | Tokenizer: list items are `"- "` (dash-space); `('+'\|'-')? digit+` is a number | `-5` at document root parsed as a **one-element list**; `list::\n  -1` accepted | Dash at line start only lexes as a list item when followed by space/EOL; root `-5`/`-inf` are scalars; `-1` as a list item is a parse error |
 | F3 | v0.1 §Strip spaces: `"""` strips **all** leading/trailing whitespace per content line | v0.1 documents got v0.2 preserve semantics (no version gate) | `ScanTripleQuoteMultiline` gates on `>= V0_2`; v0.1 trims each content line |
 | F4 | Tokenizer digit classes: hex `['0'-'9' 'A'-'F' '_']`, octal/binary/exponent include `_` | `0xCAFE_BABE`, `1e1_0` rejected with "Unexpected character '_'" | Underscores accepted (and ignored) in hex/octal/binary digits and exponent digits |

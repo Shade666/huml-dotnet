@@ -12,7 +12,7 @@ namespace Huml.Net.Serialization;
 /// Converts .NET objects to HUML text using the <see cref="PropertyDescriptor"/> cache
 /// for property enumeration in declaration order.
 /// </summary>
-internal static class HumlSerializer
+internal static class HumlSerializerImpl
 {
     // ── Re-entry guard ────────────────────────────────────────────────────────
 
@@ -354,7 +354,7 @@ internal static class HumlSerializer
         {
             throw new HumlSerializeException(
                 $"Cannot serialize type '{type.FullName}': delegates, function pointers, and " +
-                "similar non-data types are not supported by HumlSerializer.");
+                "similar non-data types are not supported by HumlSerializerImpl.");
         }
 
         // POCO — reflect using PropertyDescriptor (pass declaredType for top-level type-directed dispatch)
@@ -615,9 +615,9 @@ internal static class HumlSerializer
         {
             var msg = declaringType != null
                 ? $"Cannot serialize property '{key}' on type '{declaringType.Name}': delegates, " +
-                  "function pointers, and similar non-data types are not supported by HumlSerializer."
+                  "function pointers, and similar non-data types are not supported by HumlSerializerImpl."
                 : $"Cannot serialize type '{valueType2.FullName}': delegates, function pointers, and " +
-                  "similar non-data types are not supported by HumlSerializer.";
+                  "similar non-data types are not supported by HumlSerializerImpl.";
             throw new HumlSerializeException(msg);
         }
         sb.Append(indent);
@@ -938,7 +938,7 @@ internal static class HumlSerializer
                     if (IsUnsupportedType(itemType))
                         throw new HumlSerializeException(
                             $"Cannot serialize type '{itemType.FullName}': delegates, function pointers, and " +
-                            "similar non-data types are not supported by HumlSerializer.");
+                            "similar non-data types are not supported by HumlSerializerImpl.");
                     // Pass the declared element type so polymorphic collection elements emit
                     // their discriminator.
                     SerializeMappingBody(sb, item, depth + 1, options, declaredType: elementDeclaredType);

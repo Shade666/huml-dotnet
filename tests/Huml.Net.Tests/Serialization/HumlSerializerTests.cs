@@ -113,7 +113,7 @@ public class HumlSerializerTests
     [Fact]
     public void Serialize_DefaultOptions_EmitsV02Header()
     {
-        var result = HumlSerializer.Serialize(new OrderedPoco(), HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(new OrderedPoco(), HumlOptions.Default);
 
         result.Should().StartWith("%HUML v0.2.0\n");
     }
@@ -122,7 +122,7 @@ public class HumlSerializerTests
     public void Serialize_V01Options_EmitsV01Header()
     {
         var opts = new HumlOptions { SpecVersion = HumlSpecVersion.V0_1 };
-        var result = HumlSerializer.Serialize(new OrderedPoco(), opts);
+        var result = HumlSerializerImpl.Serialize(new OrderedPoco(), opts);
 
         result.Should().StartWith("%HUML v0.1.0\n");
     }
@@ -130,7 +130,7 @@ public class HumlSerializerTests
     [Fact]
     public void Serialize_NullValue_EmitsHeaderAndNull()
     {
-        var result = HumlSerializer.Serialize(null, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(null, HumlOptions.Default);
 
         result.Should().Be("%HUML v0.2.0\nnull\n");
     }
@@ -141,7 +141,7 @@ public class HumlSerializerTests
     public void Serialize_PropertiesEmittedInDeclarationOrder_NotAlphabetical()
     {
         var poco = new OrderedPoco { Zebra = "z", Alpha = 1, Beta = true };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         // Zebra must appear before Alpha, Alpha before Beta
         var zebraIdx = result.IndexOf("Zebra:", StringComparison.Ordinal);
@@ -158,7 +158,7 @@ public class HumlSerializerTests
     public void Serialize_StringProperty_EmitsQuotedValue()
     {
         var poco = new MixedStringPoco { Text = "hello" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Text: \"hello\"\n");
     }
@@ -167,7 +167,7 @@ public class HumlSerializerTests
     public void Serialize_NullStringProperty_EmitsNull()
     {
         var poco = new MixedStringPoco { Text = null };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Text: null\n");
     }
@@ -176,7 +176,7 @@ public class HumlSerializerTests
     public void Serialize_BoolTrue_EmitsLowercase()
     {
         var poco = new OrderedPoco { Beta = true };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Beta: true\n");
     }
@@ -185,7 +185,7 @@ public class HumlSerializerTests
     public void Serialize_BoolFalse_EmitsLowercase()
     {
         var poco = new OrderedPoco { Beta = false };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Beta: false\n");
     }
@@ -194,7 +194,7 @@ public class HumlSerializerTests
     public void Serialize_IntProperty_EmitsBareInteger()
     {
         var poco = new OrderedPoco { Alpha = 42 };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Alpha: 42\n");
     }
@@ -205,7 +205,7 @@ public class HumlSerializerTests
         var poco = new InnerPoco { Label = "x", Count = 0 };
         // Use direct object serialization with a double via anonymous-style dict test
         // Instead use typed overload approach
-        var result = HumlSerializer.Serialize(new { Val = 3.14 }, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(new { Val = 3.14 }, HumlOptions.Default);
 
         result.Should().Contain("Val: 3.14\n");
     }
@@ -213,7 +213,7 @@ public class HumlSerializerTests
     [Fact]
     public void Serialize_DoubleNaN_EmitsNan()
     {
-        var result = HumlSerializer.Serialize(new { Val = double.NaN }, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(new { Val = double.NaN }, HumlOptions.Default);
 
         result.Should().Contain("Val: nan\n");
     }
@@ -221,7 +221,7 @@ public class HumlSerializerTests
     [Fact]
     public void Serialize_DoublePositiveInfinity_EmitsPlusInf()
     {
-        var result = HumlSerializer.Serialize(new { Val = double.PositiveInfinity }, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(new { Val = double.PositiveInfinity }, HumlOptions.Default);
 
         result.Should().Contain("Val: +inf\n");
     }
@@ -229,7 +229,7 @@ public class HumlSerializerTests
     [Fact]
     public void Serialize_DoubleNegativeInfinity_EmitsMinusInf()
     {
-        var result = HumlSerializer.Serialize(new { Val = double.NegativeInfinity }, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(new { Val = double.NegativeInfinity }, HumlOptions.Default);
 
         result.Should().Contain("Val: -inf\n");
     }
@@ -237,7 +237,7 @@ public class HumlSerializerTests
     [Fact]
     public void Serialize_FloatProperty_EmitsDecimalLiteral()
     {
-        var result = HumlSerializer.Serialize(new { Val = 1.5f }, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(new { Val = 1.5f }, HumlOptions.Default);
 
         result.Should().Contain("Val: 1.5\n");
     }
@@ -245,7 +245,7 @@ public class HumlSerializerTests
     [Fact]
     public void Serialize_LongProperty_EmitsBareInteger()
     {
-        var result = HumlSerializer.Serialize(new { Val = 9999999999L }, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(new { Val = 9999999999L }, HumlOptions.Default);
 
         result.Should().Contain("Val: 9999999999\n");
     }
@@ -256,7 +256,7 @@ public class HumlSerializerTests
     public void Serialize_StringWithQuote_EscapesQuote()
     {
         var poco = new MixedStringPoco { Text = "say \"hi\"" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Text: \"say \\\"hi\\\"\"\n");
     }
@@ -265,7 +265,7 @@ public class HumlSerializerTests
     public void Serialize_StringWithNewline_EscapesNewline()
     {
         var poco = new MixedStringPoco { Text = "line1\nline2" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Text: \"line1\\nline2\"\n");
     }
@@ -274,7 +274,7 @@ public class HumlSerializerTests
     public void Serialize_StringWithBackslash_EscapesBackslash()
     {
         var poco = new MixedStringPoco { Text = @"C:\path" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Text: \"C:\\\\path\"\n");
     }
@@ -283,7 +283,7 @@ public class HumlSerializerTests
     public void Serialize_StringWithTab_EscapesTab()
     {
         var poco = new MixedStringPoco { Text = "col1\tcol2" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Text: \"col1\\tcol2\"\n");
     }
@@ -294,7 +294,7 @@ public class HumlSerializerTests
     public void Serialize_HumlPropertyRename_UsesCustomKey()
     {
         var poco = new RenamedPoco { Name = "Alice" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("custom_key: \"Alice\"\n");
         result.Should().NotContain("Name:");
@@ -306,7 +306,7 @@ public class HumlSerializerTests
     public void Serialize_HumlIgnore_ExcludesProperty()
     {
         var poco = new IgnoredPoco { Visible = "yes", Hidden = "no" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Visible:");
         result.Should().NotContain("Hidden:");
@@ -318,7 +318,7 @@ public class HumlSerializerTests
     public void Serialize_OmitIfDefault_SkipsDefaultValue()
     {
         var poco = new OmitDefaultPoco { Value = 0, Name = "test" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().NotContain("Value:");
         result.Should().Contain("Name:");
@@ -328,7 +328,7 @@ public class HumlSerializerTests
     public void Serialize_OmitIfDefault_EmitsNonDefaultValue()
     {
         var poco = new OmitDefaultPoco { Value = 5, Name = "test" };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Value: 5\n");
     }
@@ -339,7 +339,7 @@ public class HumlSerializerTests
     public void Serialize_EmptyList_EmitsEmptyVectorLiteral()
     {
         var poco = new ListPoco { Items = new List<string>() };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Items:: []\n");
     }
@@ -348,7 +348,7 @@ public class HumlSerializerTests
     public void Serialize_ListWithItems_EmitsMultilineBlock()
     {
         var poco = new ListPoco { Items = new List<string> { "alpha", "beta" } };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Items::\n");
         result.Should().Contain("  - \"alpha\"\n");
@@ -359,7 +359,7 @@ public class HumlSerializerTests
     public void Serialize_ArrayWithItems_EmitsMultilineBlock()
     {
         var poco = new ArrayPoco { Items = new[] { "x", "y" } };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Items::\n");
         result.Should().Contain("  - \"x\"\n");
@@ -370,7 +370,7 @@ public class HumlSerializerTests
     public void Serialize_EmptyDictionary_EmitsEmptyDictLiteral()
     {
         var poco = new DictPoco { Map = new Dictionary<string, string>() };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Map:: {}\n");
     }
@@ -379,7 +379,7 @@ public class HumlSerializerTests
     public void Serialize_DictionaryWithEntries_EmitsMultilineBlock()
     {
         var poco = new DictPoco { Map = new Dictionary<string, string> { ["key1"] = "val1" } };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Map::\n");
         result.Should().Contain("  key1: \"val1\"\n");
@@ -395,7 +395,7 @@ public class HumlSerializerTests
             Title = "root",
             Inner = new InnerPoco { Label = "child", Count = 7 }
         };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Title: \"root\"\n");
         result.Should().Contain("Inner::\n");
@@ -407,7 +407,7 @@ public class HumlSerializerTests
     public void Serialize_NullNestedPoco_EmitsNull()
     {
         var poco = new NestedPoco { Title = "root", Inner = null };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Inner: null\n");
     }
@@ -422,7 +422,7 @@ public class HumlSerializerTests
             Title = "t",
             Inner = new InnerPoco { Label = "l", Count = 1 }
         };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         // Level 1 properties should be two spaces indented
         result.Should().Contain("  Label:");
@@ -435,7 +435,7 @@ public class HumlSerializerTests
     public void Serialize_DelegateType_ThrowsHumlSerializeException()
     {
         Action<int> action = _ => { };
-        var act = () => HumlSerializer.Serialize(new { Handler = action }, HumlOptions.Default);
+        var act = () => HumlSerializerImpl.Serialize(new { Handler = action }, HumlOptions.Default);
 
         act.Should().Throw<HumlSerializeException>();
     }
@@ -446,7 +446,7 @@ public class HumlSerializerTests
     public void Serialize_UsesUnixNewlines()
     {
         var poco = new OrderedPoco { Zebra = "z", Alpha = 1, Beta = true };
-        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializerImpl.Serialize(poco, HumlOptions.Default);
 
         // No Windows-style \r\n
         result.Should().NotContain("\r\n");
@@ -458,8 +458,8 @@ public class HumlSerializerTests
     public void Serialize_TypedOverload_ProducesSameOutput()
     {
         var poco = new OrderedPoco { Zebra = "z", Alpha = 1, Beta = true };
-        var resultUntyped = HumlSerializer.Serialize((object)poco, HumlOptions.Default);
-        var resultTyped = HumlSerializer.Serialize(poco, typeof(OrderedPoco), HumlOptions.Default);
+        var resultUntyped = HumlSerializerImpl.Serialize((object)poco, HumlOptions.Default);
+        var resultTyped = HumlSerializerImpl.Serialize(poco, typeof(OrderedPoco), HumlOptions.Default);
 
         resultTyped.Should().Be(resultUntyped);
     }
@@ -470,7 +470,7 @@ public class HumlSerializerTests
     public void Serialize_DeclaredBaseType_OmitsDerivedOnlyProperties()
     {
         var value = new PolymorphicDerived { Name = "Alice", Extra = 99 };
-        var result = HumlSerializer.Serialize(value, typeof(PolymorphicBase), HumlOptions.LatestSupported);
+        var result = HumlSerializerImpl.Serialize(value, typeof(PolymorphicBase), HumlOptions.LatestSupported);
         result.Should().NotContain("Extra");
     }
 
@@ -478,7 +478,7 @@ public class HumlSerializerTests
     public void Serialize_DeclaredBaseType_IncludesBaseProperties()
     {
         var value = new PolymorphicDerived { Name = "Bob", Extra = 42 };
-        var result = HumlSerializer.Serialize(value, typeof(PolymorphicBase), HumlOptions.LatestSupported);
+        var result = HumlSerializerImpl.Serialize(value, typeof(PolymorphicBase), HumlOptions.LatestSupported);
         result.Should().Contain("Name: \"Bob\"");
     }
 
@@ -486,7 +486,7 @@ public class HumlSerializerTests
     public void Serialize_DeclaredBaseType_NestedPocoUsesRuntimeType()
     {
         var nesting = new NestingPoco { Child = new PolymorphicDerived { Name = "nested", Extra = 42 } };
-        var result = HumlSerializer.Serialize(nesting, typeof(NestingPoco), HumlOptions.LatestSupported);
+        var result = HumlSerializerImpl.Serialize(nesting, typeof(NestingPoco), HumlOptions.LatestSupported);
         result.Should().Contain("Extra");
     }
 }

@@ -1,6 +1,6 @@
 # Populate
 
-`Huml.Populate<T>()` deserialises a HUML document onto an **existing** object instance, overlaying
+`HumlSerializer.Populate<T>()` deserialises a HUML document onto an **existing** object instance, overlaying
 values rather than constructing a new instance. Properties present in the HUML document overwrite
 the corresponding property on the existing instance; properties absent from the document are left
 unchanged.
@@ -36,7 +36,7 @@ public class ServerConfig
 
 var config = new ServerConfig();   // defaults applied by property initialisers
 
-Huml.Populate("""
+HumlSerializer.Populate("""
     %HUML v0.2.0
     Port: 443
     Debug: true
@@ -55,7 +55,7 @@ Pass `HumlOptions` as the third argument to use a naming policy or other options
 var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
 var config = new ServerConfig { Host = "localhost", Port = 8080 };
 
-Huml.Populate("""
+HumlSerializer.Populate("""
     %HUML v0.2.0
     port: 443
     """, config, options);
@@ -77,7 +77,7 @@ Huml.Populate("""
 
 ## Comparison with Deserialize
 
-| | `Huml.Deserialize<T>()` | `Huml.Populate<T>()` |
+| | `HumlSerializer.Deserialize<T>()` | `HumlSerializer.Populate<T>()` |
 |---|---|---|
 | Instance source | Created by `Activator.CreateInstance` | Caller-supplied |
 | Missing keys | Property stays at default (type default) | Property stays at caller's value |

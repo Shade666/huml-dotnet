@@ -50,7 +50,7 @@ public sealed class HumlOptionsStrictTests
             UnknownKey: 123
             """;
 
-        var act = () => Huml.Deserialize<StrictDto>(huml, HumlOptions.Strict);
+        var act = () => HumlSerializer.Deserialize<StrictDto>(huml, HumlOptions.Strict);
 
         act.Should().Throw<HumlDeserializeException>()
             .WithMessage("*UnknownKey*");

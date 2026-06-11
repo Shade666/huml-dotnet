@@ -96,8 +96,8 @@ public class RoundTripPropertyTests
         for (int i = 0; i < IterationsPerSeed; i++)
         {
             var original = RandomLeaf(rng);
-            var huml = Huml.Serialize(original);
-            var restored = Huml.Deserialize<ScalarLeaf>(huml, HumlOptions.Default);
+            var huml = HumlSerializer.Serialize(original);
+            var restored = HumlSerializer.Deserialize<ScalarLeaf>(huml, HumlOptions.Default);
             restored.Should().Be(original,
                 because: $"seed {seed} iteration {i} must round-trip (doc: {huml})");
         }
@@ -113,9 +113,9 @@ public class RoundTripPropertyTests
         for (int i = 0; i < IterationsPerSeed; i++)
         {
             var original = RandomGraph(rng, depth: 3);
-            var s1 = Huml.Serialize(original);
-            var restored = Huml.Deserialize<GraphNode>(s1, HumlOptions.Default);
-            var s2 = Huml.Serialize(restored);
+            var s1 = HumlSerializer.Serialize(original);
+            var restored = HumlSerializer.Deserialize<GraphNode>(s1, HumlOptions.Default);
+            var s2 = HumlSerializer.Serialize(restored);
             s2.Should().Be(s1,
                 because: $"seed {seed} iteration {i}: serialise→deserialise→serialise must be a fixpoint");
         }
@@ -130,8 +130,8 @@ public class RoundTripPropertyTests
     [InlineData(-0.0)]
     public void P3_special_doubles_round_trip(double value)
     {
-        var huml = Huml.Serialize(new DoubleBox(value));
-        var restored = Huml.Deserialize<DoubleBox>(huml, HumlOptions.Default);
+        var huml = HumlSerializer.Serialize(new DoubleBox(value));
+        var restored = HumlSerializer.Deserialize<DoubleBox>(huml, HumlOptions.Default);
         if (double.IsNaN(value))
             double.IsNaN(restored.Value).Should().BeTrue();
         else
@@ -157,14 +157,14 @@ public class RoundTripPropertyTests
                 var input = row.GetProperty("input").GetString()!;
 
                 Dictionary<string, object?>? map;
-                try { map = Huml.Deserialize<Dictionary<string, object?>>(input, HumlOptions.LatestSupported); }
+                try { map = HumlSerializer.Deserialize<Dictionary<string, object?>>(input, HumlOptions.LatestSupported); }
                 catch (Exception) { continue; } // root scalars/lists and exotic shapes: out of scope here
 
                 // Root scalars/lists deserialise to an empty map today (silent-loss
                 // behaviour under separate review); only mapping-shaped docs are in
                 // scope for this stability property.
                 if (map is null || map.Count == 0) continue;
-                var act = () => Huml.Parse(Huml.Serialize(map), HumlOptions.LatestSupported);
+                var act = () => HumlSerializer.Parse(HumlSerializer.Serialize(map), HumlOptions.LatestSupported);
                 act.Should().NotThrow(because: $"re-serialised form of fixture input '{input}' must re-parse");
                 checked_++;
             }

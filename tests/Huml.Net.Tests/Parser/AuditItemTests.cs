@@ -22,7 +22,7 @@ public class AuditItemTests
     [InlineData("key: 0b1111111111111111111111111111111111111111111111111111111111111111")]
     public void Base_prefixed_literal_exceeding_int64_throws(string input)
     {
-        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Parse(input, HumlOptions.LatestSupported);
         act.Should().Throw<HumlParseException>().WithMessage("*overflow*");
     }
 
@@ -33,7 +33,7 @@ public class AuditItemTests
     [InlineData("key: -0xFF", -255L)]
     public void Base_prefixed_literal_within_range_parses(string input, long expected)
     {
-        var doc = Huml.Parse(input, HumlOptions.LatestSupported);
+        var doc = HumlSerializer.Parse(input, HumlOptions.LatestSupported);
         var scalar = ((HumlMapping)doc.Entries[0]).Value.Should().BeOfType<HumlScalar>().Subject;
         scalar.Value.Should().Be(expected);
     }
@@ -43,7 +43,7 @@ public class AuditItemTests
     [Fact]
     public void Leading_bom_throws_with_self_explanatory_message()
     {
-        var act = () => Huml.Parse("﻿key: 1", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Parse("﻿key: 1", HumlOptions.LatestSupported);
         act.Should().Throw<HumlParseException>().WithMessage("*byte-order mark*");
     }
 }

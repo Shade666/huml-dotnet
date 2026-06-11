@@ -18,7 +18,7 @@ public class AotAnnotationTests
     [Fact]
     public void Serialize_Generic_CarriesRequiresUnreferencedCodeAttribute()
     {
-        var method = typeof(Huml).GetMethods(BindingFlags.Public | BindingFlags.Static)
+        var method = typeof(HumlSerializer).GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Single(m => string.Equals(m.Name, "Serialize", StringComparison.Ordinal)
                       && m.IsGenericMethod
                       && m.GetParameters().Length == 2
@@ -33,7 +33,7 @@ public class AotAnnotationTests
     [Fact]
     public void Serialize_Generic_CarriesRequiresDynamicCodeAttribute()
     {
-        var method = typeof(Huml).GetMethods(BindingFlags.Public | BindingFlags.Static)
+        var method = typeof(HumlSerializer).GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Single(m => string.Equals(m.Name, "Serialize", StringComparison.Ordinal)
                       && m.IsGenericMethod
                       && m.GetParameters().Length == 2
@@ -48,7 +48,7 @@ public class AotAnnotationTests
     [Fact]
     public void Deserialize_StringGeneric_CarriesBothAnnotations()
     {
-        var method = typeof(Huml).GetMethods(BindingFlags.Public | BindingFlags.Static)
+        var method = typeof(HumlSerializer).GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Single(m => string.Equals(m.Name, "Deserialize", StringComparison.Ordinal)
                       && m.IsGenericMethod
                       && m.GetParameters()[0].ParameterType == typeof(string));
@@ -63,7 +63,7 @@ public class AotAnnotationTests
     [Fact]
     public void Deserialize_SpanGeneric_CarriesBothAnnotations()
     {
-        var method = typeof(Huml).GetMethods(BindingFlags.Public | BindingFlags.Static)
+        var method = typeof(HumlSerializer).GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Single(m => string.Equals(m.Name, "Deserialize", StringComparison.Ordinal)
                       && m.IsGenericMethod
                       && m.GetParameters()[0].ParameterType == typeof(ReadOnlySpan<char>));
@@ -78,7 +78,7 @@ public class AotAnnotationTests
     [Fact]
     public void Deserialize_StringType_CarriesBothAnnotations()
     {
-        var method = typeof(Huml).GetMethod(
+        var method = typeof(HumlSerializer).GetMethod(
             "Deserialize",
             BindingFlags.Public | BindingFlags.Static,
             binder: null,
@@ -95,7 +95,7 @@ public class AotAnnotationTests
     [Fact]
     public void Populate_StringGeneric_CarriesBothAnnotations()
     {
-        var method = typeof(Huml).GetMethods(BindingFlags.Public | BindingFlags.Static)
+        var method = typeof(HumlSerializer).GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Single(m => string.Equals(m.Name, "Populate", StringComparison.Ordinal)
                       && m.IsGenericMethod
                       && m.GetParameters()[0].ParameterType == typeof(string));
@@ -110,7 +110,7 @@ public class AotAnnotationTests
     [Fact]
     public void Populate_SpanGeneric_CarriesBothAnnotations()
     {
-        var method = typeof(Huml).GetMethods(BindingFlags.Public | BindingFlags.Static)
+        var method = typeof(HumlSerializer).GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Single(m => string.Equals(m.Name, "Populate", StringComparison.Ordinal)
                       && m.IsGenericMethod
                       && m.GetParameters()[0].ParameterType == typeof(ReadOnlySpan<char>));
@@ -125,7 +125,7 @@ public class AotAnnotationTests
     [Fact]
     public void Serialize_ObjectType_CarriesBothAnnotations()
     {
-        var method = typeof(Huml).GetMethod(
+        var method = typeof(HumlSerializer).GetMethod(
             "Serialize",
             BindingFlags.Public | BindingFlags.Static,
             binder: null,
@@ -142,7 +142,7 @@ public class AotAnnotationTests
     [Fact]
     public void Parse_DoesNotCarryTrimAnnotations()
     {
-        var method = typeof(Huml).GetMethod(
+        var method = typeof(HumlSerializer).GetMethod(
             "Parse",
             BindingFlags.Public | BindingFlags.Static,
             binder: null,

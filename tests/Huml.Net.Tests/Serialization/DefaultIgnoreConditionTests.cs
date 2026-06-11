@@ -187,7 +187,7 @@ public class DefaultIgnoreConditionTests
     public void HumlIgnoreDefaults_SkipsAllDefaultProperties_WhenAllAtDefault()
     {
         var dto = new IgnoreDefaultsDto(); // Count=0, Tag=null, Active=false, Score=0.0
-        var result = Huml.Serialize(dto, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(dto, HumlOptions.Default);
 
         result.Should().NotContain("Count:");
         result.Should().NotContain("Tag:");
@@ -199,7 +199,7 @@ public class DefaultIgnoreConditionTests
     public void HumlIgnoreDefaults_EmitsNonDefaultInt_WhenCountIsNonZero()
     {
         var dto = new IgnoreDefaultsDto { Count = 5 };
-        var result = Huml.Serialize(dto, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(dto, HumlOptions.Default);
 
         result.Should().Contain("Count: 5");
     }
@@ -208,7 +208,7 @@ public class DefaultIgnoreConditionTests
     public void HumlIgnoreDefaults_EmitsNonDefaultString_WhenTagIsSet()
     {
         var dto = new IgnoreDefaultsDto { Tag = "hello" };
-        var result = Huml.Serialize(dto, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(dto, HumlOptions.Default);
 
         result.Should().Contain("Tag:");
         result.Should().Contain("hello");
@@ -221,7 +221,7 @@ public class DefaultIgnoreConditionTests
     {
         var dto = new PlainDto { Count = 0 };
         var options = new HumlOptions { DefaultIgnoreCondition = HumlIgnoreCondition.WhenWritingDefault };
-        var result = Huml.Serialize(dto, options);
+        var result = HumlSerializer.Serialize(dto, options);
 
         result.Should().NotContain("Count:");
     }
@@ -231,7 +231,7 @@ public class DefaultIgnoreConditionTests
     {
         var dto = new PlainDto { Tag = null };
         var options = new HumlOptions { DefaultIgnoreCondition = HumlIgnoreCondition.WhenWritingDefault };
-        var result = Huml.Serialize(dto, options);
+        var result = HumlSerializer.Serialize(dto, options);
 
         result.Should().NotContain("Tag:");
     }
@@ -241,7 +241,7 @@ public class DefaultIgnoreConditionTests
     {
         var dto = new PlainDto { Count = 5 };
         var options = new HumlOptions { DefaultIgnoreCondition = HumlIgnoreCondition.WhenWritingDefault };
-        var result = Huml.Serialize(dto, options);
+        var result = HumlSerializer.Serialize(dto, options);
 
         result.Should().Contain("Count: 5");
     }
@@ -253,7 +253,7 @@ public class DefaultIgnoreConditionTests
     {
         var dto = new PlainDto { Tag = null };
         var options = new HumlOptions { DefaultIgnoreCondition = HumlIgnoreCondition.WhenWritingNull };
-        var result = Huml.Serialize(dto, options);
+        var result = HumlSerializer.Serialize(dto, options);
 
         result.Should().NotContain("Tag:");
     }
@@ -263,7 +263,7 @@ public class DefaultIgnoreConditionTests
     {
         var dto = new PlainDto { Count = 0 };
         var options = new HumlOptions { DefaultIgnoreCondition = HumlIgnoreCondition.WhenWritingNull };
-        var result = Huml.Serialize(dto, options);
+        var result = HumlSerializer.Serialize(dto, options);
 
         result.Should().Contain("Count: 0");
     }
@@ -275,7 +275,7 @@ public class DefaultIgnoreConditionTests
     {
         var dto = new PlainDto { Count = 42, Tag = "x", Active = true };
         var options = new HumlOptions { DefaultIgnoreCondition = HumlIgnoreCondition.Always };
-        var result = Huml.Serialize(dto, options);
+        var result = HumlSerializer.Serialize(dto, options);
 
         result.Should().NotContain("Count:");
         result.Should().NotContain("Tag:");
@@ -288,7 +288,7 @@ public class DefaultIgnoreConditionTests
     public void Never_EmitsAllProperties_IncludingDefaultValues()
     {
         var dto = new PlainDto { Count = 0 };
-        var result = Huml.Serialize(dto, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(dto, HumlOptions.Default);
 
         result.Should().Contain("Count: 0");
     }
@@ -301,7 +301,7 @@ public class DefaultIgnoreConditionTests
         // ExplicitOmit=0 should be omitted by per-property [HumlProperty(OmitIfDefault=true)]
         // ClassOmit=0 should be omitted by class-level [HumlIgnoreDefaults]
         var dto = new IgnoreDefaultsWithOverrideDto { ExplicitOmit = 0, ClassOmit = 0 };
-        var result = Huml.Serialize(dto, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(dto, HumlOptions.Default);
 
         result.Should().NotContain("ExplicitOmit:");
         result.Should().NotContain("ClassOmit:");
@@ -313,7 +313,7 @@ public class DefaultIgnoreConditionTests
         // ExplicitOmit=5 is non-default — per-property omit does NOT fire
         // ClassOmit=0 still omitted by class-level
         var dto = new IgnoreDefaultsWithOverrideDto { ExplicitOmit = 5, ClassOmit = 0 };
-        var result = Huml.Serialize(dto, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(dto, HumlOptions.Default);
 
         result.Should().Contain("ExplicitOmit: 5");
         result.Should().NotContain("ClassOmit:");
@@ -327,7 +327,7 @@ public class DefaultIgnoreConditionTests
         // BaseIgnoreDto has [HumlIgnoreDefaults]; DerivedIgnoreDto inherits it.
         // Both BaseCount and DerivedCount are at their CLR default (0).
         var dto = new DerivedIgnoreDto { BaseCount = 0, DerivedCount = 0 };
-        var result = Huml.Serialize(dto, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(dto, HumlOptions.Default);
 
         result.Should().NotContain("BaseCount:");
         result.Should().NotContain("DerivedCount:");
@@ -342,7 +342,7 @@ public class DefaultIgnoreConditionTests
         // BaseCount declared on undecorated BaseNoIgnoreDto should be emitted.
         // DerivedCount declared on decorated DerivedWithIgnoreDto should be suppressed.
         var dto = new DerivedWithIgnoreDto { BaseCount = 0, DerivedCount = 0 };
-        var result = Huml.Serialize(dto, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(dto, HumlOptions.Default);
 
         result.Should().Contain("BaseCount:");
         result.Should().NotContain("DerivedCount:");

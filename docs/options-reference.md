@@ -44,13 +44,13 @@ using Huml.Net;
 using Huml.Net.Versioning;
 
 // Read version from document header; throw if unrecognised
-var result = Huml.Deserialize<MyDto>(humlText, HumlOptions.AutoDetect);
+var result = HumlSerializer.Deserialize<MyDto>(humlText, HumlOptions.AutoDetect);
 
 // Read version from header; fall back silently to latest if unrecognised
-var lenient = Huml.Deserialize<MyDto>(humlText, HumlOptions.LatestSupportedAutoDetect);
+var lenient = HumlSerializer.Deserialize<MyDto>(humlText, HumlOptions.LatestSupportedAutoDetect);
 
 // Maximum strictness — throws on unknown keys and duplicate dictionary entries
-var strict = Huml.Deserialize<MyDto>(humlText, HumlOptions.Strict);
+var strict = HumlSerializer.Deserialize<MyDto>(humlText, HumlOptions.Strict);
 
 // Custom options
 var custom = new HumlOptions
@@ -59,7 +59,7 @@ var custom = new HumlOptions
     UnmappedMemberHandling = UnmappedMemberHandling.Disallow,
     PropertyNamingPolicy = HumlNamingPolicy.KebabCase,
 };
-var result2 = Huml.Deserialize<MyDto>(humlText, custom);
+var result2 = HumlSerializer.Deserialize<MyDto>(humlText, custom);
 ```
 
 ## Notes
@@ -79,13 +79,13 @@ var result2 = Huml.Deserialize<MyDto>(humlText, custom);
 **Huml.Net does not enforce a maximum document size.** There is no built-in limit on the
 number of bytes, characters, or nesting levels in an input document beyond `MaxRecursionDepth`.
 When parsing untrusted input, callers are responsible for enforcing size constraints before
-passing the document to `Huml.Parse` / `Huml.Deserialize`:
+passing the document to `HumlSerializer.Parse` / `HumlSerializer.Deserialize`:
 
 ```csharp
 const int MaxDocumentBytes = 1 * 1024 * 1024; // 1 MiB — set a limit appropriate for your app
 if (Encoding.UTF8.GetByteCount(humlText) > MaxDocumentBytes)
     throw new InvalidOperationException("Document exceeds maximum allowed size.");
-var result = Huml.Deserialize<MyDto>(humlText, HumlOptions.Default);
+var result = HumlSerializer.Deserialize<MyDto>(humlText, HumlOptions.Default);
 ```
 
 A dedicated `HumlOptions.MaxDocumentSize` property may be added in a future release as a

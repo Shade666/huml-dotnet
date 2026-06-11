@@ -35,7 +35,7 @@ public sealed class HumlSortedSetDeserializationTests
               - 2
             """;
 
-        var result = Huml.Deserialize<WithSortedSet>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithSortedSet>(huml, Opts);
 
         result.Values.Should().BeOfType<SortedSet<int>>();
         result.Values.Should().BeEquivalentTo(ExpectedSorted);
@@ -52,7 +52,7 @@ public sealed class HumlSortedSetDeserializationTests
             Values:: []
             """;
 
-        var result = Huml.Deserialize<WithSortedSet>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithSortedSet>(huml, Opts);
 
         result.Values.Should().BeOfType<SortedSet<int>>();
         result.Values.Should().BeEmpty();
@@ -72,7 +72,7 @@ public sealed class HumlSortedSetDeserializationTests
               - 5
             """;
 
-        var result = Huml.Deserialize<WithDuplicateSorted>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithDuplicateSorted>(huml, Opts);
 
         result.Numbers.Should().HaveCount(2);
         result.Numbers.Should().Contain(5);

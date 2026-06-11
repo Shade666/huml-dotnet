@@ -161,7 +161,7 @@ public class HumlSerializerInlineTests
         var poco = new InlineListPoco { Tags = new List<int> { 1, 2, 3 } };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
         result.Should().Contain("Tags:: 1, 2, 3\n");
     }
@@ -174,7 +174,7 @@ public class HumlSerializerInlineTests
         var poco = new ComplexListPoco { Items = new List<SubObj> { new SubObj { X = 1 } } };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
         // Complex list (contains POCOs) must fall back to multiline, with vector
         // items in the grammar-valid "- ::" form (no bare dash, no trailing space).
@@ -194,7 +194,7 @@ public class HumlSerializerInlineTests
         };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
         result.Should().Contain("Counts:: a: 1, b: 2\n");
     }
@@ -210,7 +210,7 @@ public class HumlSerializerInlineTests
         };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
         // Complex dict (values are lists) must fall back to multiline
         result.Should().Contain("Nested::\n");
@@ -225,7 +225,7 @@ public class HumlSerializerInlineTests
         // [HumlProperty(Inline = InlineMode.Inline)] with default options (Multiline) should still emit inline
         var poco = new InlineAttrTruePoco { Tags = new List<int> { 10, 20, 30 } };
 
-        var result = Huml.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Tags:: 10, 20, 30\n");
     }
@@ -239,7 +239,7 @@ public class HumlSerializerInlineTests
         var poco = new InlineAttrFalsePoco { Tags = new List<int> { 1, 2 } };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
         result.Should().Contain("Tags::\n");
         result.Should().Contain("  - 1\n");
@@ -253,7 +253,7 @@ public class HumlSerializerInlineTests
         PropertyDescriptor.ClearCache();
         var poco = new InlineListPoco { Tags = new List<int> { 1, 2 } };
 
-        var result = Huml.Serialize(poco, HumlOptions.Default);
+        var result = HumlSerializer.Serialize(poco, HumlOptions.Default);
 
         result.Should().Contain("Tags::\n");
         result.Should().Contain("  - 1\n");
@@ -268,7 +268,7 @@ public class HumlSerializerInlineTests
         var poco = new InlineListPoco { Tags = new List<int>() };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
         // Empty collections always use the empty literal regardless of CollectionFormat
         result.Should().Contain("Tags:: []\n");
@@ -282,9 +282,9 @@ public class HumlSerializerInlineTests
         var poco = new InlineListPoco { Tags = new List<int> { 7, 8, 9 } };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
-        var act = () => Huml.Parse(result, HumlOptions.AutoDetect);
+        var act = () => HumlSerializer.Parse(result, HumlOptions.AutoDetect);
         act.Should().NotThrow();
     }
 
@@ -299,9 +299,9 @@ public class HumlSerializerInlineTests
         };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
-        var act = () => Huml.Parse(result, HumlOptions.AutoDetect);
+        var act = () => HumlSerializer.Parse(result, HumlOptions.AutoDetect);
         act.Should().NotThrow();
     }
 
@@ -313,7 +313,7 @@ public class HumlSerializerInlineTests
         var poco = new OmitNullCollectionPoco { Tags = null };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
         // OmitIfDefault = true with null value — property should be omitted
         result.Should().NotContain("Tags");
@@ -330,7 +330,7 @@ public class HumlSerializerInlineTests
         };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
 
-        var result = Huml.Serialize(poco, opts);
+        var result = HumlSerializer.Serialize(poco, opts);
 
         // All items are scalars — should emit inline
         result.Should().Contain("Values::");

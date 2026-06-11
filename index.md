@@ -10,7 +10,7 @@ dotnet add package Huml.Net
 ```csharp
 using Huml.Net;
 
-var config = Huml.Deserialize<ServerConfig>("""
+var config = HumlSerializer.Deserialize<ServerConfig>("""
     %HUML v0.2.0
     Host: "localhost"
     Port: 8080
@@ -21,7 +21,7 @@ var config = Huml.Deserialize<ServerConfig>("""
 
 - **New here?** Start with the [Getting Started tutorial](docs/getting-started.md).
 - **Need to do a specific thing?** Browse the [how-to guides](docs/toc.yml).
-- **Looking up an API?** See the API reference: <xref:Huml.Net.Huml>.
+- **Looking up an API?** See the API reference: <xref:Huml.Net.HumlSerializer>.
 - **Want to understand the design?** Read the [explanation pages](docs/versioning.md).
 
 ## Why Huml.Net

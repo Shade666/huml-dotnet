@@ -21,10 +21,10 @@ Huml.Net throws four exception types, all in the namespace `Huml.Net.Exceptions`
 
 | Operation               | Can Throw                                                                                                                         |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `Huml.Parse()`          | `HumlParseException`, `HumlUnsupportedVersionException`                                                                           |
-| `Huml.Deserialize<T>()` | `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage, missing `[HumlRequired]` / C# `required` members, or unknown key when `UnmappedMemberHandling = Disallow`), `HumlUnsupportedVersionException` (version stage) |
-| `Huml.Populate<T>()`    | `ArgumentNullException` (null `huml` string or null existing instance), `ArgumentException` (T is a value type), `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage, or unknown key when `UnmappedMemberHandling = Disallow`), `HumlUnsupportedVersionException` (version stage) |
-| `Huml.Serialize<T>()`   | `HumlSerializeException`                                                                                                          |
+| `HumlSerializer.Parse()`          | `HumlParseException`, `HumlUnsupportedVersionException`                                                                           |
+| `HumlSerializer.Deserialize<T>()` | `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage, missing `[HumlRequired]` / C# `required` members, or unknown key when `UnmappedMemberHandling = Disallow`), `HumlUnsupportedVersionException` (version stage) |
+| `HumlSerializer.Populate<T>()`    | `ArgumentNullException` (null `huml` string or null existing instance), `ArgumentException` (T is a value type), `HumlParseException` (parse stage), `HumlDeserializeException` (mapping stage, or unknown key when `UnmappedMemberHandling = Disallow`), `HumlUnsupportedVersionException` (version stage) |
+| `HumlSerializer.Serialize<T>()`   | `HumlSerializeException`                                                                                                          |
 
 ## Exception Properties
 
@@ -71,7 +71,7 @@ using Huml.Net.Exceptions;
 
 try
 {
-    var result = Huml.Deserialize<MyDto>(humlText);
+    var result = HumlSerializer.Deserialize<MyDto>(humlText);
 }
 catch (HumlParseException ex)
 {
@@ -92,7 +92,7 @@ catch (HumlDeserializeException ex)
 - `HumlDeserializeException` for missing required members lists **all** absent keys in a
   single throw: `"Missing required member(s) on type 'X': 'Key1', 'Key2'."` Keys are listed
   in property declaration order. See [Required Properties](required-properties.md) for details.
-- `HumlSerializeException` is thrown by `Huml.Serialize` when
+- `HumlSerializeException` is thrown by `HumlSerializer.Serialize` when
   `HumlOptions.ValidateDuplicateKeysOnWrite = true` and a dictionary produces two entries
   with the same ordinal key.
 - `init`-only properties are now settable during deserialisation via reflection. The previous

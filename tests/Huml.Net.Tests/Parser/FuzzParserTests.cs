@@ -14,7 +14,7 @@ public sealed class FuzzParserTests
 
     private static void AssertParserSafe(string input, HumlOptions? options = null)
     {
-        try { Huml.Parse(input, options ?? HumlOptions.LatestSupported); }
+        try { HumlSerializer.Parse(input, options ?? HumlOptions.LatestSupported); }
         catch (HumlParseException) { /* expected */ }
         catch (HumlUnsupportedVersionException) { /* expected for unknown headers */ }
         // Any other exception propagates and fails the test
@@ -93,14 +93,14 @@ public sealed class FuzzParserTests
     [Fact]
     public void Fuzz08_nesting_at_max_depth()
     {
-        var act = () => Huml.Parse(MakeNestedHuml(4), DepthFourOpts);
+        var act = () => HumlSerializer.Parse(MakeNestedHuml(4), DepthFourOpts);
         act.Should().NotThrow();
     }
 
     [Fact]
     public void Fuzz09_nesting_exceeds_max_depth()
     {
-        var act = () => Huml.Parse(MakeNestedHuml(10), DepthFourOpts);
+        var act = () => HumlSerializer.Parse(MakeNestedHuml(10), DepthFourOpts);
         act.Should().Throw<HumlParseException>();
     }
 
@@ -219,9 +219,9 @@ public sealed class FuzzParserTests
     {
         // inf is a first-class HUML scalar kind, but keyword literals are lowercase
         // and case-sensitive: "Inf" is an unquoted string, i.e. a parse error.
-        var act = () => Huml.Parse("key: Inf", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Parse("key: Inf", HumlOptions.LatestSupported);
         act.Should().Throw<HumlParseException>();
-        var lower = () => Huml.Parse("key: inf", HumlOptions.LatestSupported);
+        var lower = () => HumlSerializer.Parse("key: inf", HumlOptions.LatestSupported);
         lower.Should().NotThrow();
     }
 
@@ -230,9 +230,9 @@ public sealed class FuzzParserTests
     {
         // nan is a first-class HUML scalar kind, but keyword literals are lowercase
         // and case-sensitive: "NaN" is an unquoted string, i.e. a parse error.
-        var act = () => Huml.Parse("key: NaN", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Parse("key: NaN", HumlOptions.LatestSupported);
         act.Should().Throw<HumlParseException>();
-        var lower = () => Huml.Parse("key: nan", HumlOptions.LatestSupported);
+        var lower = () => HumlSerializer.Parse("key: nan", HumlOptions.LatestSupported);
         lower.Should().NotThrow();
     }
 }

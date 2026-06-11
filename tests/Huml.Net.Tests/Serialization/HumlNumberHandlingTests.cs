@@ -9,7 +9,7 @@ namespace Huml.Net.Tests.Serialization;
 /// <summary>
 /// Tests for <see cref="HumlNumberHandling"/> enum and <see cref="HumlOptions.NumberHandling"/>
 /// property wired through <c>HumlDeserializer.CoerceScalar</c> and
-/// <c>HumlSerializer.SerializeValueInternal</c>.
+/// <c>HumlSerializerImpl.SerializeValueInternal</c>.
 /// </summary>
 public sealed class HumlNumberHandlingTests
 {
@@ -19,7 +19,7 @@ public sealed class HumlNumberHandlingTests
     public void Num01_strict_rejects_string_to_int()
     {
         const string huml = "%HUML v0.2.0\nValue: \"42\"";
-        var act = () => Huml.Deserialize<IntDto>(huml, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<IntDto>(huml, HumlOptions.LatestSupported);
 
         act.Should().Throw<HumlDeserializeException>();
     }
@@ -28,7 +28,7 @@ public sealed class HumlNumberHandlingTests
     public void Num13_strict_rejects_string_to_long()
     {
         const string huml = "%HUML v0.2.0\nValue: \"100\"";
-        var act = () => Huml.Deserialize<LongDto>(huml, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<LongDto>(huml, HumlOptions.LatestSupported);
 
         act.Should().Throw<HumlDeserializeException>();
     }
@@ -37,7 +37,7 @@ public sealed class HumlNumberHandlingTests
     public void Num14_strict_rejects_string_to_double()
     {
         const string huml = "%HUML v0.2.0\nValue: \"3.14\"";
-        var act = () => Huml.Deserialize<DoubleDto>(huml, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<DoubleDto>(huml, HumlOptions.LatestSupported);
 
         act.Should().Throw<HumlDeserializeException>();
     }
@@ -50,7 +50,7 @@ public sealed class HumlNumberHandlingTests
         const string huml = "%HUML v0.2.0\nValue: \"42\"";
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.AllowReadingFromString };
 
-        var result = Huml.Deserialize<IntDto>(huml, opts);
+        var result = HumlSerializer.Deserialize<IntDto>(huml, opts);
 
         result!.Value.Should().Be(42);
     }
@@ -62,7 +62,7 @@ public sealed class HumlNumberHandlingTests
     {
         const string huml = "%HUML v0.2.0\nValue: \"2024-01-15T00:00:00.0000000\"";
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.AllowReadingFromString };
-        var act = () => Huml.Deserialize<DateDto>(huml, opts);
+        var act = () => HumlSerializer.Deserialize<DateDto>(huml, opts);
 
         act.Should().NotThrow();
     }
@@ -72,7 +72,7 @@ public sealed class HumlNumberHandlingTests
     [Fact]
     public void Num03_strict_emits_bare_integer()
     {
-        var output = Huml.Serialize(new IntDto { Value = 42 }, HumlOptions.LatestSupported);
+        var output = HumlSerializer.Serialize(new IntDto { Value = 42 }, HumlOptions.LatestSupported);
 
         output.Should().Contain("Value: 42\n");
     }
@@ -83,7 +83,7 @@ public sealed class HumlNumberHandlingTests
     public void Num04_write_as_string_quotes_integer()
     {
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
-        var output = Huml.Serialize(new IntDto { Value = 42 }, opts);
+        var output = HumlSerializer.Serialize(new IntDto { Value = 42 }, opts);
 
         output.Should().Contain("Value: \"42\"\n");
     }
@@ -92,7 +92,7 @@ public sealed class HumlNumberHandlingTests
     public void Num05_write_as_string_quotes_double()
     {
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
-        var output = Huml.Serialize(new DoubleDto { Value = 3.14 }, opts);
+        var output = HumlSerializer.Serialize(new DoubleDto { Value = 3.14 }, opts);
 
         output.Should().Contain("Value: \"3.14\"\n");
     }
@@ -101,7 +101,7 @@ public sealed class HumlNumberHandlingTests
     public void Num06_write_as_string_quotes_float()
     {
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
-        var output = Huml.Serialize(new FloatDto { Value = 1.5f }, opts);
+        var output = HumlSerializer.Serialize(new FloatDto { Value = 1.5f }, opts);
 
         output.Should().Contain("Value: \"1.5\"\n");
     }
@@ -110,7 +110,7 @@ public sealed class HumlNumberHandlingTests
     public void Num07_write_as_string_quotes_decimal()
     {
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
-        var output = Huml.Serialize(new DecimalDto { Value = 9.99m }, opts);
+        var output = HumlSerializer.Serialize(new DecimalDto { Value = 9.99m }, opts);
 
         output.Should().Contain("Value: \"9.99\"\n");
     }
@@ -121,7 +121,7 @@ public sealed class HumlNumberHandlingTests
     public void Num08_nan_never_quoted()
     {
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
-        var output = Huml.Serialize(new DoubleDto { Value = double.NaN }, opts);
+        var output = HumlSerializer.Serialize(new DoubleDto { Value = double.NaN }, opts);
 
         output.Should().Contain("Value: nan\n");
         output.Should().NotContain("Value: \"nan\"");
@@ -131,7 +131,7 @@ public sealed class HumlNumberHandlingTests
     public void Num09_positive_inf_never_quoted()
     {
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
-        var output = Huml.Serialize(new DoubleDto { Value = double.PositiveInfinity }, opts);
+        var output = HumlSerializer.Serialize(new DoubleDto { Value = double.PositiveInfinity }, opts);
 
         output.Should().Contain("Value: +inf\n");
         output.Should().NotContain("Value: \"+inf\"");
@@ -141,7 +141,7 @@ public sealed class HumlNumberHandlingTests
     public void Num10_negative_inf_never_quoted()
     {
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
-        var output = Huml.Serialize(new DoubleDto { Value = double.NegativeInfinity }, opts);
+        var output = HumlSerializer.Serialize(new DoubleDto { Value = double.NegativeInfinity }, opts);
 
         output.Should().Contain("Value: -inf\n");
         output.Should().NotContain("Value: \"-inf\"");
@@ -155,8 +155,8 @@ public sealed class HumlNumberHandlingTests
         var serOpts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
         var desOpts = new HumlOptions { NumberHandling = HumlNumberHandling.AllowReadingFromString };
 
-        var serialised = Huml.Serialize(new IntDto { Value = 99 }, serOpts);
-        var result = Huml.Deserialize<IntDto>(serialised, desOpts);
+        var serialised = HumlSerializer.Serialize(new IntDto { Value = 99 }, serOpts);
+        var result = HumlSerializer.Deserialize<IntDto>(serialised, desOpts);
 
         result!.Value.Should().Be(99);
     }
@@ -167,8 +167,8 @@ public sealed class HumlNumberHandlingTests
         var serOpts = new HumlOptions { NumberHandling = HumlNumberHandling.WriteAsString };
         var desOpts = new HumlOptions { NumberHandling = HumlNumberHandling.AllowReadingFromString };
 
-        var serialised = Huml.Serialize(new DoubleDto { Value = 2.718 }, serOpts);
-        var result = Huml.Deserialize<DoubleDto>(serialised, desOpts);
+        var serialised = HumlSerializer.Serialize(new DoubleDto { Value = 2.718 }, serOpts);
+        var result = HumlSerializer.Deserialize<DoubleDto>(serialised, desOpts);
 
         result!.Value.Should().BeApproximately(2.718, 0.0001);
     }
@@ -211,7 +211,7 @@ public sealed class HumlNumberHandlingTests
     public void Num16_per_member_allow_reading_from_string_accepts_quoted_int()
     {
         const string huml = "%HUML v0.2.0\nAnnotatedValue: \"42\"\nStrictValue: 7";
-        var result = Huml.Deserialize<MixedReadDto>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<MixedReadDto>(huml, HumlOptions.LatestSupported);
 
         result!.AnnotatedValue.Should().Be(42);
         result.StrictValue.Should().Be(7);
@@ -221,7 +221,7 @@ public sealed class HumlNumberHandlingTests
     public void Num16b_strict_member_on_mixed_dto_rejects_string()
     {
         const string huml = "%HUML v0.2.0\nAnnotatedValue: 1\nStrictValue: \"99\"";
-        var act = () => Huml.Deserialize<MixedReadDto>(huml, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<MixedReadDto>(huml, HumlOptions.LatestSupported);
 
         act.Should().Throw<HumlDeserializeException>();
     }
@@ -230,7 +230,7 @@ public sealed class HumlNumberHandlingTests
     public void Num17_per_member_write_as_string_quotes_annotated_leaves_other_bare()
     {
         var dto = new MixedWriteDto { AnnotatedValue = 42, StrictValue = 7 };
-        var output = Huml.Serialize(dto, HumlOptions.LatestSupported);
+        var output = HumlSerializer.Serialize(dto, HumlOptions.LatestSupported);
 
         output.Should().Contain("AnnotatedValue: \"42\"\n");
         output.Should().Contain("StrictValue: 7\n");
@@ -242,7 +242,7 @@ public sealed class HumlNumberHandlingTests
         const string huml = "%HUML v0.2.0\nAnnotatedValue: \"42\"\nStrictValue: 7";
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.Strict };
 
-        var result = Huml.Deserialize<MixedReadDto>(huml, opts);
+        var result = HumlSerializer.Deserialize<MixedReadDto>(huml, opts);
 
         result!.AnnotatedValue.Should().Be(42);
     }
@@ -253,7 +253,7 @@ public sealed class HumlNumberHandlingTests
         // Serialise with per-member WriteAsString on AnnotatedValue; StrictValue emits bare
         var dto = new MixedWriteDto { AnnotatedValue = 10, StrictValue = 20 };
         var serOpts = new HumlOptions { NumberHandling = HumlNumberHandling.Strict };
-        var output = Huml.Serialize(dto, serOpts);
+        var output = HumlSerializer.Serialize(dto, serOpts);
 
         output.Should().Contain("AnnotatedValue: \"10\"\n");
         output.Should().Contain("StrictValue: 20\n");
@@ -261,7 +261,7 @@ public sealed class HumlNumberHandlingTests
         // Deserialise back using MixedReadDto: AnnotatedValue has [AllowReadingFromString]
         // so it accepts the quoted "10"; StrictValue has no attribute and uses the global Strict option
         var desOpts = new HumlOptions { NumberHandling = HumlNumberHandling.Strict };
-        var result = Huml.Deserialize<MixedReadDto>(output, desOpts);
+        var result = HumlSerializer.Deserialize<MixedReadDto>(output, desOpts);
 
         result!.AnnotatedValue.Should().Be(10);
         result.StrictValue.Should().Be(20);
@@ -271,11 +271,11 @@ public sealed class HumlNumberHandlingTests
     public void Num20_per_member_round_trip_write_as_string_and_allow_reading()
     {
         var dto = new RoundTripDto { Value = 55 };
-        var output = Huml.Serialize(dto, HumlOptions.LatestSupported);
+        var output = HumlSerializer.Serialize(dto, HumlOptions.LatestSupported);
 
         output.Should().Contain("Value: \"55\"\n");
 
-        var result = Huml.Deserialize<RoundTripDto>(output, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<RoundTripDto>(output, HumlOptions.LatestSupported);
 
         result!.Value.Should().Be(55);
     }
@@ -286,7 +286,7 @@ public sealed class HumlNumberHandlingTests
         const string huml = "%HUML v0.2.0\nAnnotatedValue: \"42\"";
         var opts = new HumlOptions { NumberHandling = HumlNumberHandling.AllowReadingFromString };
 
-        var act = () => Huml.Deserialize<StrictOverrideDto>(huml, opts);
+        var act = () => HumlSerializer.Deserialize<StrictOverrideDto>(huml, opts);
 
         act.Should().Throw<HumlDeserializeException>();
     }
@@ -298,7 +298,7 @@ public sealed class HumlNumberHandlingTests
     {
         // [HumlNumberHandling(WriteAsString)] on a List<int> property must quote every element
         var dto = new IntListWriteDto { Values = new List<int> { 1, 2, 3 } };
-        var output = Huml.Serialize(dto, HumlOptions.LatestSupported);
+        var output = HumlSerializer.Serialize(dto, HumlOptions.LatestSupported);
 
         output.Should().Contain("- \"1\"");
         output.Should().Contain("- \"2\"");
@@ -312,7 +312,7 @@ public sealed class HumlNumberHandlingTests
         // Same as Num22 but with CollectionFormat.Inline — items in inline sequence must also be quoted
         var dto = new IntListWriteDto { Values = new List<int> { 10, 20 } };
         var opts = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
-        var output = Huml.Serialize(dto, opts);
+        var output = HumlSerializer.Serialize(dto, opts);
 
         output.Should().Contain("\"10\"");
         output.Should().Contain("\"20\"");
@@ -322,7 +322,7 @@ public sealed class HumlNumberHandlingTests
     public void Num24_per_member_allow_reading_from_string_applies_to_list_elements()
     {
         const string huml = "%HUML v0.2.0\nValues::\n  - \"5\"\n  - \"10\"";
-        var result = Huml.Deserialize<IntListReadDto>(huml, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Deserialize<IntListReadDto>(huml, HumlOptions.LatestSupported);
 
         result!.Values.Should().ContainInOrder(5, 10);
     }

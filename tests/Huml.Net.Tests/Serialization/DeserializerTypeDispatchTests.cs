@@ -24,8 +24,8 @@ public sealed class DeserializerTypeDispatchTests
     public void Cr04_timeonly_round_trips_correctly()
     {
         var original = new TimeOnlyHolder { Time = new TimeOnly(14, 30, 0) };
-        var huml = Huml.Serialize(original, Opts);
-        var roundTripped = Huml.Deserialize<TimeOnlyHolder>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var roundTripped = HumlSerializer.Deserialize<TimeOnlyHolder>(huml, Opts);
         roundTripped.Time.Should().Be(original.Time);
     }
 
@@ -33,8 +33,8 @@ public sealed class DeserializerTypeDispatchTests
     public void Cr04_timeonly_with_fractional_seconds_round_trips()
     {
         var original = new TimeOnlyHolder { Time = new TimeOnly(9, 0, 0, 500) };
-        var huml = Huml.Serialize(original, Opts);
-        var roundTripped = Huml.Deserialize<TimeOnlyHolder>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var roundTripped = HumlSerializer.Deserialize<TimeOnlyHolder>(huml, Opts);
         roundTripped.Time.Should().Be(original.Time);
     }
 
@@ -42,8 +42,8 @@ public sealed class DeserializerTypeDispatchTests
     public void Cr04_timeonly_midnight_round_trips()
     {
         var original = new TimeOnlyHolder { Time = TimeOnly.MinValue };
-        var huml = Huml.Serialize(original, Opts);
-        var roundTripped = Huml.Deserialize<TimeOnlyHolder>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var roundTripped = HumlSerializer.Deserialize<TimeOnlyHolder>(huml, Opts);
         roundTripped.Time.Should().Be(original.Time);
     }
 #endif
@@ -64,7 +64,7 @@ public sealed class DeserializerTypeDispatchTests
             Name: "Alice"
             """;
 
-        var act = () => Huml.Deserialize<RequiredHolder>(huml, Opts);
+        var act = () => HumlSerializer.Deserialize<RequiredHolder>(huml, Opts);
         act.Should().NotThrow();
     }
 
@@ -76,7 +76,7 @@ public sealed class DeserializerTypeDispatchTests
             Other: "ignored"
             """;
 
-        var act = () => Huml.Deserialize<RequiredHolder>(huml, new HumlOptions
+        var act = () => HumlSerializer.Deserialize<RequiredHolder>(huml, new HumlOptions
         {
             UnmappedMemberHandling = UnmappedMemberHandling.Skip,
         });
@@ -101,7 +101,7 @@ public sealed class DeserializerTypeDispatchTests
               Bob: 95
             """;
 
-        var result = Huml.Deserialize<WithIDictionary>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithIDictionary>(huml, Opts);
         result.Scores.Should().ContainKey("Alice").WhoseValue.Should().Be(100);
         result.Scores.Should().ContainKey("Bob").WhoseValue.Should().Be(95);
     }
@@ -116,7 +116,7 @@ public sealed class DeserializerTypeDispatchTests
               region: "eu-west"
             """;
 
-        var result = Huml.Deserialize<WithStringDict>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithStringDict>(huml, Opts);
         result.Labels.Should().ContainKey("env").WhoseValue.Should().Be("prod");
     }
 
@@ -150,7 +150,7 @@ public sealed class DeserializerTypeDispatchTests
               - 3
             """;
 
-        var result = Huml.Deserialize<WithICollection>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithICollection>(huml, Opts);
         result.Items.Should().HaveCount(3);
         result.Items.Should().Contain(2);
     }
@@ -165,7 +165,7 @@ public sealed class DeserializerTypeDispatchTests
               - "Bob"
             """;
 
-        var result = Huml.Deserialize<WithIReadOnlyList>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithIReadOnlyList>(huml, Opts);
         result.Names.Should().HaveCount(2);
         result.Names[0].Should().Be("Alice");
     }

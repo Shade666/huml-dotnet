@@ -127,7 +127,7 @@ public class HumlConverterTests
         var options = new HumlOptions { Converters = new List<HumlConverter>() };
         var poco = new PointPropPoco { Name = "test" };
         // Act + Assert: no exception — built-in dispatch still works
-        var act = () => Huml.Serialize(poco, options);
+        var act = () => HumlSerializer.Serialize(poco, options);
         act.Should().NotThrow();
     }
 
@@ -148,7 +148,7 @@ public class HumlConverterTests
         var options = new HumlOptions();
         // TaggedPoint has [HumlConverter(typeof(PointConverter))] at class level
         // Serialise a POCO that holds a TaggedPoint — converter should fire
-        var act = () => Huml.Serialize(new { P = new TaggedPoint(1, 2) }, options);
+        var act = () => HumlSerializer.Serialize(new { P = new TaggedPoint(1, 2) }, options);
         act.Should().NotThrow();
     }
 
@@ -158,7 +158,7 @@ public class HumlConverterTests
         // A type with type-level converter; property with different converter
         // Property-level should win for that property
         var options = new HumlOptions();
-        var act = () => Huml.Serialize(new PointPropPoco { Location = new Point(3, 4) }, options);
+        var act = () => HumlSerializer.Serialize(new PointPropPoco { Location = new Point(3, 4) }, options);
         act.Should().NotThrow();
     }
 
@@ -176,7 +176,7 @@ public class HumlConverterTests
     public void OptionsLevel_Converter_InvokedBeforeBuiltinDispatch()
     {
         var options = new HumlOptions { Converters = new List<HumlConverter> { new PointConverter() } };
-        var result = Huml.Serialize(new { P = new Point(1, 2) }, options);
+        var result = HumlSerializer.Serialize(new { P = new Point(1, 2) }, options);
         result.Should().Contain("\"1,2\"");
     }
 
@@ -187,7 +187,7 @@ public class HumlConverterTests
         // The string should be serialised with built-in quoting
         var options = new HumlOptions { Converters = new List<HumlConverter> { new PointConverter() } };
         // Verify via serialising a POCO whose non-Point properties still use built-in dispatch
-        var result = Huml.Serialize(new PointPropPoco { Location = new Point(5, 6), Name = "hello" }, options);
+        var result = HumlSerializer.Serialize(new PointPropPoco { Location = new Point(5, 6), Name = "hello" }, options);
         result.Should().Contain("\"hello\"");
     }
 
@@ -195,7 +195,7 @@ public class HumlConverterTests
     public void AppendRaw_EmitsVerbatimFragment()
     {
         var options = new HumlOptions { Converters = new List<HumlConverter> { new PointConverter() } };
-        var result = Huml.Serialize(new { P = new Point(7, 8) }, options);
+        var result = HumlSerializer.Serialize(new { P = new Point(7, 8) }, options);
         // PointConverter uses AppendRaw to emit "X,Y"
         result.Should().Contain("\"7,8\"");
     }
@@ -204,7 +204,7 @@ public class HumlConverterTests
     public void PropertyLevel_Converter_Write_InvokedForThatPropertyOnly()
     {
         var poco = new PointPropPoco { Location = new Point(10, 20), Name = "world" };
-        var result = Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         // Location uses converter; Name uses built-in string dispatch
         result.Should().Contain("\"10,20\"");
         result.Should().Contain("\"world\"");
@@ -215,7 +215,7 @@ public class HumlConverterTests
     {
         // A POCO holding two TaggedPoint properties
         var poco = new { A = new TaggedPoint(1, 2), B = new TaggedPoint(3, 4) };
-        var result = Huml.Serialize(poco, HumlOptions.LatestSupported);
+        var result = HumlSerializer.Serialize(poco, HumlOptions.LatestSupported);
         result.Should().Contain("\"1,2\"");
         result.Should().Contain("\"3,4\"");
     }
@@ -231,7 +231,7 @@ public class HumlConverterTests
             VersionSource = VersionSource.Header,
             Converters = new List<HumlConverter> { new PointConverter() }
         };
-        var result = Huml.Deserialize<PointContainerPoco>(huml, options);
+        var result = HumlSerializer.Deserialize<PointContainerPoco>(huml, options);
         result.P.Should().Be(new Point(1, 2));
     }
 
@@ -240,7 +240,7 @@ public class HumlConverterTests
     {
         // The Read method receives a HumlScalar; assert converter is invoked with correct node type
         var huml = "%HUML v0.2.0\nLocation: \"5,6\"\n";
-        var result = Huml.Deserialize<PointPropPoco>(huml, HumlOptions.Default);
+        var result = HumlSerializer.Deserialize<PointPropPoco>(huml, HumlOptions.Default);
         result.Location.Should().Be(new Point(5, 6));
     }
 
@@ -248,7 +248,7 @@ public class HumlConverterTests
     public void PropertyLevel_Converter_Read_InvokedForThatPropertyOnly()
     {
         var huml = "%HUML v0.2.0\nLocation: \"3,4\"\nName: \"hello\"\n";
-        var result = Huml.Deserialize<PointPropPoco>(huml, HumlOptions.Default);
+        var result = HumlSerializer.Deserialize<PointPropPoco>(huml, HumlOptions.Default);
         result.Location.Should().Be(new Point(3, 4));
         result.Name.Should().Be("hello");
     }
@@ -257,7 +257,7 @@ public class HumlConverterTests
     public void TypeLevel_Converter_Read_InvokedForEveryOccurrence()
     {
         var huml = "%HUML v0.2.0\nPoints::\n  - \"1,2\"\n  - \"3,4\"\n";
-        var result = Huml.Deserialize<TaggedListPoco>(huml, HumlOptions.Default);
+        var result = HumlSerializer.Deserialize<TaggedListPoco>(huml, HumlOptions.Default);
         result.Points.Should().HaveCount(2);
     }
 
@@ -267,7 +267,7 @@ public class HumlConverterTests
         // PointConverter.Read validates ScalarKind.String and throws HumlDeserializeException
         // when given an integer scalar — verifies the exception propagates through converter dispatch.
         var huml = "%HUML v0.2.0\nLocation: 42\n";
-        var act = () => Huml.Deserialize<PointPropPoco>(huml, HumlOptions.Default);
+        var act = () => HumlSerializer.Deserialize<PointPropPoco>(huml, HumlOptions.Default);
         act.Should().Throw<HumlDeserializeException>();
     }
 
@@ -277,8 +277,8 @@ public class HumlConverterTests
     public void CustomType_RoundTrips_ThroughConverter()
     {
         var original = new PointPropPoco { Location = new Point(11, 22), Name = "rt" };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var restored = Huml.Deserialize<PointPropPoco>(huml, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var restored = HumlSerializer.Deserialize<PointPropPoco>(huml, HumlOptions.LatestSupported);
         restored.Location.Should().Be(original.Location);
         restored.Name.Should().Be(original.Name);
     }
@@ -292,9 +292,9 @@ public class HumlConverterTests
             Converters = new List<HumlConverter> { new PointConverter() }
         };
         var original = new { P = new Point(7, 8) };
-        var huml = Huml.Serialize(original, options);
+        var huml = HumlSerializer.Serialize(original, options);
         // Deserialise into typed class for assertion (key is P, must match PointContainerPoco.P)
-        var restored = Huml.Deserialize<PointContainerPoco>(huml, options);
+        var restored = HumlSerializer.Deserialize<PointContainerPoco>(huml, options);
         restored.P.Should().Be(new Point(7, 8));
     }
 
@@ -302,8 +302,8 @@ public class HumlConverterTests
     public void HumlConverterAttribute_Property_RoundTrips()
     {
         var original = new ContainerPoco { Location = new Point(5, 5), Label = "box" };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var restored = Huml.Deserialize<ContainerPoco>(huml, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var restored = HumlSerializer.Deserialize<ContainerPoco>(huml, HumlOptions.LatestSupported);
         restored.Location.Should().Be(original.Location);
         restored.Label.Should().Be(original.Label);
     }
@@ -312,8 +312,8 @@ public class HumlConverterTests
     public void ListOf_TypeLevelConverter_RoundTrips_AllElements()
     {
         var original = new TaggedListPoco { Points = new List<TaggedPoint> { new(1, 2), new(3, 4) } };
-        var huml = Huml.Serialize(original, HumlOptions.LatestSupported);
-        var restored = Huml.Deserialize<TaggedListPoco>(huml, HumlOptions.LatestSupported);
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var restored = HumlSerializer.Deserialize<TaggedListPoco>(huml, HumlOptions.LatestSupported);
         restored.Points.Should().HaveCount(2);
         restored.Points[0].Should().Be(new TaggedPoint(1, 2));
         restored.Points[1].Should().Be(new TaggedPoint(3, 4));
@@ -339,7 +339,7 @@ public class HumlConverterTests
             Converters = new List<HumlConverter> { new NeverMatchConverter() }
         };
         // Serialising a string should use built-in dispatch, not NeverMatchConverter
-        var result = Huml.Serialize(new { Text = "hello" }, options);
+        var result = HumlSerializer.Serialize(new { Text = "hello" }, options);
         result.Should().Contain("\"hello\"");
     }
 
@@ -353,7 +353,7 @@ public class HumlConverterTests
         {
             Converters = new List<HumlConverter> { first, second }
         };
-        var result = Huml.Serialize(new { P = new Point(1, 2) }, options);
+        var result = HumlSerializer.Serialize(new { P = new Point(1, 2) }, options);
         result.Should().Contain("\"1,2\"");
     }
 }

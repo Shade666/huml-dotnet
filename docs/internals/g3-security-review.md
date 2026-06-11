@@ -14,7 +14,7 @@
    (no backtracking → no quadratic-time input), guarded boundary reads (including the
    `_source[_pos-1]` trailing-space checks, proven safe at buffer edges), and iterative
    blank-line handling (no recursion). The 8 M-iteration fuzz campaign (G3.3) additionally drives
-   `Huml.Parse` — and thus the whole lexer — with zero crashes/hangs/contract escapes. No findings.
+   `HumlSerializer.Parse` — and thus the whole lexer — with zero crashes/hangs/contract escapes. No findings.
 2. **Six findings whose workflow verifiers were cut off** (verdict `null` in the raw output): the
    parser quartet (long.MinValue, non-decimal wrap, deep-record StackOverflow, reference-equality
    contract) and the serialiser cyclic-POCO critical. All were **verified by hand** during fixing
@@ -31,7 +31,7 @@
 | # | Finding | Status |
 |---|---------|--------|
 | H1 | `long.MinValue` decimal literal (`-9223372036854775808`) rejected as overflow; the serialiser emits it, so `Serialize`/`Deserialize` is not a round trip for `long.MinValue`. | **FIXED** (`ParseInt` parses the signed literal whole). `AuditItemTests`/`SpecComplianceFixTests`. |
-| H2 | User constructor that throws → `TargetInvocationException` escapes `Huml.Deserialize` raw (T6). | **FIXED** — `InvokeConstructor` unwraps and rethrows `HumlDeserializeException`. `DeserializerExceptionContractTests`. |
+| H2 | User constructor that throws → `TargetInvocationException` escapes `HumlSerializer.Deserialize` raw (T6). | **FIXED** — `InvokeConstructor` unwraps and rethrows `HumlDeserializeException`. `DeserializerExceptionContractTests`. |
 | H3 | Throwing parameterless constructor → `TargetInvocationException` escapes (only `MissingMethodException` was caught). | **FIXED** (same path). |
 | H4 | `PropertyInfo.SetValue` propagates `TargetInvocationException`/`ArgumentException` raw from both Deserialize and Populate. | **FIXED** — setter invocation wrapped. |
 | H5 | Empty POCO as a mapping-property value emits a dangling `key::` that fails to re-parse. | **FIXED** — empty mapping bodies emit `:: {}`. `SerializerEmptyValueTests`. |
@@ -61,12 +61,12 @@ a documented limitation — the common top-level/namespaced context shape is cov
 | # | Finding | Disposition |
 |---|---------|-------------|
 | M1 | Non-decimal 64-bit literals silently wrap two's-complement (`0xFFFF…FF` → −1). | **FIXED already** in the G3 AUDIT pass (range-checked `Convert.ToUInt64`). `AuditItemTests`. |
-| M2 | Deep `HumlMapping` chain → `StackOverflowException` in record `Equals`/`GetHashCode` (not reachable via `Huml.Parse`; only consumer-built deep ASTs). | **FIXED** — iterative structural equality on AST records (see M3). |
+| M2 | Deep `HumlMapping` chain → `StackOverflowException` in record `Equals`/`GetHashCode` (not reachable via `HumlSerializer.Parse`; only consumer-built deep ASTs). | **FIXED** — iterative structural equality on AST records (see M3). |
 | M3 | Record equality on `HumlSequence`/`HumlInlineMapping`/`HumlDocument` uses reference equality, breaking the documented structural-equality contract. | **FIXED** — element-wise, depth-bounded `Equals`/`GetHashCode`. `AstEqualityTests`. |
 | M4 | Silent integer truncation coercing out-of-range integers into narrow-backed enums. | DEFERRED post-beta — documented; low real-world impact, fix risks behaviour churn. |
 | M5 | Silent lossy `Convert.ChangeType` coercions (float→int rounds, int→bool, bool→string). | DEFERRED — needs a coercion-policy design (STJ has `NumberHandling`; parallels M4). Tracked. |
 | M6 | Mapping into a scalar target silently returns `default(T)`. | **FIXED** as part of the G3.3 root-shape work (now throws `HumlDeserializeException`). |
-| M7 | `Huml.Populate` partial-mutation on mid-document failure undocumented. | **FIXED** (documentation) in G4.2 XML-doc pass — contract stated on `Populate`. |
+| M7 | `HumlSerializer.Populate` partial-mutation on mid-document failure undocumented. | **FIXED** (documentation) in G4.2 XML-doc pass — contract stated on `Populate`. |
 | M8 | `string`→`Guid` (non-`IConvertible`) fails despite a comment claiming support. | DEFERRED — add `Guid`/`Uri`/`Version` coercion post-beta; comment corrected now. |
 | M9 | `InvalidOperationException` for enums with case-insensitively colliding member names. | **FIXED** — wrapped as `HumlDeserializeException`. |
 | M10 | Unregistered runtime derived type serialises with no discriminator (data loss). | DEFERRED — STJ throws here; align post-beta (needs an options switch). Documented. |

@@ -1,7 +1,7 @@
 namespace Huml.Net.Versioning;
 
 /// <summary>
-/// Controls how <see cref="T:Huml.Net.Serialization.HumlSerializer"/> and
+/// Controls how <see cref="T:Huml.Net.Serialization.HumlSerializerImpl"/> and
 /// <see cref="T:Huml.Net.Serialization.HumlDeserializer"/> handle numeric values.
 /// </summary>
 /// <remarks>

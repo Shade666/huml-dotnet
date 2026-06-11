@@ -23,7 +23,7 @@ public class HumlSerializerPoolTests
         public string Tag { get; set; } = "";
     }
 
-    // Re-entry test: the converter intentionally calls Huml.Serialize from inside Write.
+    // Re-entry test: the converter intentionally calls HumlSerializer.Serialize from inside Write.
     // The outer Serialize is using the pooled StringBuilder; the nested Serialize must
     // detect re-entry (_serializationActive == true) and fall back to a fresh SB so the
     // outer pool state is not corrupted.
@@ -40,7 +40,7 @@ public class HumlSerializerPoolTests
         {
             // Re-enter the serialiser: produce a complete HUML document for an inner POCO,
             // then embed it as a quoted string scalar so the outer document remains valid HUML.
-            var nested = Huml.Serialize(new SimplePoco { Name = value.Label, Count = 1 },
+            var nested = HumlSerializer.Serialize(new SimplePoco { Name = value.Label, Count = 1 },
                                         HumlOptions.LatestSupported);
             // Encode nested HUML as a single-line escaped quoted scalar so the outer document parses.
             var escaped = nested.Replace("\\", "\\\\", StringComparison.Ordinal)
@@ -75,14 +75,14 @@ public class HumlSerializerPoolTests
         var options = HumlOptions.LatestSupported;
 
         // JIT warmup
-        Huml.Serialize(value, options);
-        Huml.Serialize(value, options);
+        HumlSerializer.Serialize(value, options);
+        HumlSerializer.Serialize(value, options);
 
         // Measure both serialisations (min-of-N guards against tiering/GC noise);
         // pool reuse means no new StringBuilder + char[] pair on the second call
         string result1 = "", result2 = "";
-        long alloc1 = AllocationProbe.Measure(() => result1 = Huml.Serialize(value, options));
-        long alloc2 = AllocationProbe.Measure(() => result2 = Huml.Serialize(value, options));
+        long alloc1 = AllocationProbe.Measure(() => result1 = HumlSerializer.Serialize(value, options));
+        long alloc2 = AllocationProbe.Measure(() => result2 = HumlSerializer.Serialize(value, options));
 
         result1.Should().Be(result2);
         // Both calls allocate at minimum the result string. With pooling, alloc2 should be at
@@ -101,7 +101,7 @@ public class HumlSerializerPoolTests
 
         var outer = new OuterPoco { Name = "outer", Inner = new ReentrantInner("inner-label") };
 
-        var act = () => Huml.Serialize(outer, options);
+        var act = () => HumlSerializer.Serialize(outer, options);
         var result = act.Should().NotThrow().Subject;
 
         // Outer document must contain the version header and the outer property
@@ -128,7 +128,7 @@ public class HumlSerializerPoolTests
             new ThreadPoco { Id = 3, Tag = "gamma" },
             new ThreadPoco { Id = 4, Tag = "delta" },
         };
-        var expected = inputs.Select(p => Huml.Serialize(p, options)).ToArray();
+        var expected = inputs.Select(p => HumlSerializer.Serialize(p, options)).ToArray();
 
         const int IterationsPerThread = 50;
         var failures = new System.Collections.Concurrent.ConcurrentBag<string>();
@@ -137,7 +137,7 @@ public class HumlSerializerPoolTests
         {
             for (int i = 0; i < IterationsPerThread; i++)
             {
-                var actual = Huml.Serialize(input, options);
+                var actual = HumlSerializer.Serialize(input, options);
                 if (!string.Equals(actual, expected[idx], StringComparison.Ordinal))
                     failures.Add($"thread {idx} iteration {i}: expected {expected[idx]!.Length} chars, got {actual.Length} chars");
             }

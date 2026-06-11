@@ -29,7 +29,7 @@ string document = """
     Debug: true
     """;
 
-ServerConfig config = Huml.Deserialize<ServerConfig>(document);
+ServerConfig config = HumlSerializer.Deserialize<ServerConfig>(document);
 
 Console.WriteLine($"{config.Host}:{config.Port} (debug={config.Debug})");
 
@@ -57,7 +57,7 @@ Add this before the `ServerConfig` class:
 
 ```csharp
 var updated = new ServerConfig { Host = "prod.example.com", Port = 443, Debug = false };
-Console.WriteLine(Huml.Serialize(updated));
+Console.WriteLine(HumlSerializer.Serialize(updated));
 ```
 
 ```
@@ -73,12 +73,12 @@ directive first.
 ## 4. Overlay changes onto an existing object
 
 Often you have defaults and want a HUML file to override only some of them. That is what
-[`Huml.Populate`](populate.md) does:
+[`HumlSerializer.Populate`](populate.md) does:
 
 ```csharp
 var withDefaults = new ServerConfig { Host = "localhost", Port = 80, Debug = false };
 
-Huml.Populate("""
+HumlSerializer.Populate("""
     %HUML v0.2.0
     Port: 8443
     """, withDefaults);
@@ -95,7 +95,7 @@ using Huml.Net.Exceptions;
 
 try
 {
-    Huml.Deserialize<ServerConfig>("Host: localhost"); // unquoted string — invalid
+    HumlSerializer.Deserialize<ServerConfig>("Host: localhost"); // unquoted string — invalid
 }
 catch (HumlParseException ex)
 {
@@ -109,4 +109,4 @@ catch (HumlParseException ex)
 - Use records and constructor parameters: **[Bind constructors & records](constructor-binding.md)**.
 - Require certain keys to be present: **[Require properties](required-properties.md)**.
 - See every option in one place: **[Options reference](options-reference.md)**.
-- Browse the full surface: **<xref:Huml.Net.Huml>**.
+- Browse the full surface: **<xref:Huml.Net.HumlSerializer>**.

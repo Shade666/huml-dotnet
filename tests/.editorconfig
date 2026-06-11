@@ -23,3 +23,9 @@ dotnet_diagnostic.CA1852.severity = none
 # HUML fixture strings from integers; culture variance is irrelevant in test infrastructure.
 dotnet_diagnostic.CA1305.severity = none
 dotnet_diagnostic.MA0011.severity = none
+
+# CA2263: Prefer the generic overload. Tests deliberately exercise the non-generic
+# Serialize/Deserialize(object, Type, ...) overloads, use Enum.GetValues(typeof(T)) to enumerate
+# token/scalar kinds reflectively, and AwesomeAssertions' .Be(typeof(T)) for AST type checks —
+# all intentional in test code, not production paths.
+dotnet_diagnostic.CA2263.severity = none

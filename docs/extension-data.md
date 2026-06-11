@@ -30,7 +30,7 @@ Extension data properties participate in serialisation. Captured keys are re-emi
 all declared properties, in insertion order:
 
 ```csharp
-var config = Huml.Deserialize<PluginConfig>("""
+var config = HumlSerializer.Deserialize<PluginConfig>("""
     %HUML v0.2.0
     Name: "my-plugin"
     Version: 3
@@ -42,7 +42,7 @@ var config = Huml.Deserialize<PluginConfig>("""
 // config.Version == 3
 // config.Extras contains "ExperimentalFeature" and "DebugLog" as HumlNode entries
 
-string roundTripped = Huml.Serialize(config);
+string roundTripped = HumlSerializer.Serialize(config);
 // Output includes ExperimentalFeature and DebugLog after Name and Version
 ```
 
@@ -66,4 +66,4 @@ The extension data property may be typed as either:
 
 ## Populate Participation
 
-`Huml.Populate<T>()` also captures unknown keys into the extension data property.
+`HumlSerializer.Populate<T>()` also captures unknown keys into the extension data property.

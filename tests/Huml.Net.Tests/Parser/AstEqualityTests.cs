@@ -16,8 +16,8 @@ public class AstEqualityTests
     [Fact]
     public void Documents_parsed_separately_are_structurally_equal()
     {
-        var a = Huml.Parse("42", HumlOptions.LatestSupported);
-        var b = Huml.Parse("42", HumlOptions.LatestSupported);
+        var a = HumlSerializer.Parse("42", HumlOptions.LatestSupported);
+        var b = HumlSerializer.Parse("42", HumlOptions.LatestSupported);
         a.Should().Be(b);
         a.GetHashCode().Should().Be(b.GetHashCode());
     }
@@ -25,24 +25,24 @@ public class AstEqualityTests
     [Fact]
     public void Mappings_parsed_separately_are_structurally_equal()
     {
-        var a = Huml.Parse("a: 1\nb: \"two\"", HumlOptions.LatestSupported);
-        var b = Huml.Parse("a: 1\nb: \"two\"", HumlOptions.LatestSupported);
+        var a = HumlSerializer.Parse("a: 1\nb: \"two\"", HumlOptions.LatestSupported);
+        var b = HumlSerializer.Parse("a: 1\nb: \"two\"", HumlOptions.LatestSupported);
         a.Should().Be(b);
     }
 
     [Fact]
     public void Sequences_parsed_separately_are_structurally_equal()
     {
-        var a = Huml.Parse("xs::\n  - 1\n  - 2", HumlOptions.LatestSupported);
-        var b = Huml.Parse("xs::\n  - 1\n  - 2", HumlOptions.LatestSupported);
+        var a = HumlSerializer.Parse("xs::\n  - 1\n  - 2", HumlOptions.LatestSupported);
+        var b = HumlSerializer.Parse("xs::\n  - 1\n  - 2", HumlOptions.LatestSupported);
         a.Should().Be(b);
     }
 
     [Fact]
     public void Different_content_is_not_equal()
     {
-        var a = Huml.Parse("a: 1", HumlOptions.LatestSupported);
-        var b = Huml.Parse("a: 2", HumlOptions.LatestSupported);
+        var a = HumlSerializer.Parse("a: 1", HumlOptions.LatestSupported);
+        var b = HumlSerializer.Parse("a: 2", HumlOptions.LatestSupported);
         a.Should().NotBe(b);
     }
 
@@ -51,8 +51,8 @@ public class AstEqualityTests
     {
         var set = new HashSet<HumlDocument>
         {
-            Huml.Parse("a: 1", HumlOptions.LatestSupported),
-            Huml.Parse("a: 1", HumlOptions.LatestSupported),
+            HumlSerializer.Parse("a: 1", HumlOptions.LatestSupported),
+            HumlSerializer.Parse("a: 1", HumlOptions.LatestSupported),
         };
         set.Should().HaveCount(1, because: "structurally equal documents must collapse to one key");
     }

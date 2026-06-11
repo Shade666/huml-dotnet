@@ -37,8 +37,8 @@ The generator fills in the `partial` class with a `HumlTypeInfo<T>` per register
 ```csharp
 var options = new HumlOptions { TypeInfoResolver = AppHumlContext.Default };
 
-var config = Huml.Deserialize<ServerConfig>(document, options);
-string huml = Huml.Serialize(config, options);
+var config = HumlSerializer.Deserialize<ServerConfig>(document, options);
+string huml = HumlSerializer.Serialize(config, options);
 ```
 
 When the resolver supplies metadata for a type, Huml.Net uses the generated delegates and

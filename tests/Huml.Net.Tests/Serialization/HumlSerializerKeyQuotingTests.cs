@@ -11,7 +11,7 @@ public class HumlSerializerKeyQuotingTests
     public void Serialize_DictionaryWithArabicKeys_EmitsQuotedKeys()
     {
         var dict = new Dictionary<string, string> { ["اسم"] = "أحمد" };
-        var huml = Huml.Serialize(dict);
+        var huml = HumlSerializer.Serialize(dict);
         huml.Should().Contain("\"اسم\": ");
     }
 
@@ -20,7 +20,7 @@ public class HumlSerializerKeyQuotingTests
     public void Serialize_DictionaryWithDigitStartKey_EmitsQuotedKey()
     {
         var dict = new Dictionary<string, string> { ["1start"] = "value" };
-        var huml = Huml.Serialize(dict);
+        var huml = HumlSerializer.Serialize(dict);
         huml.Should().Contain("\"1start\": ");
     }
 
@@ -29,7 +29,7 @@ public class HumlSerializerKeyQuotingTests
     public void Serialize_DictionaryWithSpaceInKey_EmitsQuotedKey()
     {
         var dict = new Dictionary<string, string> { ["has space"] = "value" };
-        var huml = Huml.Serialize(dict);
+        var huml = HumlSerializer.Serialize(dict);
         huml.Should().Contain("\"has space\": ");
     }
 
@@ -38,7 +38,7 @@ public class HumlSerializerKeyQuotingTests
     public void Serialize_DictionaryWithEmptyKey_EmitsQuotedKey()
     {
         var dict = new Dictionary<string, string> { [""] = "value" };
-        var huml = Huml.Serialize(dict);
+        var huml = HumlSerializer.Serialize(dict);
         huml.Should().Contain("\"\": ");
     }
 
@@ -51,12 +51,12 @@ public class HumlSerializerKeyQuotingTests
             ["اسم"] = "أحمد",
             ["名前"] = "太郎",
         };
-        var huml = Huml.Serialize(dict);
+        var huml = HumlSerializer.Serialize(dict);
 
-        var act = () => Huml.Parse(huml, HumlOptions.AutoDetect);
+        var act = () => HumlSerializer.Parse(huml, HumlOptions.AutoDetect);
         act.Should().NotThrow();
 
-        var result = Huml.Deserialize<Dictionary<string, string>>(huml, HumlOptions.AutoDetect);
+        var result = HumlSerializer.Deserialize<Dictionary<string, string>>(huml, HumlOptions.AutoDetect);
         result["اسم"].Should().Be("أحمد");
         result["名前"].Should().Be("太郎");
     }
@@ -66,7 +66,7 @@ public class HumlSerializerKeyQuotingTests
     public void Serialize_DictionaryWithValidBareKey_EmitsBareKey()
     {
         var dict = new Dictionary<string, string> { ["validKey"] = "value" };
-        var huml = Huml.Serialize(dict);
+        var huml = HumlSerializer.Serialize(dict);
         huml.Should().Contain("validKey: ");
         huml.Should().NotContain("\"validKey\"");
     }
@@ -76,7 +76,7 @@ public class HumlSerializerKeyQuotingTests
     public void Serialize_DictionaryWithNonAsciiKeyNestedList_EmitsQuotedKeyWithVectorIndicator()
     {
         var dict = new Dictionary<string, List<string>> { ["données"] = new List<string> { "a", "b" } };
-        var huml = Huml.Serialize(dict);
+        var huml = HumlSerializer.Serialize(dict);
         huml.Should().Contain("\"données\"::");
     }
 
@@ -86,13 +86,13 @@ public class HumlSerializerKeyQuotingTests
     public void RoundTrip_DictionaryWithColonInKey_QuotesKeyAndReparses()
     {
         var dict = new Dictionary<string, string> { ["a:b"] = "v" };
-        var huml = Huml.Serialize(dict);
+        var huml = HumlSerializer.Serialize(dict);
         huml.Should().Contain("\"a:b\": ");
 
-        var act = () => Huml.Parse(huml, HumlOptions.AutoDetect);
+        var act = () => HumlSerializer.Parse(huml, HumlOptions.AutoDetect);
         act.Should().NotThrow();
 
-        var result = Huml.Deserialize<Dictionary<string, string>>(huml, HumlOptions.AutoDetect);
+        var result = HumlSerializer.Deserialize<Dictionary<string, string>>(huml, HumlOptions.AutoDetect);
         result["a:b"].Should().Be("v");
     }
 }

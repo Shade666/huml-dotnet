@@ -39,7 +39,7 @@ public class ServerConfig
     public ServerConfig() { Host = "localhost"; Port = 80; }
 }
 
-var config = Huml.Deserialize<ServerConfig>("""
+var config = HumlSerializer.Deserialize<ServerConfig>("""
     %HUML v0.2.0
     host: "db.example.com"
     port: 5432
@@ -57,7 +57,7 @@ using Huml.Net;
 
 public record Point(double X, double Y);
 
-var p = Huml.Deserialize<Point>("""
+var p = HumlSerializer.Deserialize<Point>("""
     %HUML v0.2.0
     X: 1.5
     Y: -2.0
@@ -91,7 +91,7 @@ public class Config
     public int Port { get; init; } = 80;
 }
 
-var cfg = Huml.Deserialize<Config>("""
+var cfg = HumlSerializer.Deserialize<Config>("""
     %HUML v0.2.0
     Host: "prod.example.com"
     Port: 443
@@ -99,7 +99,7 @@ var cfg = Huml.Deserialize<Config>("""
 // cfg.Host == "prod.example.com", cfg.Port == 443
 ```
 
-`Huml.Populate<T>()` also supports `init`-only property assignment on the supplied instance.
+`HumlSerializer.Populate<T>()` also supports `init`-only property assignment on the supplied instance.
 
 ## Exceptions
 

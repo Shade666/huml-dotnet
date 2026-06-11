@@ -409,7 +409,7 @@ public class LexerTests
     {
         // 500 blank lines followed by a simple key-value pair
         var input = new string('\n', 500) + "key: \"value\"";
-        var act = () => Huml.Parse(input, HumlOptions.Default);
+        var act = () => HumlSerializer.Parse(input, HumlOptions.Default);
         act.Should().NotThrow();
     }
 }

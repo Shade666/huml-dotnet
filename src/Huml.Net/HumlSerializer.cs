@@ -9,10 +9,10 @@ namespace Huml.Net;
 /// Provides static methods for serialising and deserialising HUML documents.
 /// This is the single public entry point for the library, mirroring the
 /// <c>System.Text.Json.JsonSerializer</c> pattern. All internal pipeline classes
-/// (<see cref="Serialization.HumlSerializer"/>, <see cref="Serialization.HumlDeserializer"/>,
+/// (<see cref="Serialization.HumlSerializerImpl"/>, <see cref="Serialization.HumlDeserializer"/>,
 /// <see cref="HumlParser"/>) are internal — consumers interact only through this class.
 /// </summary>
-public static class Huml
+public static class HumlSerializer
 {
     private const string RequiresUnreferencedCodeMessage =
         "HUML serialisation and deserialisation require types that cannot be statically " +
@@ -31,7 +31,7 @@ public static class Huml
     /// <example>
     /// <code>
     /// var config = new ServerConfig { Host = "localhost", Port = 8080 };
-    /// string huml = Huml.Serialize(config);
+    /// string huml = HumlSerializer.Serialize(config);
     /// // %HUML v0.2.0
     /// // Host: "localhost"
     /// // Port: 8080
@@ -40,7 +40,7 @@ public static class Huml
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static string Serialize<T>(T value, HumlOptions? options = null)
-        => Serialization.HumlSerializer.Serialize(value, typeof(T), options);
+        => Serialization.HumlSerializerImpl.Serialize(value, typeof(T), options);
 
     /// <summary>Serialises <paramref name="value"/> of the given <paramref name="type"/> to a HUML string.</summary>
     /// <param name="value">The value to serialise. May be <c>null</c>.</param>
@@ -51,7 +51,7 @@ public static class Huml
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static string Serialize(object? value, Type type, HumlOptions? options = null)
-        => Serialization.HumlSerializer.Serialize(value, type, options);
+        => Serialization.HumlSerializerImpl.Serialize(value, type, options);
 
     /// <summary>
     /// Deserialises a HUML string into <typeparamref name="T"/>.
@@ -71,7 +71,7 @@ public static class Huml
     ///     Host: "localhost"
     ///     Port: 8080
     ///     """;
-    /// var config = Huml.Deserialize&lt;ServerConfig&gt;(huml);
+    /// var config = HumlSerializer.Deserialize&lt;ServerConfig&gt;(huml);
     /// // config.Host == "localhost", config.Port == 8080
     /// </code>
     /// </example>
@@ -127,7 +127,7 @@ public static class Huml
     /// <example>
     /// <code>
     /// var config = new ServerConfig { Host = "localhost", Port = 10 };
-    /// Huml.Populate("""
+    /// HumlSerializer.Populate("""
     ///     %HUML v0.2.0
     ///     Port: 50
     ///     """, config);
@@ -179,7 +179,7 @@ public static class Huml
     /// <example>
     /// <code>
     /// // Validate without binding to a type — throws HumlParseException on invalid input.
-    /// HumlDocument doc = Huml.Parse("""
+    /// HumlDocument doc = HumlSerializer.Parse("""
     ///     %HUML v0.2.0
     ///     name: "example"
     ///     """);

@@ -1,6 +1,6 @@
 # AST Usage Guide
 
-`Huml.Parse()` returns a `HumlDocument` — the root of the abstract syntax tree (AST).
+`HumlSerializer.Parse()` returns a `HumlDocument` — the root of the abstract syntax tree (AST).
 Use the AST when you need to inspect or transform a HUML document without mapping it to a known .NET type.
 
 ## Required Using Directives
@@ -42,7 +42,7 @@ Note: `NaN` and `Inf` scalars carry the raw token string in `Value` rather than 
 using Huml.Net;
 using Huml.Net.Parser;
 
-HumlDocument doc = Huml.Parse(humlString);
+HumlDocument doc = HumlSerializer.Parse(humlString);
 
 foreach (HumlNode entry in doc.Entries)
 {
@@ -92,7 +92,7 @@ case HumlMapping { Value: HumlInlineMapping inline }:
     break;
 ```
 
-The distinction exists because `HumlDocument` is always the root node returned by `Huml.Parse()`, while `HumlInlineMapping` only appears as a value within a mapping.
+The distinction exists because `HumlDocument` is always the root node returned by `HumlSerializer.Parse()`, while `HumlInlineMapping` only appears as a value within a mapping.
 
 ## Source Positions
 
@@ -106,7 +106,7 @@ All AST nodes carry the source position of the opening token in the HUML documen
 These properties are excluded from structural equality — two nodes representing the same value at different positions are still considered equal by `==`.
 
 ```csharp
-HumlDocument doc = Huml.Parse(humlString);
+HumlDocument doc = HumlSerializer.Parse(humlString);
 
 foreach (HumlNode entry in doc.Entries)
 {
@@ -124,13 +124,13 @@ foreach (HumlNode entry in doc.Entries)
 Pass `HumlOptions.AutoDetect` to read the spec version from the document header:
 
 ```csharp
-HumlDocument doc = Huml.Parse(humlString, HumlOptions.AutoDetect);
+HumlDocument doc = HumlSerializer.Parse(humlString, HumlOptions.AutoDetect);
 ```
 
 Or use the default options (v0.2, no header required):
 
 ```csharp
-HumlDocument doc = Huml.Parse(humlString);
+HumlDocument doc = HumlSerializer.Parse(humlString);
 ```
 
 See [Options Reference](options-reference.md) for all available options.

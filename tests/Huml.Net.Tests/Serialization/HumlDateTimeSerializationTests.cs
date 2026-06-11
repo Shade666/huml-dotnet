@@ -45,7 +45,7 @@ public sealed class HumlDateTimeSerializationTests
     public void Date01_DateTime_serialises_as_quoted_O_format()
     {
         var dto = new WithDateTime { When = new DateTime(2024, 3, 15, 10, 30, 0, DateTimeKind.Utc) };
-        var huml = Huml.Serialize(dto, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
         huml.Should().Contain("When: \"2024-03-15T10:30:00.0000000Z\"");
     }
 
@@ -57,7 +57,7 @@ public sealed class HumlDateTimeSerializationTests
             When: "2024-03-15T10:30:00.0000000Z"
             MaybeWhen: null
             """;
-        var result = Huml.Deserialize<WithDateTime>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithDateTime>(huml, Opts);
         result.When.Should().Be(new DateTime(2024, 3, 15, 10, 30, 0, DateTimeKind.Utc));
         result.When.Kind.Should().Be(DateTimeKind.Utc);
         result.MaybeWhen.Should().BeNull();
@@ -71,8 +71,8 @@ public sealed class HumlDateTimeSerializationTests
             When = new DateTime(2024, 3, 15, 10, 30, 0, DateTimeKind.Utc),
             MaybeWhen = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         };
-        var huml = Huml.Serialize(dto, Opts);
-        var result = Huml.Deserialize<WithDateTime>(huml, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
+        var result = HumlSerializer.Deserialize<WithDateTime>(huml, Opts);
         result.MaybeWhen.Should().Be(dto.MaybeWhen);
     }
 
@@ -85,7 +85,7 @@ public sealed class HumlDateTimeSerializationTests
         {
             Stamp = new DateTimeOffset(2024, 3, 15, 10, 30, 0, TimeSpan.FromMinutes(330)) // +05:30
         };
-        var huml = Huml.Serialize(dto, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
         huml.Should().Contain("Stamp: \"2024-03-15T10:30:00.0000000+05:30\"");
     }
 
@@ -96,7 +96,7 @@ public sealed class HumlDateTimeSerializationTests
             %HUML v0.2.0
             Stamp: "2024-03-15T10:30:00.0000000+05:30"
             """;
-        var result = Huml.Deserialize<WithDateTimeOffset>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithDateTimeOffset>(huml, Opts);
         result.Stamp.Offset.Should().Be(TimeSpan.FromMinutes(330));
         result.Stamp.Year.Should().Be(2024);
         result.Stamp.Month.Should().Be(3);
@@ -109,7 +109,7 @@ public sealed class HumlDateTimeSerializationTests
     public void Date03_TimeSpan_serialises_as_constant_format()
     {
         var dto = new WithTimeSpan { Duration = new TimeSpan(1, 2, 3, 4, 567) };
-        var huml = Huml.Serialize(dto, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
         huml.Should().Contain("Duration: \"1.02:03:04.5670000\"");
     }
 
@@ -117,8 +117,8 @@ public sealed class HumlDateTimeSerializationTests
     public void Date03_TimeSpan_round_trips()
     {
         var original = new WithTimeSpan { Duration = new TimeSpan(1, 2, 3, 4, 567) };
-        var huml = Huml.Serialize(original, Opts);
-        var result = Huml.Deserialize<WithTimeSpan>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var result = HumlSerializer.Deserialize<WithTimeSpan>(huml, Opts);
         result.Duration.Should().Be(original.Duration);
     }
 
@@ -126,9 +126,9 @@ public sealed class HumlDateTimeSerializationTests
     public void Date03_Negative_TimeSpan_round_trips()
     {
         var original = new WithTimeSpan { Duration = TimeSpan.FromSeconds(-90) };
-        var huml = Huml.Serialize(original, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
         huml.Should().Contain("\"-00:01:30\"");
-        var result = Huml.Deserialize<WithTimeSpan>(huml, Opts);
+        var result = HumlSerializer.Deserialize<WithTimeSpan>(huml, Opts);
         result.Duration.Should().Be(original.Duration);
     }
 
@@ -139,7 +139,7 @@ public sealed class HumlDateTimeSerializationTests
     public void Date04_DateOnly_serialises_as_yyyy_MM_dd()
     {
         var dto = new WithDateOnly { Day = new DateOnly(2024, 3, 15) };
-        var huml = Huml.Serialize(dto, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
         huml.Should().Contain("Day: \"2024-03-15\"");
     }
 
@@ -147,8 +147,8 @@ public sealed class HumlDateTimeSerializationTests
     public void Date04_DateOnly_round_trips()
     {
         var original = new WithDateOnly { Day = new DateOnly(2024, 3, 15) };
-        var huml = Huml.Serialize(original, Opts);
-        var result = Huml.Deserialize<WithDateOnly>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var result = HumlSerializer.Deserialize<WithDateOnly>(huml, Opts);
         result.Day.Should().Be(original.Day);
     }
 
@@ -156,8 +156,8 @@ public sealed class HumlDateTimeSerializationTests
     public void Date04_Nullable_DateOnly_null_round_trips()
     {
         var original = new WithDateOnly { Day = new DateOnly(2024, 3, 15), MaybeDay = null };
-        var huml = Huml.Serialize(original, Opts);
-        var result = Huml.Deserialize<WithDateOnly>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var result = HumlSerializer.Deserialize<WithDateOnly>(huml, Opts);
         result.MaybeDay.Should().BeNull();
     }
 
@@ -169,8 +169,8 @@ public sealed class HumlDateTimeSerializationTests
             Day = new DateOnly(2024, 3, 15),
             MaybeDay = new DateOnly(2025, 12, 31)
         };
-        var huml = Huml.Serialize(original, Opts);
-        var result = Huml.Deserialize<WithDateOnly>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var result = HumlSerializer.Deserialize<WithDateOnly>(huml, Opts);
         result.MaybeDay.Should().Be(original.MaybeDay);
     }
 
@@ -180,7 +180,7 @@ public sealed class HumlDateTimeSerializationTests
     public void Date05_TimeOnly_serialises_zero_fraction_without_trailing_zeros()
     {
         var dto = new WithTimeOnly { Moment = new TimeOnly(10, 30, 0) };
-        var huml = Huml.Serialize(dto, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
         huml.Should().Contain("Moment: \"10:30:00\"");
     }
 
@@ -188,7 +188,7 @@ public sealed class HumlDateTimeSerializationTests
     public void Date05_TimeOnly_serialises_nonzero_fraction()
     {
         var dto = new WithTimeOnly { Moment = new TimeOnly(10, 30, 0, 123) };
-        var huml = Huml.Serialize(dto, Opts);
+        var huml = HumlSerializer.Serialize(dto, Opts);
         huml.Should().Contain("Moment: \"10:30:00.123\"");
     }
 
@@ -196,8 +196,8 @@ public sealed class HumlDateTimeSerializationTests
     public void Date05_TimeOnly_round_trips_zero_fraction()
     {
         var original = new WithTimeOnly { Moment = new TimeOnly(10, 30, 0) };
-        var huml = Huml.Serialize(original, Opts);
-        var result = Huml.Deserialize<WithTimeOnly>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var result = HumlSerializer.Deserialize<WithTimeOnly>(huml, Opts);
         result.Moment.Should().Be(original.Moment);
     }
 
@@ -205,8 +205,8 @@ public sealed class HumlDateTimeSerializationTests
     public void Date05_TimeOnly_round_trips_nonzero_fraction()
     {
         var original = new WithTimeOnly { Moment = new TimeOnly(10, 30, 0, 123) };
-        var huml = Huml.Serialize(original, Opts);
-        var result = Huml.Deserialize<WithTimeOnly>(huml, Opts);
+        var huml = HumlSerializer.Serialize(original, Opts);
+        var result = HumlSerializer.Deserialize<WithTimeOnly>(huml, Opts);
         result.Moment.Should().Be(original.Moment);
     }
 #endif

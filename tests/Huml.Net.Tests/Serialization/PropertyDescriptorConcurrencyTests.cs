@@ -33,7 +33,7 @@ public sealed class PropertyDescriptorConcurrencyTests
         var exceptions = new System.Collections.Concurrent.ConcurrentBag<Exception>();
         var threads = Enumerable.Range(0, 16).Select(_ => new Thread(() =>
         {
-            try { Huml.Deserialize<SampleDto>(huml, Opts); }
+            try { HumlSerializer.Deserialize<SampleDto>(huml, Opts); }
             catch (Exception ex) { exceptions.Add(ex); }
         })).ToList();
 
@@ -60,7 +60,7 @@ public sealed class PropertyDescriptorConcurrencyTests
         var results = new System.Collections.Concurrent.ConcurrentBag<SampleDto>();
         var threads = Enumerable.Range(0, 16).Select(_ => new Thread(() =>
         {
-            var dto = Huml.Deserialize<SampleDto>(huml, Opts);
+            var dto = HumlSerializer.Deserialize<SampleDto>(huml, Opts);
             results.Add(dto);
         })).ToList();
 
@@ -92,14 +92,14 @@ public sealed class PropertyDescriptorConcurrencyTests
 
         var threads = Enumerable.Range(0, 16).Select(_ => new Thread(() =>
         {
-            Huml.Deserialize<SampleDto>(huml, Opts);
+            HumlSerializer.Deserialize<SampleDto>(huml, Opts);
         })).ToList();
 
         threads.ForEach(t => t.Start());
         threads.ForEach(t => t.Join());
 
         // Cache should be warm — a second call succeeds without exception.
-        var act = () => Huml.Deserialize<SampleDto>(huml, Opts);
+        var act = () => HumlSerializer.Deserialize<SampleDto>(huml, Opts);
         act.Should().NotThrow();
     }
 }

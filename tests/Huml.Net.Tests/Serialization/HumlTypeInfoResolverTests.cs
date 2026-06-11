@@ -42,7 +42,7 @@ public sealed class HumlTypeInfoResolverTests
     {
         var opts = HumlOptions.LatestSupported;
 
-        var result = Huml.Deserialize<SimpleDto>(HumlInput, opts);
+        var result = HumlSerializer.Deserialize<SimpleDto>(HumlInput, opts);
 
         result.Name.Should().Be("Alice");
         result.Count.Should().Be(42);
@@ -56,7 +56,7 @@ public sealed class HumlTypeInfoResolverTests
         var opts = HumlOptions.LatestSupported;
         var dto = new SimpleDto { Name = "Bob", Count = 7 };
 
-        var huml = Huml.Serialize(dto, opts);
+        var huml = HumlSerializer.Serialize(dto, opts);
 
         huml.Should().Contain("Name:").And.Contain("Bob");
     }
@@ -73,7 +73,7 @@ public sealed class HumlTypeInfoResolverTests
             TypeInfoResolver = new AlwaysNullResolver(),
         };
 
-        var result = Huml.Deserialize<SimpleDto>(HumlInput, opts);
+        var result = HumlSerializer.Deserialize<SimpleDto>(HumlInput, opts);
 
         result.Name.Should().Be("Alice");
         result.Count.Should().Be(42);
@@ -92,7 +92,7 @@ public sealed class HumlTypeInfoResolverTests
         };
         var dto = new SimpleDto { Name = "Carol", Count = 3 };
 
-        var act = () => Huml.Serialize(dto, opts);
+        var act = () => HumlSerializer.Serialize(dto, opts);
 
         act.Should().NotThrow();
     }
@@ -109,7 +109,7 @@ public sealed class HumlTypeInfoResolverTests
             TypeInfoResolver = new StubResolver(),
         };
 
-        var act = () => Huml.Deserialize<SimpleDto>(HumlInput, opts);
+        var act = () => HumlSerializer.Deserialize<SimpleDto>(HumlInput, opts);
 
         act.Should().NotThrow();
     }
@@ -127,7 +127,7 @@ public sealed class HumlTypeInfoResolverTests
         };
         var dto = new SimpleDto { Name = "Dave", Count = 99 };
 
-        var act = () => Huml.Serialize(dto, opts);
+        var act = () => HumlSerializer.Serialize(dto, opts);
 
         act.Should().NotThrow();
     }

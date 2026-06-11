@@ -28,7 +28,7 @@ public class G3SecurityFixTests
         a.Next = b;
         b.Next = a; // cycle
 
-        var act = () => Huml.Serialize(a);
+        var act = () => HumlSerializer.Serialize(a);
         act.Should().Throw<HumlSerializeException>();
     }
 
@@ -43,7 +43,7 @@ public class G3SecurityFixTests
             cur = cur.Next;
         }
 
-        var act = () => Huml.Serialize(head);
+        var act = () => HumlSerializer.Serialize(head);
         act.Should().Throw<HumlSerializeException>();
     }
 
@@ -63,7 +63,7 @@ public class G3SecurityFixTests
     [Fact]
     public void Throwing_parameterised_constructor_surfaces_as_deserialize_exception()
     {
-        var act = () => Huml.Deserialize<CtorValidates>("age: -5", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<CtorValidates>("age: -5", HumlOptions.LatestSupported);
         act.Should().Throw<HumlDeserializeException>();
     }
 
@@ -76,7 +76,7 @@ public class G3SecurityFixTests
     [Fact]
     public void Throwing_parameterless_constructor_surfaces_as_deserialize_exception()
     {
-        var act = () => Huml.Deserialize<ParamlessThrows>("x: 1", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<ParamlessThrows>("x: 1", HumlOptions.LatestSupported);
         act.Should().Throw<HumlDeserializeException>();
     }
 
@@ -93,7 +93,7 @@ public class G3SecurityFixTests
     [Fact]
     public void Throwing_property_setter_surfaces_as_deserialize_exception()
     {
-        var act = () => Huml.Deserialize<SetterThrows>("X: -1", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<SetterThrows>("X: -1", HumlOptions.LatestSupported);
         act.Should().Throw<HumlDeserializeException>();
     }
 
@@ -110,8 +110,8 @@ public class G3SecurityFixTests
     [Fact]
     public void Empty_poco_property_value_round_trips()
     {
-        var huml = Huml.Serialize(new HasEmpty());
-        var act = () => Huml.Parse(huml, HumlOptions.Default);
+        var huml = HumlSerializer.Serialize(new HasEmpty());
+        var act = () => HumlSerializer.Parse(huml, HumlOptions.Default);
         act.Should().NotThrow(because: $"empty POCO values must emit ':: {{}}', got:\n{huml}");
     }
 
@@ -126,7 +126,7 @@ public class G3SecurityFixTests
     [Fact]
     public void Throwing_property_getter_surfaces_as_serialize_exception()
     {
-        var act = () => Huml.Serialize(new GetterThrows());
+        var act = () => HumlSerializer.Serialize(new GetterThrows());
         act.Should().Throw<HumlSerializeException>();
     }
 
@@ -142,7 +142,7 @@ public class G3SecurityFixTests
         try
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
-            var huml = Huml.Serialize(dict);
+            var huml = HumlSerializer.Serialize(dict);
             huml.Should().Contain("1.5", because: "numeric keys must use invariant formatting regardless of thread culture");
             huml.Should().NotContain("1,5");
         }
@@ -166,7 +166,7 @@ public class G3SecurityFixTests
     [Fact]
     public void Enum_with_case_insensitive_collision_does_not_leak_raw_exception()
     {
-        var act = () => Huml.Deserialize<HasCollidingEnum>("E: \"Value\"", HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Deserialize<HasCollidingEnum>("E: \"Value\"", HumlOptions.LatestSupported);
         act.Should().NotThrow<InvalidOperationException>(
             because: "a colliding-name enum must not leak a raw InvalidOperationException");
     }

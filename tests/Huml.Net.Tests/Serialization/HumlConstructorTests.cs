@@ -135,14 +135,14 @@ public class HumlConstructorTests
     [Fact]
     public void Deserialize_AmbiguousCtors_ThrowsHumlDeserializeException()
     {
-        var act = () => Huml.Deserialize<AmbiguousCtorClass>("X: 1");
+        var act = () => HumlSerializer.Deserialize<AmbiguousCtorClass>("X: 1");
         act.Should().Throw<HumlDeserializeException>().WithMessage("*multiple*");
     }
 
     [Fact]
     public void Deserialize_MultiAnnotatedCtors_ThrowsHumlDeserializeException()
     {
-        var act = () => Huml.Deserialize<MultiAnnotatedCtorClass>("X: 1");
+        var act = () => HumlSerializer.Deserialize<MultiAnnotatedCtorClass>("X: 1");
         act.Should().Throw<HumlDeserializeException>().WithMessage("*[HumlConstructor]*");
     }
 
@@ -156,7 +156,7 @@ public class HumlConstructorTests
             last-name: "Smith"
             """;
         var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
-        var result = Huml.Deserialize<PersonKebab>(huml, options);
+        var result = HumlSerializer.Deserialize<PersonKebab>(huml, options);
         result.firstName.Should().Be("Alice");
         result.lastName.Should().Be("Smith");
     }
@@ -166,7 +166,7 @@ public class HumlConstructorTests
     [Fact]
     public void Deserialize_MissingRequiredParam_ThrowsHumlDeserializeExceptionWithParamName()
     {
-        var act = () => Huml.Deserialize<Point>("X: 3"); // Y is missing
+        var act = () => HumlSerializer.Deserialize<Point>("X: 3"); // Y is missing
         act.Should().Throw<HumlDeserializeException>().WithMessage("*Y*");
     }
 
@@ -175,7 +175,7 @@ public class HumlConstructorTests
     [Fact]
     public void Deserialize_OptionalParamAbsent_UsesDefaultValue()
     {
-        var result = Huml.Deserialize<PointWithDefault>("X: 5");
+        var result = HumlSerializer.Deserialize<PointWithDefault>("X: 5");
         result.X.Should().Be(5);
         result.Y.Should().Be(99); // default from PointWithDefault(int X, int Y = 99)
     }
@@ -189,7 +189,7 @@ public class HumlConstructorTests
             Name: "test"
             Count: 7
             """;
-        var result = Huml.Deserialize<InitOnlyClass>(huml);
+        var result = HumlSerializer.Deserialize<InitOnlyClass>(huml);
         result.Name.Should().Be("test");
         result.Count.Should().Be(7);
     }
@@ -204,7 +204,7 @@ public class HumlConstructorTests
             LastName: "Jones"
             Nickname: "BJ"
             """;
-        var result = Huml.Deserialize<PersonWithExtra>(huml);
+        var result = HumlSerializer.Deserialize<PersonWithExtra>(huml);
         result.FirstName.Should().Be("Bob");
         result.LastName.Should().Be("Jones");
         result.Nickname.Should().Be("BJ");
@@ -216,8 +216,8 @@ public class HumlConstructorTests
     public void Deserialize_Record_RoundTripProducesValueEqualInstance()
     {
         var original = new ColorRecord("Red", 255, 0, 0);
-        var huml = Huml.Serialize(original);
-        var result = Huml.Deserialize<ColorRecord>(huml);
+        var huml = HumlSerializer.Serialize(original);
+        var result = HumlSerializer.Deserialize<ColorRecord>(huml);
         result.Should().Be(original);
     }
 }

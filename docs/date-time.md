@@ -27,7 +27,7 @@ public class Event
     public TimeSpan Duration { get; set; }
 }
 
-var ev = Huml.Deserialize<Event>("""
+var ev = HumlSerializer.Deserialize<Event>("""
     %HUML v0.2.0
     Name: "conference"
     OccurredAt: "2026-05-19T09:00:00.0000000"
@@ -52,7 +52,7 @@ public class Schedule
     public TimeOnly StartsAt { get; set; }
 }
 
-var schedule = Huml.Deserialize<Schedule>("""
+var schedule = HumlSerializer.Deserialize<Schedule>("""
     %HUML v0.2.0
     Date: "2026-05-19"
     StartsAt: "09:30:00"

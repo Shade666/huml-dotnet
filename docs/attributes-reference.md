@@ -40,4 +40,4 @@ namespace unless noted; the source-generation attributes are in
 ## See also
 
 - [Options reference](options-reference.md) — the `HumlOptions` knobs that interact with these attributes.
-- <xref:Huml.Net.Huml> — full signatures and members.
+- <xref:Huml.Net.HumlSerializer> — full signatures and members.

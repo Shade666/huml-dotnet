@@ -29,7 +29,7 @@ public class VersionHeaderParsingTests
         };
 #pragma warning restore CS0618
 
-        var act = () => Huml.Parse(input, options);
+        var act = () => HumlSerializer.Parse(input, options);
         act.Should().NotThrow();
     }
 
@@ -42,7 +42,7 @@ public class VersionHeaderParsingTests
         // version token with a bare Advance(), so this would NOT throw today.
         const string input = "%HUML v9.9.0\nkey: true\n";
 
-        var act = () => Huml.Parse(input, HumlOptions.AutoDetect);
+        var act = () => HumlSerializer.Parse(input, HumlOptions.AutoDetect);
         act.Should().Throw<HumlUnsupportedVersionException>()
            .Which.DeclaredVersion.Should().Be("v9.9.0");
     }
@@ -60,7 +60,7 @@ public class VersionHeaderParsingTests
             UnknownVersionBehaviour = UnknownVersionBehaviour.UseLatest,
         };
 
-        var act = () => Huml.Parse(input, options);
+        var act = () => HumlSerializer.Parse(input, options);
         act.Should().NotThrow();
     }
 
@@ -78,7 +78,7 @@ public class VersionHeaderParsingTests
             UnknownVersionBehaviour = UnknownVersionBehaviour.UsePrevious,
         };
 
-        var act = () => Huml.Parse(input, options);
+        var act = () => HumlSerializer.Parse(input, options);
         act.Should().NotThrow();
     }
 
@@ -94,7 +94,7 @@ public class VersionHeaderParsingTests
             UnknownVersionBehaviour = UnknownVersionBehaviour.UsePrevious,
         };
 
-        var act = () => Huml.Parse(input, options);
+        var act = () => HumlSerializer.Parse(input, options);
         act.Should().Throw<HumlUnsupportedVersionException>()
            .Which.DeclaredVersion.Should().Be("v0.0.5");
     }
@@ -108,7 +108,7 @@ public class VersionHeaderParsingTests
         // must be silently ignored and parsing succeeds with options.SpecVersion (v0.2).
         const string input = "%HUML v9.9.0\nkey: true\n";
 
-        var act = () => Huml.Parse(input, HumlOptions.LatestSupported);
+        var act = () => HumlSerializer.Parse(input, HumlOptions.LatestSupported);
         act.Should().NotThrow();
     }
 
@@ -120,7 +120,7 @@ public class VersionHeaderParsingTests
         // No %HUML directive in input; AutoDetect must fall back to options.SpecVersion (v0.2).
         const string input = "key: true\n";
 
-        var act = () => Huml.Parse(input, HumlOptions.AutoDetect);
+        var act = () => HumlSerializer.Parse(input, HumlOptions.AutoDetect);
         act.Should().NotThrow();
     }
 
@@ -132,7 +132,7 @@ public class VersionHeaderParsingTests
         // A v0.2 header with VersionSource.Options should parse fine.
         const string input = "%HUML v0.2.0\nkey: true\n";
 
-        var act = () => Huml.Parse(input, HumlOptions.Default);
+        var act = () => HumlSerializer.Parse(input, HumlOptions.Default);
         act.Should().NotThrow();
     }
 }

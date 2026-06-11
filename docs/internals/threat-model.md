@@ -1,16 +1,16 @@
 # Threat Model — Huml.Net
 
-**Scope:** `Huml.Parse`, `Huml.Deserialize<T>`, `Huml.Populate<T>` consuming **untrusted input** (config files from disk, documents over the network, user uploads), plus `Huml.Serialize<T>` consuming untrusted *object graphs*, and the `Huml.Net.SourceGeneration` analyzer consuming user source code at build time.
+**Scope:** `HumlSerializer.Parse`, `HumlSerializer.Deserialize<T>`, `HumlSerializer.Populate<T>` consuming **untrusted input** (config files from disk, documents over the network, user uploads), plus `HumlSerializer.Serialize<T>` consuming untrusted *object graphs*, and the `Huml.Net.SourceGeneration` analyzer consuming user source code at build time.
 **Written:** 2026-06-11 (G3.1 of the beta release programme). Directs the G3.2 adversarial review; update when the pipeline changes.
 
 ## Trust boundaries and assets
 
 | Boundary | Untrusted input | Asset at risk |
 |----------|-----------------|---------------|
-| `Huml.Parse(string/Span)` | Document text | Process availability (CPU, memory, stack); exception contract |
-| `Huml.Deserialize<T>` | Document text + target type shape | As above, plus type-safety of materialised objects |
-| `Huml.Populate<T>` | Document text + existing instance | As above, plus integrity of the caller's object |
-| `Huml.Serialize<T>` | Object graph (cycles, hostile converters, exotic types) | Process availability; output integrity |
+| `HumlSerializer.Parse(string/Span)` | Document text | Process availability (CPU, memory, stack); exception contract |
+| `HumlSerializer.Deserialize<T>` | Document text + target type shape | As above, plus type-safety of materialised objects |
+| `HumlSerializer.Populate<T>` | Document text + existing instance | As above, plus integrity of the caller's object |
+| `HumlSerializer.Serialize<T>` | Object graph (cycles, hostile converters, exotic types) | Process availability; output integrity |
 | Source generator | User C# source | Build-process availability; generated-code correctness |
 
 **Security promise to consumers:** for any input string, the parse/deserialise entry points either succeed or throw `HumlParseException`/`HumlDeserializeException`/`HumlUnsupportedVersionException`. They never crash the process, never hang unboundedly, never consume memory disproportionate to input size, and never throw undeclared exception types. (One escape already found and fixed in G1.3: `FormatException` from digitless base prefixes — the class of bug is proven present historically; the review must hunt for siblings.)

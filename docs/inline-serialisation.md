@@ -27,7 +27,7 @@ Set `CollectionFormat.Inline` on your options to request inline output for all e
 
 ```csharp
 var options = new HumlOptions { CollectionFormat = CollectionFormat.Inline };
-string huml = Huml.Serialize(myObject, options);
+string huml = HumlSerializer.Serialize(myObject, options);
 ```
 
 The default is `CollectionFormat.Multiline`, which produces the traditional indented block format:
@@ -144,5 +144,5 @@ it is silently ignored. Only list and dictionary properties are affected.
 ## Version Compatibility
 
 Inline format is valid in both HUML v0.1 and v0.2. The serialiser emits the same inline syntax
-regardless of `HumlOptions.SpecVersion`. Inline output round-trips through `Huml.Parse` without
+regardless of `HumlOptions.SpecVersion`. Inline output round-trips through `HumlSerializer.Parse` without
 error on both spec versions.

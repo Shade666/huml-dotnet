@@ -1,6 +1,13 @@
 # Public API Freeze — 0.2.0-beta.1
 
 **Declared:** 2026-06-11 (G3.4 of the beta release programme).
+**Amended:** 2026-06-11 (G5) — the freeze was deliberately re-opened once for a single
+justified breaking change: the facade type `Huml.Net.Huml` was renamed to
+`Huml.Net.HumlSerializer`. The original name collided with the root `Huml` namespace, so
+`using Huml.Net; Huml.Deserialize(...)` did not compile for any consumer outside the
+`Huml.Net.*` namespace tree — a defect the G5 examples-against-the-package work surfaced on the
+first example. The rename is the only change since the original freeze; the baseline below
+reflects it.
 
 The public API surface of `Huml.Net` is **frozen** for the `0.2.0-beta.1` release as of this
 date. The frozen surface is captured in [`docs/public-api.txt`](../public-api.txt) (290 lines,
