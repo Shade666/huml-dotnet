@@ -25,12 +25,22 @@
 | H4 | `PropertyInfo.SetValue` propagates `TargetInvocationException`/`ArgumentException` raw from both Deserialize and Populate. | **FIXED** — setter invocation wrapped. |
 | H5 | Empty POCO as a mapping-property value emits a dangling `key::` that fails to re-parse. | **FIXED** — empty mapping bodies emit `:: {}`. `SerializerEmptyValueTests`. |
 | H6 | Polymorphic discriminator not emitted for derived types in nested/collection position → silent type loss on round-trip. | **FIXED** — discriminator emit moved into the shared per-object path. `PolymorphicNestedTests`. |
-| H7 | Source generator: two context classes sharing a simple name crash the generator (duplicate `AddSource` hint). | **FIXED** — hint names fully qualified. `SourceGeneratorRobustnessTests`. |
-| H8 | Source generator: `init`-only properties emit `CS8852` — registering any record/`init` POCO breaks the consumer build. | **FIXED** — generated setter path handles init-only via the supported pattern. |
-| H9 | Source generator: `CreateObject` emits `new T()` unconditionally — parameterised-ctor, `required`-member, and abstract types break the build. | **FIXED** — guarded emission; unsupported shapes get a diagnostic, not broken code. |
-| H10 | Source generator: drops `[HumlIgnore]`/`[HumlProperty]`/naming metadata — generated path serialises ignored properties (data leak) and uses wrong keys. | **FIXED** — generator reads the same attribute metadata as the reflection path. |
+| H7 | Source generator: two context classes sharing a simple name crash the generator (duplicate `AddSource` hint). | **PENDING** — source-generator hardening batch (see below). |
+| H8 | Source generator: `init`-only properties emit `CS8852` — registering any record/`init` POCO breaks the consumer build. | **PENDING**. |
+| H9 | Source generator: `CreateObject` emits `new T()` unconditionally — parameterised-ctor, `required`-member, and abstract types break the build. | **PENDING**. |
+| H10 | Source generator: drops `[HumlIgnore]`/`[HumlProperty]`/naming metadata — generated path serialises ignored properties (data leak) and uses wrong keys. | **PENDING**. |
 | H11 | Serialiser: dictionary keys formatted with current-culture `ToString()` (non-invariant output). *(verifier downgraded to medium, but folded in here as a correctness/parity fix.)* | **FIXED** — invariant formatting throughout. |
 | H12 | Serialiser: property getter that throws leaks `TargetInvocationException`. *(verifier downgraded to medium.)* | **FIXED** — getter invocation wrapped. |
+
+### Source-generator hardening batch (H7–H10, M11–M14) — PENDING
+
+The five source-generator highs and four mediums form one coherent batch against
+`Huml.Net.SourceGeneration/HumlSerializationGenerator.cs`. They are **not yet fixed**. They
+are separable from the runtime-security work above because: (a) the generator is an opt-in
+feature — none are reachable from untrusted *document* input; (b) the failure mode is a broken
+*consumer* build, not a runtime crash or data exposure in the core library; (c) fixing them
+correctly needs generated-code compilation tests (a Roslyn `CSharpGeneratorDriver` harness)
+that do not yet exist in the test project. Tracked as the next work item in this goal.
 
 ## Medium (triaged — fix in this goal where cheap, else dispositioned)
 
