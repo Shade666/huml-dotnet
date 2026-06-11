@@ -28,6 +28,7 @@ Findings from the G3.2 adversarial security review (docs/internals/g3-security-r
 - **Hex/octal/binary literals exceeding `Int64` now overflow loudly** like decimals, instead of silently wrapping via two's complement (`0xFFFFFFFFFFFFFFFF` no longer becomes `-1`).
 - **Dictionary keys serialise with invariant culture** — numeric/`IFormattable` keys are no longer formatted using the ambient thread culture.
 - **Case-insensitively colliding enum member names** now throw `HumlDeserializeException` rather than a raw `InvalidOperationException`.
+- **The source generator no longer emits code that breaks the consumer build.** Registering records / `init`-only properties (was `CS8852`), parameterised-constructor / `required`-member / abstract types (was `CS7036`/`CS9035`), two context classes sharing a simple name, two registered types sharing a simple name (was `CS0102`), or properties named with C# keywords (e.g. `@class`) now all compile cleanly. The generator also honours `[HumlIgnore]` (previously serialised ignored properties — a data leak) and `[HumlProperty]` key overrides.
 
 ### Fixed
 
