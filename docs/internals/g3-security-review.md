@@ -4,10 +4,21 @@
 **Method:** multi-agent workflow — one adversarial finder per pipeline slice (lexer, parser, deserialiser, serialiser, source generator), briefed by [threat-model.md](threat-model.md); every finding then attacked by independent verifiers (default-refute), with a second reproduction-lens verifier for critical/high. Raw machine output: [g3-review-raw.json](g3-review-raw.json).
 **Outcome:** 35 findings surfaced, **34 confirmed, 1 rejected**. 12 (criticals + highs) fixed with regression tests; mediums/lows triaged below.
 
-## Coverage gaps (must close before the API freeze is final)
+## Coverage gaps — resolved
 
-1. **Lexer slice did not complete.** The finder agent for `Lexer.cs` was terminated by an account spend limit before returning. The lexer was *partially* exercised indirectly — the 8 M-iteration fuzz campaign (G3.3) drives `Huml.Parse` through the lexer with zero crashes/hangs/contract escapes — but it received no dedicated adversarial read. **Re-run the lexer slice when budget resets.**
-2. **Six findings reached the verification stage but their verifiers were cut off** (verdict `null` in the raw output): the parser quartet (long.MinValue, non-decimal wrap, deep-record StackOverflow, reference-equality contract) and the serialiser cyclic-POCO critical. These were **verified by hand** during fixing (each reproduced before the fix, regression-tested after) — see the per-finding notes below.
+1. **Lexer slice (workflow agent cut off by the spend limit) — closed by focused manual review + fuzzing.**
+   The dedicated finder agent for `Lexer.cs` never returned, so the lexer was reviewed by hand
+   against the threat model (2026-06-11): every scanning loop (`NextToken`, `MeasureIndent`,
+   `ScanQuotedStringContent` two-pass, the multiline scanners, `ScanNumber`) bounds on
+   `_pos < _source.Length`; the lexer is a span-based `ref struct` with **forward-only** progress
+   (no backtracking → no quadratic-time input), guarded boundary reads (including the
+   `_source[_pos-1]` trailing-space checks, proven safe at buffer edges), and iterative
+   blank-line handling (no recursion). The 8 M-iteration fuzz campaign (G3.3) additionally drives
+   `Huml.Parse` — and thus the whole lexer — with zero crashes/hangs/contract escapes. No findings.
+2. **Six findings whose workflow verifiers were cut off** (verdict `null` in the raw output): the
+   parser quartet (long.MinValue, non-decimal wrap, deep-record StackOverflow, reference-equality
+   contract) and the serialiser cyclic-POCO critical. All were **verified by hand** during fixing
+   (each reproduced before the fix, regression-tested after).
 
 ## Critical
 
