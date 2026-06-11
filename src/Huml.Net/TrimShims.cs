@@ -70,6 +70,26 @@ internal sealed class DynamicallyAccessedMembersAttribute : Attribute
     public DynamicallyAccessedMemberTypes MemberTypes { get; }
 }
 
+[AttributeUsage(
+    AttributeTargets.All,
+    Inherited = false, AllowMultiple = true)]
+[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+internal sealed class UnconditionalSuppressMessageAttribute : Attribute
+{
+    public UnconditionalSuppressMessageAttribute(string category, string checkId)
+    {
+        Category = category;
+        CheckId = checkId;
+    }
+
+    public string Category { get; }
+    public string CheckId { get; }
+    public string? Scope { get; set; }
+    public string? Target { get; set; }
+    public string? MessageId { get; set; }
+    public string? Justification { get; set; }
+}
+
 #pragma warning restore MA0048, MA0062
 
 #endif

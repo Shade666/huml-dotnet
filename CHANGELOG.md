@@ -31,6 +31,7 @@ Findings from the G3.2 adversarial security review (docs/internals/g3-security-r
 
 ### Fixed
 
+- **Polymorphic types round-trip in nested and collection positions.** The `[HumlPolymorphic]` discriminator was only emitted for the top-level declared type, so a derived value held in a property or list element serialised without its discriminator and silently lost its concrete type on deserialisation. The declared (base) type is now threaded through nested and collection emission.
 - **Empty POCO property values now emit `:: {}`** instead of a dangling `key::` that failed to re-parse.
 - **Lists of objects now serialise to valid HUML.** Vector items inside multi-line lists were emitted as a bare dash with trailing whitespace (`- ` + newline) followed by a key block — a form the grammar (and Huml.Net's own parser) rejects, so `Serialize` output containing a `List<SomePoco>` could never be deserialised. Items now use the grammar's `- ::` form (matching go-huml's encoder); empty vector items emit `- :: []`/`- :: {}`.
 - **`object`-typed deserialisation no longer silently discards content.** A nested mapping or sequence deserialised into an `object?` slot produced a content-less `new object()`. Mappings now materialise as `Dictionary<string, object?>`, sequences as `List<object?>`, mirroring `System.Text.Json`.

@@ -471,7 +471,7 @@ internal static class HumlSerializer
                 if (shouldOmit) continue;
             }
 
-            EmitEntry(sb, indent, desc.HumlKey, propValue, depth, options, desc.Inline, desc.Converter, declaringType: obj.GetType(), numberHandlingOverride: desc.NumberHandling);
+            EmitEntry(sb, indent, desc.HumlKey, propValue, depth, options, desc.Inline, desc.Converter, declaringType: obj.GetType(), numberHandlingOverride: desc.NumberHandling, declaredValueType: desc.Property.PropertyType);
         }
 
         // Emit extension-data entries after all declared properties (EXT-04).
@@ -512,7 +512,8 @@ internal static class HumlSerializer
         bool? inlineOverride = null,
         HumlConverter? converterOverride = null,
         Type? declaringType = null,
-        HumlNumberHandling? numberHandlingOverride = null)
+        HumlNumberHandling? numberHandlingOverride = null,
+        Type? declaredValueType = null)
     {
         // Property-level converter dispatch (highest priority — wins over type-level and options)
         if (converterOverride != null)
@@ -603,7 +604,8 @@ internal static class HumlSerializer
             sb.Append(indent);
             AppendKey(sb, key);
             sb.Append("::\n");
-            EmitSequenceItems(sb, items, depth + 1, options, numberHandlingOverride);
+            EmitSequenceItems(sb, items, depth + 1, options, numberHandlingOverride,
+                elementDeclaredType: PolymorphicBaseOrNull(ElementTypeOrNull(declaredValueType)));
             return;
         }
 
@@ -623,7 +625,10 @@ internal static class HumlSerializer
         int marker = sb.Length;
         sb.Append("::\n");
         int bodyStart = sb.Length;
-        SerializeMappingBody(sb, value!, depth + 1, options);
+        // Pass the declared property type so a polymorphic base type emits its discriminator
+        // even in nested position (the runtime type alone loses the [HumlPolymorphic] base).
+        SerializeMappingBody(sb, value!, depth + 1, options,
+            declaredType: PolymorphicBaseOrNull(declaredValueType));
         if (sb.Length == bodyStart)
         {
             // A POCO with no serialisable members would otherwise leave a dangling "key::"
@@ -645,6 +650,32 @@ internal static class HumlSerializer
                 $"Serialisation exceeded the maximum depth of {options.MaxRecursionDepth}. "
                 + "This usually indicates a cyclic object graph; raise HumlOptions.MaxRecursionDepth "
                 + "if the data is genuinely this deep.");
+    }
+
+    /// <summary>
+    /// Returns <paramref name="declaredType"/> if it carries <c>[HumlPolymorphic]</c>, else null.
+    /// Passing a non-polymorphic declared type down would needlessly force the runtime type to be
+    /// treated as a declared type; only polymorphic bases need the discriminator emit.
+    /// </summary>
+    private static Type? PolymorphicBaseOrNull(Type? declaredType) =>
+        declaredType != null && PolymorphicMetadataCache.GetPolymorphicAttribute(declaredType) != null
+            ? declaredType
+            : null;
+
+    /// <summary>
+    /// Returns the element type of an array or <c>IEnumerable&lt;T&gt;</c>-implementing type,
+    /// or null when none can be determined.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Whole serialiser is [RequiresUnreferencedCode]; only used to read a generic element type for polymorphic dispatch.")]
+    private static Type? ElementTypeOrNull(Type? collectionType)
+    {
+        if (collectionType is null) return null;
+        if (collectionType.IsArray) return collectionType.GetElementType();
+        foreach (var i in collectionType.GetInterfaces())
+            if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                return i.GetGenericArguments()[0];
+        return null;
     }
 
     /// <summary>Formats a dictionary key invariantly (culture-independent), never null.</summary>
@@ -871,7 +902,8 @@ internal static class HumlSerializer
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void EmitSequenceItems(
         StringBuilder sb, IEnumerable items, int depth, HumlOptions options,
-        HumlNumberHandling? memberNumberHandling = null)
+        HumlNumberHandling? memberNumberHandling = null,
+        Type? elementDeclaredType = null)
     {
         GuardDepth(depth, options);
         var indent = Indent(depth);
@@ -897,7 +929,8 @@ internal static class HumlSerializer
                 else if (item is IEnumerable nested and not string)
                 {
                     isListLike = true;
-                    EmitSequenceItems(sb, nested, depth + 1, options, memberNumberHandling);
+                    EmitSequenceItems(sb, nested, depth + 1, options, memberNumberHandling,
+                        elementDeclaredType: PolymorphicBaseOrNull(ElementTypeOrNull(elementDeclaredType)));
                 }
                 else if (item != null)
                 {
@@ -906,7 +939,9 @@ internal static class HumlSerializer
                         throw new HumlSerializeException(
                             $"Cannot serialize type '{itemType.FullName}': delegates, function pointers, and " +
                             "similar non-data types are not supported by HumlSerializer.");
-                    SerializeMappingBody(sb, item, depth + 1, options);
+                    // Pass the declared element type so polymorphic collection elements emit
+                    // their discriminator.
+                    SerializeMappingBody(sb, item, depth + 1, options, declaredType: elementDeclaredType);
                 }
                 if (sb.Length == bodyStart)
                 {
