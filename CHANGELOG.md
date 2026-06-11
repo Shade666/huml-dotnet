@@ -17,8 +17,21 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 - **A dash must be followed by a space to start a list item.** Root `-5`/`-inf` now parse as scalars (previously a one-element list — wrong AST shape); `list::\n  -1` is now a parse error.
 - **v0.1 `"""` multiline strings now strip all leading/trailing whitespace per content line**, per the v0.1 "Strip spaces" semantics (a missing version gate meant v0.2 preserve semantics applied).
 
+### Security
+
+Findings from the G3.2 adversarial security review (docs/internals/g3-security-review.md):
+
+- **Cyclic object graphs no longer crash the process.** `Huml.Serialize` recursion is now bounded by `HumlOptions.MaxRecursionDepth`; a self-referencing graph throws a catchable `HumlSerializeException` instead of an uncatchable `StackOverflowException`.
+- **User constructor / property-setter / getter exceptions now surface as the declared type.** A throwing constructor (parameterised or parameterless) or property setter during deserialisation now throws `HumlDeserializeException` (with the original as `InnerException`) instead of leaking `System.Reflection.TargetInvocationException`; a throwing getter during serialisation throws `HumlSerializeException`.
+- **`long.MinValue` (`-9223372036854775808`) now parses** — it was previously rejected as an overflow, breaking round-trips of the minimum `Int64`.
+- **A leading byte-order mark (U+FEFF) now produces a clear error** ("save as UTF-8 without BOM") instead of a generic "unexpected character".
+- **Hex/octal/binary literals exceeding `Int64` now overflow loudly** like decimals, instead of silently wrapping via two's complement (`0xFFFFFFFFFFFFFFFF` no longer becomes `-1`).
+- **Dictionary keys serialise with invariant culture** — numeric/`IFormattable` keys are no longer formatted using the ambient thread culture.
+- **Case-insensitively colliding enum member names** now throw `HumlDeserializeException` rather than a raw `InvalidOperationException`.
+
 ### Fixed
 
+- **Empty POCO property values now emit `:: {}`** instead of a dangling `key::` that failed to re-parse.
 - **Lists of objects now serialise to valid HUML.** Vector items inside multi-line lists were emitted as a bare dash with trailing whitespace (`- ` + newline) followed by a key block — a form the grammar (and Huml.Net's own parser) rejects, so `Serialize` output containing a `List<SomePoco>` could never be deserialised. Items now use the grammar's `- ::` form (matching go-huml's encoder); empty vector items emit `- :: []`/`- :: {}`.
 - **`object`-typed deserialisation no longer silently discards content.** A nested mapping or sequence deserialised into an `object?` slot produced a content-less `new object()`. Mappings now materialise as `Dictionary<string, object?>`, sequences as `List<object?>`, mirroring `System.Text.Json`.
 - **Root scalars and root sequences now deserialise into typed targets** (`Huml.Deserialize<long>("123")`, `Huml.Deserialize<List<long>>("1, 2, 3")`) — previously these silently produced empty/default objects; mismatched targets now throw `HumlDeserializeException`.

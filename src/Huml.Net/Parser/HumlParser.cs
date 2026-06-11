@@ -344,7 +344,31 @@ internal ref struct HumlParser
         string digits = s.Substring(idx).Replace("_", "", StringComparison.Ordinal);
         try
         {
-            return sign * Convert.ToInt64(digits, radix);
+            if (radix == 10)
+            {
+                // Parse the signed literal whole so long.MinValue (-9223372036854775808)
+                // round-trips: its magnitude alone (…808) exceeds long.MaxValue, so the
+                // old `sign * Convert.ToInt64(magnitude)` rejected a representable value.
+                return long.Parse(sign == -1 ? "-" + digits : digits, CultureInfo.InvariantCulture);
+            }
+
+            // Base-prefixed literals: Convert.ToInt64 with a radix interprets the high
+            // bit as a two's-complement sign (0xFFFFFFFFFFFFFFFF would silently become
+            // -1). Parse the magnitude unsigned and range-check explicitly so overflow
+            // behaves the same as the decimal path.
+            ulong magnitude = Convert.ToUInt64(digits, radix);
+            if (sign == 1)
+            {
+                if (magnitude > long.MaxValue)
+                    throw new OverflowException();
+                return (long)magnitude;
+            }
+            return magnitude switch
+            {
+                <= long.MaxValue => -(long)magnitude,
+                (ulong)long.MaxValue + 1 => long.MinValue,
+                _ => throw new OverflowException(),
+            };
         }
         catch (OverflowException)
         {

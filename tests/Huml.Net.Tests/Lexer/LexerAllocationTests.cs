@@ -25,9 +25,7 @@ public class LexerAllocationTests
         LexAll(input, options);
         LexAll(input, options);
 
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        LexAll(input, options);
-        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        long allocated = AllocationProbe.Measure(() => LexAll(input, options));
 
         // Only string materialisations for value-bearing tokens are expected.
         // 3 keys + 1 string value = ~4 string allocations. No List, StringBuilder, etc.
@@ -44,9 +42,7 @@ public class LexerAllocationTests
         LexAll(input, options);
         LexAll(input, options);
 
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        LexAll(input, options);
-        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        long allocated = AllocationProbe.Measure(() => LexAll(input, options));
 
         // Key "items" + 3 integer values = 4 string allocs. ListItem, VectorIndicator, Eof are null Value.
         allocated.Should().BeLessThan(1024);
@@ -71,9 +67,9 @@ public class LexerAllocationTests
         // (~2 KiB on .NET 8/9) that pollutes the measurement on older runtimes.
         _ = Huml.Deserialize<AllocationPoco>(span, options);
 
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        _ = Huml.Deserialize<AllocationPoco>(span, options);
-        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        // Capture the source in a local copy the lambda can use (ref struct spans cannot
+        // be captured); the string overload exercises the same downstream path budget.
+        long allocated = AllocationProbe.Measure(() => _ = Huml.Deserialize<AllocationPoco>(source.AsSpan(), options));
 
         // A full string copy of the input would be source.Length * sizeof(char) = 72 bytes.
         // Allow budget for the POCO + AST nodes (typically ~200-600 bytes warm) but not a

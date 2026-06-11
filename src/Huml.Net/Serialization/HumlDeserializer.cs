@@ -158,7 +158,7 @@ internal static class HumlDeserializer
             var deserializedValue = ResolvePropertyValue(mapping.Value, descriptor, mapping.Key, options);
 
             // Overlay: set property value on the existing instance (POP-03)
-            descriptor.Property.SetValue(existing, deserializedValue);
+            SafeSetValue(descriptor.Property, existing, deserializedValue);
         }
     }
 
@@ -344,6 +344,15 @@ internal static class HumlDeserializer
                 throw new HumlDeserializeException(
                     $"Type '{targetType.Name}' has no accessible parameterless constructor.");
             }
+            catch (System.Reflection.TargetInvocationException ex)
+            {
+                // The parameterless constructor itself threw — surface it as the declared
+                // exception type rather than leaking the reflection wrapper.
+                throw new HumlDeserializeException(
+                    $"The constructor of type '{targetType.Name}' threw "
+                    + $"{ex.InnerException?.GetType().Name ?? "an exception"}: {ex.InnerException?.Message}",
+                    ex.InnerException ?? ex);
+            }
         }
 
         // SGS seam: resolver-driven path. When the resolver supplies property metadata
@@ -423,7 +432,7 @@ internal static class HumlDeserializer
             var deserializedValue = ResolvePropertyValue(mapping.Value, descriptor, mapping.Key, options);
 
             // Set property value via reflection
-            descriptor.Property.SetValue(instance, deserializedValue);
+            SafeSetValue(descriptor.Property, instance, deserializedValue);
             boundKeys.Add(descriptor.HumlKey);
         }
 
@@ -520,8 +529,42 @@ internal static class HumlDeserializer
             }
         }
 
-        var instance = ctor.Invoke(args);
+        object instance;
+        try
+        {
+            instance = ctor.Invoke(args);
+        }
+        catch (System.Reflection.TargetInvocationException ex)
+        {
+            // A user constructor that validates its arguments (e.g. range checks on
+            // attacker-controlled document values) must surface as HumlDeserializeException,
+            // not leak the reflection wrapper out of the public API.
+            throw new HumlDeserializeException(
+                $"The constructor of type '{targetType.Name}' threw "
+                + $"{ex.InnerException?.GetType().Name ?? "an exception"}: {ex.InnerException?.Message}",
+                ex.InnerException ?? ex);
+        }
         return (instance, alreadyBound);
+    }
+
+    /// <summary>
+    /// Invokes a property setter, translating the reflection wrapper exception thrown by a
+    /// validating setter into <see cref="HumlDeserializeException"/> so the public API only
+    /// ever surfaces its declared exception type.
+    /// </summary>
+    [RequiresUnreferencedCode("Reflection-based HUML deserialisation.")]
+    private static void SafeSetValue(System.Reflection.PropertyInfo property, object? instance, object? value)
+    {
+        try
+        {
+            property.SetValue(instance, value);
+        }
+        catch (Exception ex) when (ex is System.Reflection.TargetInvocationException or ArgumentException)
+        {
+            var inner = (ex as System.Reflection.TargetInvocationException)?.InnerException ?? ex;
+            throw new HumlDeserializeException(
+                $"Setting property '{property.Name}' threw {inner.GetType().Name}: {inner.Message}", inner);
+        }
     }
 
     // ── Sequence deserialization ──────────────────────────────────────────────

@@ -17,15 +17,10 @@ public class HumlSerializerAllocationTests
         Huml.Serialize(value, options);
         Huml.Serialize(value, options);
 
-        // Measure first serialization
-        long before1 = GC.GetAllocatedBytesForCurrentThread();
-        string result1 = Huml.Serialize(value, options);
-        long alloc1 = GC.GetAllocatedBytesForCurrentThread() - before1;
-
-        // Measure second serialization -- indent strings should be cached
-        long before2 = GC.GetAllocatedBytesForCurrentThread();
-        string result2 = Huml.Serialize(value, options);
-        long alloc2 = GC.GetAllocatedBytesForCurrentThread() - before2;
+        // Measure both serialisations (min-of-N guards against tiering/GC noise)
+        string result1 = "", result2 = "";
+        long alloc1 = AllocationProbe.Measure(() => result1 = Huml.Serialize(value, options));
+        long alloc2 = AllocationProbe.Measure(() => result2 = Huml.Serialize(value, options));
 
         result1.Should().Be(result2);
         // Second call should not allocate significantly more than first (indent strings are static).

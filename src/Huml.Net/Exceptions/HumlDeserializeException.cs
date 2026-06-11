@@ -30,6 +30,11 @@ public sealed class HumlDeserializeException : Exception
     /// <param name="message">Description of the deserialisation error.</param>
     public HumlDeserializeException(string message) : base(message) { }
 
+    /// <summary>Initialises a new instance with an error message and a reference to the inner exception.</summary>
+    /// <param name="message">Description of the deserialisation error.</param>
+    /// <param name="innerException">The exception that caused the current exception (e.g. one thrown by a user constructor or property setter).</param>
+    public HumlDeserializeException(string message, Exception innerException) : base(message, innerException) { }
+
     /// <summary>
     /// Initialises a new instance with a diagnostic message, optional key, and line number.
     /// When <paramref name="key"/> is non-null the formatted message is

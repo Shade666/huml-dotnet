@@ -156,6 +156,13 @@ internal ref struct Lexer
                     + $"Non-Latin characters are supported in quoted keys: \"{ch}\": \"value\"");
             }
 
+            if (ch == '﻿')
+            {
+                ThrowParseError(
+                    "A byte-order mark (U+FEFF) is not allowed in HUML documents. "
+                    + "Save the document as UTF-8 without BOM.");
+            }
+
             ThrowParseError($"Unexpected character '{ch}'.");
         }
 

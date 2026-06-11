@@ -370,6 +370,12 @@ internal static class HumlSerializer
     [RequiresUnreferencedCode("Reflection-based HUML serialisation.")]
     private static void SerializeMappingBody(StringBuilder sb, object obj, int depth, HumlOptions options, Type? declaredType = null)
     {
+        // Cycle/recursion guard: a self-referencing object graph would otherwise recurse
+        // until the stack is exhausted, crashing the process with an uncatchable
+        // StackOverflowException. Bounding on MaxRecursionDepth (mirrors the parser) turns
+        // that into a catchable HumlSerializeException.
+        GuardDepth(depth, options);
+
         // SGS seam: resolver-driven path. When the resolver supplies property metadata
         // (Properties non-null), use delegate-based emission and bypass reflection.
         // Prefer the runtime type's TypeInfo (covers polymorphic derived types whose own
@@ -423,7 +429,20 @@ internal static class HumlSerializer
 
         foreach (var desc in descriptors)
         {
-            var propValue = desc.Property.GetValue(obj);
+            object? propValue;
+            try
+            {
+                propValue = desc.Property.GetValue(obj);
+            }
+            catch (System.Reflection.TargetInvocationException ex)
+            {
+                // A property getter that throws must surface as HumlSerializeException, not
+                // leak the reflection wrapper type out of the public API.
+                throw new HumlSerializeException(
+                    $"The getter for property '{desc.Property.Name}' on type '{obj.GetType().Name}' threw "
+                    + $"{ex.InnerException?.GetType().Name ?? "an exception"}: {ex.InnerException?.Message}",
+                    ex.InnerException ?? ex);
+            }
 
             // Precedence chain (highest to lowest, per D-09):
             // 1. Per-property [HumlProperty(OmitIfDefault = true)]
@@ -601,9 +620,41 @@ internal static class HumlSerializer
         }
         sb.Append(indent);
         AppendKey(sb, key);
+        int marker = sb.Length;
         sb.Append("::\n");
+        int bodyStart = sb.Length;
         SerializeMappingBody(sb, value!, depth + 1, options);
+        if (sb.Length == bodyStart)
+        {
+            // A POCO with no serialisable members would otherwise leave a dangling "key::"
+            // that fails to re-parse (ambiguous empty vector). Emit the empty-dict signifier.
+            sb.Length = marker;
+            sb.Append(":: {}\n");
+        }
     }
+
+    /// <summary>
+    /// Throws <see cref="HumlSerializeException"/> when serialisation recursion exceeds
+    /// <see cref="HumlOptions.MaxRecursionDepth"/> — the catchable guard against cyclic or
+    /// pathologically deep object graphs that would otherwise overflow the stack.
+    /// </summary>
+    private static void GuardDepth(int depth, HumlOptions options)
+    {
+        if (depth > options.MaxRecursionDepth)
+            throw new HumlSerializeException(
+                $"Serialisation exceeded the maximum depth of {options.MaxRecursionDepth}. "
+                + "This usually indicates a cyclic object graph; raise HumlOptions.MaxRecursionDepth "
+                + "if the data is genuinely this deep.");
+    }
+
+    /// <summary>Formats a dictionary key invariantly (culture-independent), never null.</summary>
+    private static string FormatDictionaryKey(object? key) => key switch
+    {
+        null => "null",
+        string s => s,
+        IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
+        _ => key.ToString() ?? "null",
+    };
 
     /// <summary>
     /// Emits a scalar-only sequence in inline format: <c>key:: v1, v2, v3\n</c>.
@@ -645,7 +696,7 @@ internal static class HumlSerializer
         {
             if (!first) sb.Append(", ");
             first = false;
-            var entryKey = entry.Key?.ToString() ?? "null";
+            var entryKey = FormatDictionaryKey(entry.Key);
             AppendKey(sb, entryKey);
             sb.Append(": ");
             SerializeValue(sb, entry.Value, 0, options, memberNumberHandling: memberNumberHandling);
@@ -822,6 +873,7 @@ internal static class HumlSerializer
         StringBuilder sb, IEnumerable items, int depth, HumlOptions options,
         HumlNumberHandling? memberNumberHandling = null)
     {
+        GuardDepth(depth, options);
         var indent = Indent(depth);
         foreach (var item in items)
         {
@@ -889,7 +941,7 @@ internal static class HumlSerializer
 
         foreach (DictionaryEntry entry in dict)
         {
-            var key = entry.Key?.ToString() ?? "null";
+            var key = FormatDictionaryKey(entry.Key);
             var value = entry.Value;
 
             if (seenKeys != null && !seenKeys.Add(key))

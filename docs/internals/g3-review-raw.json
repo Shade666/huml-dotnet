@@ -1,0 +1,664 @@
+{
+  "summary": "Adversarial security/correctness review of the Huml.Net pipeline (G3.2)",
+  "agentCount": 52,
+  "logs": [
+    "deserializer: 11 finding(s)",
+    "sourcegen: 13 finding(s)",
+    "serializer: 7 finding(s)",
+    "parser: 4 finding(s)",
+    "[confirm:sourcegen:Generator drops [HumlIgnore]/[HumlProperty]/na] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[confirm:serializer:Empty POCO as a mapping-property value emits ] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[review:lexer] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[confirm:sourcegen:Resolver-driven deserialise path returns early] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[confirm:serializer:Polymorphic discriminator not emitted for der] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[verify:parser:Deep HumlMapping chains crash the process via unca] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[verify:parser:Record equality on collection-bearing AST nodes us] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[confirm:serializer:Property getter that throws leaks TargetInvoc] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[verify:serializer:Cyclic POCO object graph (no converter) causes] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[verify:parser:long.MinValue decimal literal is rejected; seriali] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[confirm:serializer:Dictionary keys formatted with current-cultur] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[verify:parser:Non-decimal 64-bit integer literals silently wrap ] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "confirmed: 34, rejected: 1"
+  ],
+  "result": {
+    "confirmed": [
+      {
+        "title": "long.MinValue decimal literal is rejected; serialize→deserialize round-trip throws",
+        "file": "src/Huml.Net/Parser/HumlParser.cs",
+        "line": 347,
+        "severity": "high",
+        "threat": "CORRECTNESS",
+        "description": "ParseInt parses sign and magnitude separately (`sign * Convert.ToInt64(digits, radix)`). For the decimal literal \"-9223372036854775808\" (long.MinValue, a perfectly valid Int64), the magnitude string \"9223372036854775808\" exceeds long.MaxValue (…807), so Convert.ToInt64 throws OverflowException, which is mapped to HumlParseException — even though the signed result is representable. The serializer emits this exact literal for long.MinValue, so Serialize/Deserialize is not a round trip for the minimum Int64.",
+        "evidence": "Confirmed at runtime via a referencing console app:\n- Huml.Parse(\"-9223372036854775808\") THREW HumlParseException: \"Integer literal '-9223372036854775808' overflows the supported range (int64).\"\n- Huml.Deserialize<long>(Huml.Serialize(long.MinValue)) THREW HumlParseException (same message at [2:0]).\n- Control: Huml.Parse(\"9223372036854775807\") (long.MaxValue) parses OK.\nCode path: ParseInt sign=-1, idx=1, radix=10, digits=\"9223372036854775808\" → Convert.ToInt64(digits,10) overflows → catch(OverflowException) → throw HumlParseException (HumlParser.cs:349-353).",
+        "suggestedFix": "Handle the signed minimum specially: parse the full signed literal in one step for radix 10 (e.g. long.TryParse on the original string incl. sign), or detect the magnitude == 9223372036854775808 && sign<0 case and return long.MinValue. For non-decimal radices, parse into the unsigned bit pattern then reinterpret.",
+        "slice": "parser",
+        "verdicts": [
+          null
+        ]
+      },
+      {
+        "title": "Non-decimal 64-bit integer literals silently wrap (two's-complement) instead of overflowing",
+        "file": "src/Huml.Net/Parser/HumlParser.cs",
+        "line": 347,
+        "severity": "medium",
+        "threat": "T5",
+        "description": "For hex/octal/binary literals, Convert.ToInt64(digits, radix) with radix 16/8/2 interprets a full-width value as an unsigned bit pattern and silently wraps to negative, while decimal overflow throws. This is a silent, deterministic data change reachable from untrusted input. Additionally, applying the parser's separate sign factor to an already-wrapped non-decimal magnitude produces nonsensical values for signed non-decimal literals.",
+        "evidence": "Runtime-confirmed:\n- Huml.Parse(\"0xFFFFFFFFFFFFFFFF\") → Integer(-1)\n- Huml.Parse(\"0o1777777777777777777777\") → Integer(-1)\n- Huml.Parse(\"-0xFFFFFFFFFFFFFFFF\") → Integer(1)  (Convert.ToInt64(\"FFFF…\",16) = -1, then sign(-1) * -1 = +1)\n- Control: Huml.Parse(\"18446744073709551615\") (same value, decimal) THREW HumlParseException overflow.\nThis confirms the T5 'known issue' in the threat model is present and live.",
+        "suggestedFix": "For non-decimal radices, parse via Convert.ToUInt64(digits, radix) and reinterpret as long only when it fits, or throw HumlParseException on values that do not fit signed Int64 — making behaviour consistent with the decimal overflow path. Reject a sign prefix combined with a non-decimal base prefix, or apply the sign to the unsigned value with explicit range checking.",
+        "slice": "parser",
+        "verdicts": [
+          null
+        ]
+      },
+      {
+        "title": "Deep HumlMapping chains crash the process via uncatchable StackOverflowException in record Equals/GetHashCode",
+        "file": "src/Huml.Net/Parser/HumlNode.cs",
+        "line": 27,
+        "severity": "medium",
+        "threat": "T1",
+        "description": "HumlMapping(string Key, HumlNode Value) is a public record whose compiler-generated Equals recurses through Value (a HumlNode). A chain of nested HumlMapping nodes therefore makes Equals/GetHashCode recurse one stack frame per nesting level. Beyond the stack limit this throws StackOverflowException, which is uncatchable in .NET and crashes the process. The threat model explicitly flags 'HumlNode record Equals/GetHashCode on deep ASTs' as a T1 concern. Note: this is NOT reachable through Huml.Parse, because parse depth is capped at MaxRecursionDepth (≤1024 ⇒ ~3072 Equals frames, safe); it is reachable on the public sealed-record AST surface with consumer-built or externally deep graphs (e.g. comparing nodes, or using them as HashSet/Dictionary keys).",
+        "evidence": "Runtime-confirmed crash. A console app built a 200,000-deep HumlMapping chain (a=new HumlMapping(\"k\", a)) for two equal chains and called a.Equals(b). The process terminated with a StackOverflow; captured stderr shows the repeating frames:\n  at Huml.Net.Parser.HumlMapping.Equals(HumlMapping)\n  at Huml.Net.Parser.HumlMapping.Equals(Object)\n  at Huml.Net.Parser.HumlMapping.Equals(HumlNode)\n  ... (repeating to process exit)",
+        "suggestedFix": "Document the AST records as not safe for deep structural comparison/hashing, or implement iterative (non-recursive) Equals/GetHashCode on HumlMapping (and any node whose member is a single HumlNode), or cap recursion in a custom Equals override that falls back to reference comparison beyond a depth threshold.",
+        "slice": "parser",
+        "verdicts": [
+          null
+        ]
+      },
+      {
+        "title": "Record equality on collection-bearing AST nodes uses reference equality, breaking the documented structural-equality contract",
+        "file": "src/Huml.Net/Parser/HumlSequence.cs",
+        "line": 7,
+        "severity": "medium",
+        "threat": "CORRECTNESS",
+        "description": "HumlSequence(IReadOnlyList<HumlNode> Items), HumlInlineMapping(IReadOnlyList<HumlNode> Entries), and HumlDocument(IReadOnlyList<HumlNode> Entries) get compiler-generated equality that compares the IReadOnlyList member with EqualityComparer<IReadOnlyList<HumlNode>>.Default — i.e. reference equality, not element-wise structural equality. Consequently any two distinct parses produce non-equal documents/sequences/inline-mappings, directly contradicting the contract documented on HumlNode (HumlNode.cs:8-10: 'Two nodes representing the same HUML value parsed from different source positions remain structurally equal'). The only member that IS compared structurally is HumlMapping.Value (a single HumlNode), which is exactly what produces the deep-recursion StackOverflow in the sibling finding.",
+        "evidence": "Runtime-confirmed:\n- Huml.Parse(\"42\").Equals(Huml.Parse(\"42\")) → False (two HumlDocument instances, distinct Entries arrays).\n- Huml.Parse(\"a: 1\").Equals(Huml.Parse(\"a: 1\")) → False.\nExpected per the documented structural-equality contract: True.",
+        "suggestedFix": "Override Equals/GetHashCode on HumlSequence, HumlInlineMapping, and HumlDocument to compare the list members element-wise (e.g. SequenceEqual) and combine element hashes, or drop the structural-equality claim from the HumlNode documentation if reference semantics are intended. Coordinate with the deep-recursion fix so element-wise comparison is also depth-bounded.",
+        "slice": "parser",
+        "verdicts": [
+          null
+        ]
+      },
+      {
+        "title": "TargetInvocationException escapes Huml.Deserialize when a user constructor throws",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 504,
+        "severity": "high",
+        "threat": "T6",
+        "description": "InvokeConstructor calls ctor.Invoke(args) with no try/catch. Reflection wraps any exception thrown by the user constructor in System.Reflection.TargetInvocationException, which propagates raw out of Huml.Deserialize<T>. This is the exact contract violation the threat model calls out under T6 ('exceptions from them must surface as HumlDeserializeException, not escape raw'). Constructors routinely validate attacker-controlled values (e.g. range checks), so untrusted document content directly triggers an undeclared exception type.",
+        "evidence": "Probe: class CtorThrows { public CtorThrows(int age) { if (age < 0) throw new ArgumentOutOfRangeException(); } }. Huml.Deserialize<CtorThrows>(\"age: -5\") observed throwing System.Reflection.TargetInvocationException ('Exception has been thrown by the target of an invocation'), not HumlDeserializeException. Code path: DeserializeMappingEntries line 313 -> InvokeConstructor -> line 504 ctor.Invoke(args), no exception wrapping anywhere on the path.",
+        "suggestedFix": "Wrap ctor.Invoke(args) in try/catch (TargetInvocationException tie) and rethrow new HumlDeserializeException($\"Constructor of type '{targetType.Name}' threw: {tie.InnerException?.Message}\", ..., innerException: tie.InnerException).",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and live repro. HumlDeserializer.cs line 504 (`var instance = ctor.Invoke(args);`) has no try/catch, and no wrapper exists anywhere on the path Huml.Deserialize<T> -> DeserializeNode -> DeserializeMappingEntries (line 313) -> InvokeConstructor; the only catches in the file are in CoerceScalar (lines 825-846) and the Activator parameterless path (line 323). Reproduced in a temp console app: Huml.Deserialize<CtorThrows>(\"age: -5\") with `public CtorThrows(int age) { if (age < 0) throw new ArgumentOutOfRangeException(...); }` throws System.Reflection.TargetInvocationException (inner ArgumentOutOfRangeException), not HumlDeserializeException. This violates both the threat model (docs/internals/threat-model.md line 51: 'exceptions from them must surface as HumlDeserializeException, not escape raw') and the declared exception contract in the XML docs (HumlDeserializer.cs line 35: 'On any mapping, coercion, or constructor failure'). High severity stands: attacker-controlled document values routinely hit constructor validation, and the undeclared exception type bypasses callers' catch(HumlDeserializeException) handlers.",
+            "confirmedSeverity": "high"
+          },
+          {
+            "refuted": false,
+            "reason": "Confirmed by live reproduction: Huml.Deserialize<CtorThrows>(\"age: -5\") throws System.Reflection.TargetInvocationException (inner ArgumentOutOfRangeException), not HumlDeserializeException. Decisive line: HumlDeserializer.cs:523 `var instance = ctor.Invoke(args);` inside InvokeConstructor has no try/catch, and no TargetInvocationException handling exists anywhere in src/Huml.Net (only broad catch is HumlParser.cs:354, parse-side). This violates the documented contract in Huml.cs (`<exception cref=\"HumlDeserializeException\">`) and the explicit T6 requirement in docs/internals/threat-model.md:51 (\"exceptions from them must surface as HumlDeserializeException, not escape raw\"). Finding's cited line 504 is the descriptor lookup in the same method; the unguarded Invoke is at 523 — immaterial drift. High severity stands: trivially attacker-triggerable via routine constructor validation of untrusted document values, defeating callers' exception-contract-based error handling.",
+            "confirmedSeverity": "high"
+          }
+        ]
+      },
+      {
+        "title": "TargetInvocationException escapes when a parameterless constructor throws (only MissingMethodException is caught)",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 319,
+        "severity": "high",
+        "threat": "T6",
+        "description": "The Activator.CreateInstance(targetType) call at line 319 catches only MissingMethodException (line 323). If the target type's parameterless constructor itself throws, Activator wraps it in TargetInvocationException which escapes Huml.Deserialize raw, violating the declared exception contract. Reachable for any target type whose default constructor can fail.",
+        "evidence": "Probe: class ParamlessThrows { public ParamlessThrows() { throw new InvalidDataException(\"nope\"); } public int X { get; set; } }. Huml.Deserialize<ParamlessThrows>(\"x: 1\") observed throwing System.Reflection.TargetInvocationException. Code path: DeserializeMappingEntries -> selectedCtor == null branch -> Activator.CreateInstance at line 319; catch clause at 323 only handles MissingMethodException.",
+        "suggestedFix": "Add catch (TargetInvocationException tie) alongside the MissingMethodException handler and wrap as HumlDeserializeException with the inner exception preserved.",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed. HumlDeserializer.cs line 319 wraps Activator.CreateInstance in a try whose only handler is `catch (MissingMethodException)` (line 323); a throwing parameterless ctor is wrapped by Activator in TargetInvocationException, and no outer handler exists anywhere (zero matches for TargetInvocationException in src/; Huml.Deserialize at Huml.cs line 76-77 is a bare delegation). This violates the documented contract at Huml.cs lines 56-57/72-73 (only HumlParseException/HumlDeserializeException) and HumlDeserializer.cs line 35 (\"HumlDeserializeException ... on any constructor failure\"). Runtime probe reproduced it: Huml.Deserialize<ParamlessThrows>(\"x: 1\") threw System.Reflection.TargetInvocationException (inner InvalidDataException). The same unguarded gap also exists at ctor.Invoke(args), line 504. Severity downgraded high -> medium: the trigger is the consumer's own constructor throwing, not attacker-controlled HUML input; the failure is loud with the original exception preserved as InnerException, so impact is a broken exception contract (catch-by-type error handling misses it), not corruption or a security issue. One-level inflation only, so the finding is not refuted.",
+            "confirmedSeverity": "medium"
+          },
+          {
+            "refuted": false,
+            "reason": "Confirmed by direct reproduction. HumlDeserializer.cs lines 336-346: Activator.CreateInstance(targetType) is guarded only by `catch (MissingMethodException)` (line 342); a throwing parameterless constructor yields TargetInvocationException, which escapes. Probe via public API — Huml.Deserialize<ParamlessThrows>(\"x: 1\") with `public ParamlessThrows() => throw new InvalidDataException(\"nope\")` — threw System.Reflection.TargetInvocationException (inner InvalidDataException). No wrapping exists upstream: Huml.cs facade has no catch blocks and TargetInvocationException appears nowhere in src/. This violates the documented contract (Huml.cs lines 56-57 declare only HumlParseException/HumlDeserializeException) and the project's threat model, which explicitly requires under T6 (docs/internals/threat-model.md line 51): constructor exceptions \"must surface as HumlDeserializeException, not escape raw.\" The defect is also broader than cited — the parameterised path (ctor.Invoke(args), line 523 in InvokeConstructor) is equally unwrapped. High severity stands: the threat model names this exact behaviour as a mandatory requirement, it is trivially reachable from the public API for any target type whose ctor can throw, and callers relying on the documented exception types will fail to handle it.",
+            "confirmedSeverity": "high"
+          }
+        ]
+      },
+      {
+        "title": "TargetInvocationException (and ArgumentException from converter type mismatch) escapes from PropertyInfo.SetValue in both Deserialize and Populate paths",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 407,
+        "severity": "high",
+        "threat": "T6",
+        "description": "descriptor.Property.SetValue(instance, deserializedValue) at line 407 (Deserialize path) and line 161 (Populate path) has no exception wrapping. A property setter that validates attacker-controlled values and throws produces a raw TargetInvocationException out of Huml.Deserialize/Huml.Populate. Additionally, a property-level user converter (ResolvePropertyValue line 171) that returns an object of the wrong type causes SetValue to throw raw ArgumentException. Both are undeclared exception types reachable from untrusted document content combined with realistic application types.",
+        "evidence": "Probe: class SetterThrows { public string Name { set { if (value == \"evil\") throw new FormatException(\"bad name\"); } } }. Huml.Deserialize<SetterThrows>(\"Name: \\\"evil\\\"\") observed throwing System.Reflection.TargetInvocationException. Code path: DeserializeMappingEntries entry loop -> ResolvePropertyValue (succeeds, returns \"evil\") -> SetValue at line 407 invokes the throwing setter; no try/catch between there and the public entry point. Same unguarded SetValue at line 161 in PopulateMappingEntries.",
+        "suggestedFix": "Wrap both SetValue call sites in try/catch (TargetInvocationException) and catch (ArgumentException), rethrowing as HumlDeserializeException with key/line/column context and the original exception as InnerException.",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and live reproduction. SetValue at HumlDeserializer.cs:407 (Deserialize) and :161 (Populate) is unguarded; the only catch block (lines 825-846) is scoped inside CoerceScalar and does not cover setter invocation, and Huml.cs entry points add no wrapping. Probe `Huml.Deserialize<SetterThrows>(\"Name: \\\"evil\\\"\")` and the equivalent Populate call both threw raw System.Reflection.TargetInvocationException (inner FormatException), violating the declared contract at HumlDeserializer.cs:35 (`<exception cref=\"HumlDeserializeException\">On any mapping... failure`). The ArgumentException variant follows from ResolvePropertyValue (line 171-174) returning converter output with only a null check, no type check, before SetValue. Severity reduced high→medium: exploitation requires the application to define a throwing setter or wrong-typed converter; impact is an undeclared exception type bypassing catch(HumlDeserializeException) handlers (robustness/contract defect), not memory unsafety or resource exhaustion, and System.Text.Json similarly propagates setter exceptions raw.",
+            "confirmedSeverity": "medium"
+          },
+          {
+            "refuted": false,
+            "reason": "Reproduced exactly as claimed. A throwaway console app referencing src/Huml.Net (class SetterThrows with a setter throwing FormatException on value \"evil\") produced: Huml.Deserialize<SetterThrows>(\"Name: \\\"evil\\\"\") -> System.Reflection.TargetInvocationException (inner FormatException), and Huml.Populate on the same input -> System.Reflection.TargetInvocationException (inner FormatException). Decisive code: C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs line 426 `descriptor.Property.SetValue(instance, deserializedValue);` (Deserialize path — the finding cited line 407, which is actually the closing brace of the extension-data branch; correct line is 426, a trivial offset that does not affect the claim) and line 161 `descriptor.Property.SetValue(existing, deserializedValue);` (Populate path, exactly as cited). A grep of src/Huml.Net confirms no catch of TargetInvocationException exists anywhere; the only catches near deserialisation (HumlDeserializer.cs 844-860) wrap InvalidCastException/FormatException/OverflowException inside CoerceScalar, not around SetValue. The documented contract is violated: Huml.cs XML docs (lines 56-57, 103-106) declare only HumlParseException/HumlDeserializeException (plus ArgumentNull/ArgumentException for Populate's null/struct args). Severity high is justified by the project's own threat model: docs/internals/threat-model.md T6 (line 51) explicitly requires user-code exceptions during binding to \"surface as HumlDeserializeException, not escape raw\", the trigger (a validating setter plus attacker-controlled document content) is a realistic and trivially reachable combination, and callers catching only the declared exception types will let the undeclared exception propagate (worker crash / DoS class). The secondary ArgumentException-from-converter-type-mismatch claim follows directly from PropertyInfo.SetValue reflection semantics through the same unguarded line 426 after ResolvePropertyValue (line 171) returns the converter's object unchecked.",
+            "confirmedSeverity": "high"
+          }
+        ]
+      },
+      {
+        "title": "Silent integer truncation when coercing out-of-range integers to narrow-backed enums (Enum.ToObject wraps)",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 714,
+        "severity": "medium",
+        "threat": "T5",
+        "description": "CoerceScalar's enum-from-Integer path uses Enum.ToObject(underlying, Convert.ToInt64(...)). Enum.ToObject masks the 64-bit value down to the enum's underlying-type width instead of range-checking, so an out-of-range document value silently wraps to a different (possibly defined and privileged) enum member. This is the same class of silent data change as the documented T5 hex-wrap issue, and is inconsistent with the integral-type path directly below it (lines 776-787) which uses checked casts that throw OverflowException.",
+        "evidence": "Probe: enum ByteEnum : byte { Zero=0, One=1, Two=2 }; Huml.Deserialize<ByteEnumHolder>(\"V: 257\") observed returning ByteEnum.One (257 & 0xFF == 1) with no exception. A document value of 257 silently became member One — silent data corruption from untrusted input where the target is an enum-typed setting (e.g. a permission level).",
+        "suggestedFix": "Range-check before Enum.ToObject: convert via checked cast to the enum's Enum.GetUnderlyingType (reusing the existing checked-cast switch) and wrap OverflowException as HumlDeserializeException, matching the integral-scalar path semantics.",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by execution: HumlDeserializer.cs:714 calls Enum.ToObject(underlying, Convert.ToInt64(...)) with no range check; probe Huml.Deserialize&lt;Holder&gt;(\"V: 257\") into a byte-backed enum returned ByteEnum.One silently, while the same 257 into a plain byte property threw HumlDeserializeException via the checked-cast path (lines 776-787) and System.Text.Json threw JsonException for the identical enum case. The only documented contract (EnumSerializationTests.cs ENUM-DES-09) covers in-range undefined values (99 → (Status)99), not out-of-range truncation, so no guard or contract defence exists. Medium matches the repo's own T5 precedent in docs/internals/threat-model.md:46 for the analogous hex two's-complement wrap (\"silent data change\").",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Silent lossy coercions via Convert.ChangeType: float scalar rounds into integer targets; integer coerces to bool; bool coerces to string",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 792,
+        "severity": "medium",
+        "threat": "T5",
+        "description": "Three CoerceScalar fall-through paths silently alter data rather than rejecting kind mismatches: (1) ScalarKind.Float -> integer target at line 792 uses Convert.ChangeType, which applies banker's rounding (3.7 becomes 4, 2.5 becomes 2) instead of throwing; (2) ScalarKind.Integer -> bool target falls to the default arm at line 786 and Convert.ToBoolean maps any non-zero to true (5 becomes true); (3) ScalarKind.Bool -> string target at line 733 yields \"True\". System.Text.Json rejects all three. Fractional config values silently quantised and integers silently truth-coerced are silent data corruption from untrusted input.",
+        "evidence": "Probes confirmed: Huml.Deserialize<IntHolder>(\"N: 3.7\") returned N=4 (no exception); Huml.Deserialize<BoolHolder>(\"B: 5\") returned B=True; Huml.Deserialize<StrHolder>(\"S: true\") returned S=\"True\". All via the Convert.ChangeType fall-through arms in CoerceScalar (lines 733, 786, 792).",
+        "suggestedFix": "For Float->integral targets, reject when the value has a fractional part (or always reject kind mismatch, matching STJ); for Integer->bool and Bool->string, throw HumlDeserializeException for the kind mismatch instead of falling through to Convert.ChangeType.",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and independent runtime probe. CoerceScalar (src/Huml.Net/Serialization/HumlDeserializer.cs) line 792 routes ScalarKind.Float to Convert.ChangeType with no integral-target guard: \"N: 3.7\" deserialised into an int property yields 4, and \"N: 2.5\" yields 2 (banker's rounding), with no exception — the catch block at lines 829-846 only intercepts InvalidCast/Format/Overflow, none of which Convert.ToInt32(double) throws. Line 786 (default arm of the Integer switch) maps \"B: 5\" to bool true via Convert.ToBoolean, and line 733 maps \"S: true\" to string \"True\". No test or doc declares these coercions intentional; the only \"matches STJ\" comment (line 759-760) covers string->char/Guid, and System.Text.Json rejects all three cases. The Integer arm's deliberate checked casts (lines 779-785) show lossy conversion is treated as an error elsewhere, underscoring the Float arm as an oversight. Severity medium is fair: silent data alteration in deserialisation of well-formed input, but no security-boundary breach or DoS.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Deserialising a mapping into a scalar/primitive target silently returns default(T) instead of erroring",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 232,
+        "severity": "medium",
+        "threat": "T6",
+        "description": "DeserializeMappingEntries has no guard rejecting non-POCO targets. When the target is a primitive (int, double, bool, etc.), Activator.CreateInstance(typeof(int)) at line 319 succeeds returning 0, the entry loop matches no properties (lookup is empty), unknown keys are skipped under the default UnmappedMemberHandling, and 0 is returned as the 'deserialised' value. A structurally wrong document (mapping where a number was expected) produces a plausible default value with no error — silent data corruption. Reachable through Dictionary<string,int> values, int-typed properties bound to nested blocks, and root-level Deserialize<int>.",
+        "evidence": "Probes confirmed: Huml.Deserialize<Dictionary<string,int>>(\"k::\\n  a: 1\") returned {k: 0} with no exception; Huml.Deserialize<int>(\"a: 1\\nb: 2\") returned 0 with no exception. Code path: DeserializeNode -> node is HumlDocument -> DeserializeMappingEntries(typeof(int)) -> not a dict, no poly attr, no ctor selected -> Activator.CreateInstance(typeof(int)) = 0 -> empty property lookup -> all keys unmatched and skipped -> returns 0.",
+        "suggestedFix": "At the top of DeserializeMappingEntries, throw HumlDeserializeException when targetType is a primitive, enum, string, or other known-scalar type (reuse IsNumericType plus bool/string/char/DateTime family) — a mapping node can never legitimately deserialise into them.",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and live reproduction. DeserializeMappingEntries (src/Huml.Net/Serialization/HumlDeserializer.cs:232) has no non-POCO target guard: for typeof(int), GetSelectedConstructor returns null, Activator.CreateInstance(typeof(int)) at line 319 returns 0, the property lookup is empty, and all keys hit the unknown-key branch which the default UnmappedMemberHandling.Skip (HumlOptions.cs:220) silently discards. Live probes against the built library reproduced all three claimed vectors: Deserialize<Dictionary<string,int>>(\"k::\\n  a: 1\") -> {k: 0}; Deserialize<int>(\"a: 1\\nb: 2\") -> 0; POCO with int property bound to a nested block (\"n::\\n  x: 1\") -> N=0 — all without exception, contradicting the Deserialize<T> xmldoc promise of HumlDeserializeException when mapping fails and diverging from the System.Text.Json behaviour the API mirrors (STJ throws JsonException). Medium severity is appropriate for silent default-value substitution (data integrity, no direct security impact, mitigable via UnmappedMemberHandling.Disallow).",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Huml.Populate partial-mutation behaviour on mid-document failure is undocumented",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 110,
+        "severity": "medium",
+        "threat": "T6",
+        "description": "PopulateMappingEntries sets properties on the caller's live object as it iterates entries. If coercion of a later entry throws HumlDeserializeException, properties already processed remain mutated — the caller's object is left in a half-updated state. Parse errors are safe (parsing completes before mutation begins at line 100-101), but mapping/coercion errors are not. The threat model T6 explicitly requires this contract to be documented ('a parse error mid-populate must not leave the caller's object half-mutated without documentation of that contract'); the XML docs on Huml.Populate (Huml.cs lines 91-138) document only the overlay semantics, with no mention of partial mutation on failure.",
+        "evidence": "Probe: var target = new TwoProps { A = \"orig\", B = 0 }; Huml.Populate(\"A: \\\"changed\\\"\\nB: \\\"notanint\\\"\", target) threw HumlDeserializeException for key 'B', and afterwards target.A == \"changed\" — the first property was already overwritten when the second failed.",
+        "suggestedFix": "Either document on Huml.Populate<T> that the instance may be partially updated when HumlDeserializeException is thrown (cheapest, contract-compliant), or buffer (descriptor, value) pairs and apply them only after all entries coerce successfully (atomic semantics).",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed. HumlDeserializer.cs lines 158-161: PopulateMappingEntries coerces and SetValues per loop iteration with no staging/rollback, so a HumlDeserializeException on a later entry leaves earlier properties mutated. Reproduced the probe: Populate(\"A: \\\"changed\\\"\\nB: \\\"notanint\\\"\", target) threw HumlDeserializeException for key 'B' and target.A == \"changed\" afterwards. Parse errors are safe (parse completes at lines 100-101 before mutation), but coercion errors are not. Neither the XML docs on Huml.Populate (Huml.cs 91-138) nor docs/populate.md nor docs/error-handling.md document the partial-mutation-on-failure contract, which docs/internals/threat-model.md line 52 (T6 'Populate integrity') and line 12 ('integrity of the caller's object') explicitly require. Medium severity stands for a threat-model-mandated documentation contract gap on a public API.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "string-to-Guid (and other non-IConvertible targets) fail despite in-code comment claiming intentional pass-through support",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 759,
+        "severity": "medium",
+        "threat": "CORRECTNESS",
+        "description": "The comment at lines 759-760 states 'other IConvertible types (string→char, string→Guid, etc.) pass through unconditionally — this is intentional and matches STJ behaviour'. Guid is not IConvertible, so Convert.ChangeType(string, Guid) at line 768 throws InvalidCastException, which is wrapped into HumlDeserializeException — meaning Guid-typed properties can never be deserialised from a string scalar at all. STJ supports Guid natively. The exception contract holds (declared exception type), but this is a correctness/feature defect masked by an incorrect comment, affecting a very common property type (also Uri, Version, etc.).",
+        "evidence": "Probe: Huml.Deserialize<GuidHolder>(\"G: \\\"0f8fad5b-d9cb-469f-a165-70867728950e\\\"\") observed throwing HumlDeserializeException: \"[line 1, col 3] Key 'G': Cannot convert String to 'Guid': Invalid cast from 'System.String' to 'System.Guid'.\" — contradicting the comment at lines 759-760 that string→Guid passes through.",
+        "suggestedFix": "Add explicit branches in the ScalarKind.String case for Guid (Guid.Parse with invariant culture) and consider Uri/Version, mirroring the existing DateTime/TimeSpan handling; or correct the comment and document Guid as unsupported (the comment as written is false).",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed, not refuted. The comment at HumlDeserializer.cs:759-760 claims string→Guid 'pass[es] through unconditionally — this is intentional and matches STJ behaviour', but Guid is not IConvertible, so Convert.ChangeType at line 768 throws InvalidCastException, wrapped at line 829 into HumlDeserializeException. Reproduced live: Huml.Deserialize<GuidHolder>(\"G: \\\"0f8fad5b-d9cb-469f-a165-70867728950e\\\"\") throws '[line 1, col 3] Key G: Cannot convert String to Guid: Invalid cast from System.String to System.Guid' (Uri fails identically), while System.Text.Json deserialises the same Guid natively in the same run. Grep confirms no built-in Guid converter or other guard exists anywhere in src/Huml.Net, and no test covers Guid. Medium severity stands: very common type unusable by default in an STJ-parity API, masked by a wrong comment; mitigated by declared exception type and the custom HumlConverter workaround.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "InvalidOperationException escapes Huml.Deserialize for enums whose member names collide case-insensitively",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/EnumNameCache.cs",
+        "line": 99,
+        "severity": "medium",
+        "threat": "T6",
+        "description": "EnumNameCache.Build throws InvalidOperationException when two enum members produce case-insensitively colliding HUML names. enum E { ID = 1, Id = 2 } is legal C#, and naming policies (CamelCase etc.) can also collapse distinct names into a collision. The throw happens inside GetOrBuild, reached from TryParse during CoerceScalar's enum path — i.e. at Deserialize time, where the declared contract is HumlDeserializeException only. The catch block in CoerceScalar (lines 825-846) handles only InvalidCastException/FormatException/OverflowException, so InvalidOperationException escapes raw.",
+        "evidence": "Probe: enum Collide { ID = 1, Id = 2 }; Huml.Deserialize<CollideHolder>(\"C: \\\"ID\\\"\") observed throwing System.InvalidOperationException: \"Enum type 'Collide' has two members whose HUML names collide case-insensitively: 'Id'...\" — an undeclared exception type out of Huml.Deserialize. Path: CoerceScalar line 707 EnumNameCache.TryParse -> GetOrBuild -> Build line 99-102 throws.",
+        "suggestedFix": "Either declare/accept InvalidOperationException as the type-configuration-error contract (document it on Huml.Deserialize, matching STJ's convention), or wrap it into HumlDeserializeException at the CoerceScalar enum call site.",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed. EnumNameCache.cs lines 99-102 throw raw InvalidOperationException during Build; reached at deserialize time via HumlDeserializer.cs line 706 (EnumNameCache.TryParse in CoerceScalar's enum path). The catch block at lines 825-846 handles only HumlDeserializeException/InvalidCastException/FormatException/OverflowException, and no outer catch exists in HumlDeserializer entry points or the Huml.cs facade, whose XML docs (Huml.cs lines 56-57, 72-73) declare HumlParseException and HumlDeserializeException only. Empirically reproduced in an untracked temp project: enum Collide { ID = 1, Id = 2 } with Huml.Deserialize<CollideHolder>(\"C: \\\"ID\\\"\") threw System.InvalidOperationException ('Enum type Collide has two members whose HUML names collide case-insensitively...'). Aggravating: \"ID\" is an exact ordinal match (EnumNameCache.cs line 61) yet still fails because the CI dictionary build throws before any lookup. Severity medium stands: undeclared exception type escapes the documented public API, defeating consumer catch blocks, though only triggerable by the consumer's own type design (deterministic programmer error), not untrusted input alone.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "TargetInvocationException escapes from PropertyDescriptor.BuildDescriptors when a property type is a struct with a throwing C# 10 parameterless constructor",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/PropertyDescriptor.cs",
+        "line": 180,
+        "severity": "low",
+        "threat": "T6",
+        "description": "BuildDescriptors eagerly computes DefaultValue via Activator.CreateInstance(prop.PropertyType) for every value-type property. C# 10 structs may declare an explicit parameterless constructor that throws; Activator then raises TargetInvocationException during descriptor construction, escaping any Huml.Deserialize/Serialize/Populate call that touches the containing type — even when the document never references that property. Undeclared exception type; app-type-shaped trigger, so low severity.",
+        "evidence": "Probe: struct ThrowingStruct { public ThrowingStruct() { throw new Exception(\"struct ctor\"); } public int Q { get; set; } } in class StructHolder { public ThrowingStruct X { get; set; } public int Y { get; set; } }. Huml.Deserialize<StructHolder>(\"y: 1\") (document does not mention X) observed throwing System.Reflection.TargetInvocationException from descriptor build at PropertyDescriptor.cs lines 180-183.",
+        "suggestedFix": "Guard with try/catch around Activator.CreateInstance and fall back to FormatterServices.GetUninitializedObject / RuntimeHelpers.GetUninitializedObject for the default-value computation (a zeroed struct is the correct 'default' regardless of ctor behaviour).",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by direct reproduction. PropertyDescriptor.cs lines 180-183 call Activator.CreateInstance(prop.PropertyType) for every non-nullable value-type property with no exception handling, and BuildDescriptors runs for the whole containing type before any document-key filtering. Probe (net10.0 console referencing src/Huml.Net/Huml.Net.csproj): Huml.Deserialize<StructHolder>(\"y: 1\") — where StructHolder has a ThrowingStruct X property whose C# 10 parameterless ctor throws and the document never mentions X — threw System.Reflection.TargetInvocationException (inner \"struct ctor\") with top frame 'PropertyDescriptor.BuildDescriptors ... PropertyDescriptor.cs:line 180', escaping the public Huml.Deserialize facade. No catch of TargetInvocationException exists anywhere in src/. Severity 'low' is accurate: trigger is an app-defined pathological type shape, not document input; impact is an undeclared exception type rather than incorrect data.",
+            "confirmedSeverity": "low"
+          }
+        ]
+      },
+      {
+        "title": "Misregistered [HumlDerivedType] (derived type not assignable to base) produces raw InvalidCastException from Deserialize<T>",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 278,
+        "severity": "low",
+        "threat": "T6",
+        "description": "Neither HumlDerivedTypeAttribute nor the polymorphic re-dispatch at line 278 validates that the registered DerivedType is assignable to the base targetType. The materialised unrelated object then fails the (T) cast at the Deserialize<T> entry point (line 42/56), surfacing as raw InvalidCastException — an undeclared exception type. Requires application misregistration (allow-list is caller-owned), so low severity; the positive part of the audit lead holds: an unregistered discriminator value can NOT reach Activator.CreateInstance (line 283 throws HumlDeserializeException, verified).",
+        "evidence": "Probe: [HumlPolymorphic(\"t\")][HumlDerivedType(typeof(Unrelated), \"x\")] class BadBase with class Unrelated not deriving from BadBase. Huml.Deserialize<BadBase>(\"t: \\\"x\\\"\\nz: 1\") observed throwing System.InvalidCastException: \"Unable to cast object of type 'Unrelated' to type 'BadBase'.\" Path: DeserializeMappingEntries line 278 re-dispatch builds an Unrelated instance -> returned to Deserialize<T> line 42 -> (T) cast fails.",
+        "suggestedFix": "In the registration scan (or cached in PolymorphicMetadataCache.GetDerivedTypeRegistrations), validate targetType.IsAssignableFrom(reg.DerivedType) and throw HumlDeserializeException/InvalidOperationException with a clear misregistration message before instantiation.",
+        "slice": "deserializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by direct reproduction. HumlDeserializer.cs line 279 takes reg.DerivedType with no assignability check (HumlDerivedTypeAttribute ctor only null-checks; the sole IsAssignableFrom in the library is an unrelated Delegate check in HumlSerializer.cs:936), and the re-dispatch at line 292 materialises the unrelated type, which fails the (T) cast at HumlDeserializer.cs line 42/56. A temporary xUnit probe with [HumlPolymorphic(\"t\")][HumlDerivedType(typeof(Unrelated), \"x\")] class BadBase and input \"t: \\\"x\\\"\\nz: 1\" threw System.InvalidCastException, while Huml.cs lines 56-57/72-73 document only HumlParseException/HumlDeserializeException — an undeclared exception type. The positive sub-claim also verified: unregistered discriminator (\"t: \\\"nope\\\"\") throws HumlDeserializeException at line 297-298. Low severity is correct: requires application misregistration of its own caller-owned attribute allow-list; impact is wrong exception type only.",
+            "confirmedSeverity": "low"
+          }
+        ]
+      },
+      {
+        "title": "Cyclic POCO object graph (no converter) causes StackOverflowException — process crash",
+        "file": "src/Huml.Net/Serialization/HumlSerializer.cs",
+        "line": 371,
+        "severity": "critical",
+        "threat": "T7",
+        "description": "There is NO depth guard or cycle detection on the plain POCO serialisation path. SerializeMappingBody -> EmitEntry -> SerializeMappingBody recurse without bound. The [ThreadStatic] re-entry guard only covers converter-handled types (_activeConverterTypes); a self-referencing POCO with no converter recurses until the stack is exhausted. StackOverflowException is uncatchable in .NET, so this terminates the host process, directly violating the security promise ('never crash the process'). The threat model (T1 review focus) explicitly flagged 'plain cyclic POCOs without converters?' as the gap to prove.",
+        "evidence": "Probe: class Node { string Name; Node? Next; } with n.Next = n; Huml.Serialize(n) terminates the process with exit code 255 and prints 'Stack overflow.' The captured stack trace shows the unbounded cycle: PolymorphicMetadataCache.GetPolymorphicAttribute <- HumlSerializer.SerializeMappingBody <- HumlSerializer.EmitEntry <- HumlSerializer.SerializeMappingBody (repeating). Neither SerializeMappingBody (line 371), EmitEntry (486), EmitSequenceItems (821), nor SerializeDictionaryBody (879) increments/checks any depth counter against options.MaxRecursionDepth.",
+        "suggestedFix": "Thread a depth counter through SerializeValueInternal/SerializeMappingBody/EmitEntry/EmitSequenceItems/SerializeDictionaryBody and throw HumlSerializeException when it exceeds options.MaxRecursionDepth, mirroring the parser's guard. (The 'depth' parameter already exists but is used only for indentation, not bounded.) Optionally add reference-identity cycle tracking for a clearer error.",
+        "slice": "serializer",
+        "verdicts": [
+          null
+        ]
+      },
+      {
+        "title": "Property getter that throws leaks TargetInvocationException out of Huml.Serialize",
+        "file": "src/Huml.Net/Serialization/HumlSerializer.cs",
+        "line": 426,
+        "severity": "high",
+        "threat": "T7",
+        "description": "SerializeMappingBody reads property values via desc.Property.GetValue(obj) (reflection) with no try/catch. When a getter throws, PropertyInfo.GetValue wraps the user exception in System.Reflection.TargetInvocationException, which propagates unmodified out of the public Huml.Serialize entry point. The documented exception contract (Huml.cs: '<exception cref=\"HumlSerializeException\">') and the security promise ('never throw undeclared exception types') are both violated. The same unguarded GetValue is used for extension-data (line 463) and the resolver Get delegate (line 411).",
+        "evidence": "Probe: class ThrowingGetter { string Bad => throw new InvalidOperationException(\"getter boom\"); } Huml.Serialize(new ThrowingGetter()) throws 'System.Reflection.TargetInvocationException' (inner: System.InvalidOperationException) — not HumlSerializeException.",
+        "suggestedFix": "Wrap the GetValue call (and the resolver Get invocation) so any thrown exception is rethrown as HumlSerializeException with the property/type name, unwrapping TargetInvocationException.InnerException for the message.",
+        "slice": "serializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Defect confirmed real and reachable. src/Huml.Net/Serialization/HumlSerializer.cs:426 calls desc.Property.GetValue(obj) and a grep shows ZERO catch blocks in the entire file (the only try is a try/finally for StringBuilder pooling at Serialize lines 60-83/112-135); Huml.cs:33-34 and 44-45 are bare passthroughs with no wrapping. Empirical probe (temp console app referencing the csproj, class with `public string Bad => throw new InvalidOperationException(...)`) output: 'THREW: System.Reflection.TargetInvocationException | inner: System.InvalidOperationException' — exactly as the finding claims, violating the documented '<exception cref=\"HumlSerializeException\">' contract on Huml.Serialize (Huml.cs:30). The same unguarded GetValue exists at line 463 (extension data) and propInfo.Get at line 411. However, severity 'high' is inflated by one level: the threat model's security promise (docs/internals/threat-model.md:16) explicitly scopes 'never throw undeclared exception types' to the PARSE/DESERIALISE entry points over input strings — not Serialize, whose object graph is caller-owned (T7, line 57, lists 'properties whose getters throw' as a review focus under a caller-owns-the-graph trust posture). No attacker-controlled path reaches a throwing getter; impact is an exception-contract/DX defect (wrapped exception type breaks callers' catch(HumlSerializeException) handlers), not a security boundary breach. Confirmed at medium (one-level reduction, which per the rubric does not refute the finding).",
+            "confirmedSeverity": "medium"
+          },
+          null
+        ]
+      },
+      {
+        "title": "Dictionary keys formatted with current-culture ToString() — non-invariant, locale-dependent output",
+        "file": "src/Huml.Net/Serialization/HumlSerializer.cs",
+        "line": 892,
+        "severity": "high",
+        "threat": "T7",
+        "description": "SerializeDictionaryBody computes the key with `entry.Key?.ToString()` (line 892) and EmitInlineDictionary does the same (line 648). For non-string dictionary keys (double, decimal, DateTime, DateOnly, etc.) this uses Thread.CurrentCulture, not CultureInfo.InvariantCulture. The threat model T7 requires 'all ToString/Parse paths pass CultureInfo.InvariantCulture'. This produces non-deterministic output that varies by machine locale and can emit a comma decimal separator or a date that the HUML parser cannot read back, i.e. silent data corruption across locales.",
+        "evidence": "Probe under CultureInfo('de-DE'): Huml.Serialize(new Dictionary<double,string>{{1.5,\"x\"}}) emits the key as \"1,5\" (comma); Huml.Serialize(new Dictionary<DateTime,string>{{<2026-06-11 13:30>,\"y\"}}) emits \"11.06.2026 13:30:00\" instead of an ISO-8601 invariant form. Under en-US the same double key would be \"1.5\" — output is locale-dependent.",
+        "suggestedFix": "Format dictionary keys via an invariant path: if entry.Key is IFormattable, call ((IFormattable)key).ToString(null, CultureInfo.InvariantCulture); otherwise key.ToString(). Apply at both line 892 and line 648.",
+        "slice": "serializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Defect confirmed: HumlSerializer.cs line 892 (SerializeDictionaryBody) and line 648 (EmitInlineDictionary) use entry.Key?.ToString() with Thread.CurrentCulture, while all value paths in the same file use CultureInfo.InvariantCulture. Live repro under de-DE: Dictionary<double,string>{{1.5,\"x\"}} emits key \"1,5\" (invariant emits \"1.5\"); DateTime key emits \"11.06.2026 13:30:00\". This violates threat-model T7 (docs/internals/threat-model.md line 57: all ToString/Parse paths must pass InvariantCulture). However, two impact claims are overstated, capping severity at medium: (1) AppendKey (line 992) quotes the keys, so the de-DE output is valid HUML and Huml.Parse reads it back successfully — the \"parser cannot read back\" claim is false; (2) the deserializer supports only string-keyed dictionaries (HumlDeserializer.cs IsStringKeyedDictionary, lines 954-962) and Deserialize<Dictionary<double,string>> throws HumlDeserializeException loudly, so no silent in-library round-trip corruption is possible. The defect is real but write-only, limited to the exotic non-string-keyed dictionary path the library cannot itself read back, and produces valid (merely locale-nondeterministic) output — medium, not high.",
+            "confirmedSeverity": "medium"
+          },
+          null
+        ]
+      },
+      {
+        "title": "Empty POCO as a mapping-property value emits dangling 'key::' that fails to re-parse",
+        "file": "src/Huml.Net/Serialization/HumlSerializer.cs",
+        "line": 602,
+        "severity": "high",
+        "threat": "T7",
+        "description": "EmitEntry's POCO branch unconditionally appends 'key::\\n' then calls SerializeMappingBody (lines 602-605). When the value's type has no serialisable properties — an empty POCO, or a POCO all of whose properties are omitted via DefaultIgnoreCondition/[HumlIgnoreDefaults]/[HumlIgnore] — SerializeMappingBody emits nothing, leaving a bare 'key::' with no body. The HUML parser rejects this as 'Ambiguous empty vector after :: . Use [] or {}'. The sequence path was given an empty-body fallback (lines 859-865) but the mapping-property path has no equivalent guard, so Huml.Serialize silently produces output that Huml.Parse/Deserialize cannot consume — a round-trip data-corruption bug.",
+        "evidence": "Probe: class EmptyPropHolder { string Tag=\"t\"; EmptyPoco Child = new(); } where EmptyPoco {} has no properties. Huml.Serialize yields '%HUML v0.2.0\\nTag: \"t\"\\nChild::\\n'; re-parsing that string throws HumlParseException: '[4:0] Ambiguous empty vector after :: . Use [] or {}'. Same failure reproduces for a non-empty POCO whose properties are all suppressed via DefaultIgnoreCondition=WhenWritingDefault.",
+        "suggestedFix": "In EmitEntry's POCO branch, buffer the body (record sb.Length before SerializeMappingBody) and if nothing was emitted, replace 'key::\\n' with 'key:: {}\\n', mirroring the EmitSequenceItems empty-body fallback at lines 859-865.",
+        "slice": "serializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and live repro. HumlSerializer.cs:602-605 unconditionally emits 'key::\\n' then SerializeMappingBody, which emits zero bytes for a property-less POCO or when DefaultIgnoreCondition/[HumlIgnoreDefaults]/OmitIfDefault suppress every property (lines 430-453 run at every depth). The sequence path guards this exact hazard (lines 859-865: if (sb.Length == bodyStart) rewind and emit ':: {}'), but the mapping-property path has no equivalent. Runtime repro: Huml.Serialize(new EmptyPropHolder()) yields '%HUML v0.2.0\\nTag: \"t\"\\nChild::\\n' and both Huml.Parse and Huml.Deserialize throw HumlParseException '[4:0] Ambiguous empty vector after '::'. Use [] or {}.' (thrown at HumlParser.cs:590-593, which is spec-correct — the serializer is at fault). High severity stands: silent write-time output that cannot be re-parsed, reachable via the mainstream WhenWritingDefault option with a nested all-default POCO.",
+            "confirmedSeverity": "high"
+          },
+          null
+        ]
+      },
+      {
+        "title": "Polymorphic discriminator not emitted for derived types in nested/collection position — silent type loss",
+        "file": "src/Huml.Net/Serialization/HumlSerializer.cs",
+        "line": 605,
+        "severity": "high",
+        "threat": "T6",
+        "description": "The discriminator-emit logic in SerializeMappingBody (lines 384-403) only fires when a declaredType is supplied AND it differs from the runtime type. For nested POCO properties EmitEntry calls SerializeMappingBody(value!, depth+1, options) at line 605 with NO declaredType, so targetType becomes the runtime (derived) type, PolymorphicMetadataCache.GetPolymorphicAttribute(derivedType) returns null (the [HumlPolymorphic] attribute lives on the base, inherit:false), and no '_type' key is written. The same loss occurs for list/array items via EmitSequenceItems. The derived type's identity is silently dropped on round-trip.",
+        "evidence": "Probe: [HumlPolymorphic][HumlDerivedType(typeof(Derived),\"derived\")] class Base{int X;} Derived:Base{int Y;}; class Holder{ Base Shape = new Derived{X=1,Y=2}; }. Huml.Serialize(new Holder()) emits 'Shape::\\n  X: 1\\n  Y: 2' with NO _type. Huml.Deserialize<Holder> returns Shape of runtime type 'Base' (was Derived); Y is dropped as an unmapped member. Top-level List<Base>{ new Derived{...} } likewise emits items with no _type.",
+        "suggestedFix": "Propagate the declared/static member type into EmitEntry and EmitSequenceItems (it is available from the PropertyDescriptor.Property.PropertyType / the collection element type) and pass it as declaredType into SerializeMappingBody so the discriminator-emit branch fires for nested and collection elements.",
+        "slice": "serializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and live reproduction. HumlSerializer.cs line 605 calls SerializeMappingBody(sb, value!, depth + 1, options) with no declaredType, so line 377 sets targetType to the runtime derived type; PolymorphicMetadataCache.GetPolymorphicAttribute (inherit: false, PolymorphicMetadataCache.cs line 20) returns null for the derived type and no '_type' is emitted — and even with inheritance the runtimeType != targetType guard at line 388 would skip it. Same gap at line 857 for sequence items. Probe run against the real library: Holder{Base Shape = new Derived{X=1,Y=2}} serialized as 'Shape::\\n  X: 1\\n  Y: 2' with no _type; Huml.Deserialize<Holder> returned Shape of runtime type Base with Y silently dropped (deserializer falls through at HumlDeserializer.cs lines 305-306 when the discriminator is absent). List<Base> items behave identically; top-level control correctly emits \"_type\": \"derived\". The CHANGELOG contract ('when the declared type carries [HumlPolymorphic]... the discriminator key is emitted') has no top-level-only caveat, so this violates the documented contract; the deserializer dispatches at any depth, confirming the asymmetry. Severity high stands: silent round-trip data loss in the most common usage pattern of a shipped feature.",
+            "confirmedSeverity": "high"
+          },
+          null
+        ]
+      },
+      {
+        "title": "Unregistered runtime derived type serialises silently with no discriminator and no error (data loss)",
+        "file": "src/Huml.Net/Serialization/HumlSerializer.cs",
+        "line": 390,
+        "severity": "medium",
+        "threat": "T6",
+        "description": "When the declared type is a [HumlPolymorphic] base and the runtime type is a derived type that has no [HumlDerivedType] registration, SerializeMappingBody (lines 384-403) iterates the registrations, finds no match, and falls through without emitting any discriminator and without throwing. The runtime type's properties are then emitted (descriptorType = obj.GetType()). On deserialise, the absence of a discriminator yields the base type, silently dropping the derived-only properties. System.Text.Json throws NotSupportedException for an unregistered runtime type in this position; here the failure is silent.",
+        "evidence": "Probe: class Unregistered:Base{int Z;} (no [HumlDerivedType] for Unregistered). Huml.Serialize<Base>(new Unregistered{X=1,Z=9}) emits '%HUML v0.2.0\\nX: 1\\nZ: 9' — contains _type? False. Round-tripping as Base drops Z with no error raised at serialise time.",
+        "suggestedFix": "After the registration loop, if polyAttr != null and runtimeType != targetType and no registration matched, throw HumlSerializeException naming the unregistered runtime type (matching STJ's fail-fast behaviour).",
+        "slice": "serializer",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and live reproduction. In src/Huml.Net/Serialization/HumlSerializer.cs lines 390-401 the registration loop has no else/throw on fallthrough, and line 420 ('var descriptorType = (polyAttr != null && obj.GetType() != targetType) ? obj.GetType() : targetType;') emits the unregistered runtime type's properties with no discriminator. HumlUnknownDerivedTypeHandling (default Throw) is only consulted in HumlDeserializer.cs line 299, never during serialisation. Probe (temp project, since deleted): Huml.Serialize<Base>(new Unregistered{X=1,Z=9}) produced '%HUML v0.2.0\\nX: 1\\nZ: 9' with no _type, and Huml.Deserialize<Base> returned runtime type Base with Z silently lost under the default UnmappedMemberHandling.Skip. This violates the round-trip integrity requirement in docs/internals/threat-model.md (T5/T6: Deserialize(Serialize(x)) == x) and the HumlPolymorphicAttribute doc contract that the discriminator is emitted during serialisation; no test or documented acceptance covers the fallthrough. Medium severity stands: silent data loss, no security escalation, requires a registration omission by the user.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Generator crashes (ArgumentException/CS8785) when two context classes share a simple name — duplicate AddSource hint name",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 146,
+        "severity": "high",
+        "threat": "T8",
+        "description": "EmitSource uses only the context class's simple name for the hint name: AddSource($\"{model.ClassName}.Huml.g.cs\"). Two HumlGeneratedContext subclasses with the same name in different namespaces (or a single partial context with [HumlSerializable] attributes split across two partial declarations, which makes ForAttributeWithMetadataName invoke the transform once per declaration) produce the same hint name. Roslyn throws ArgumentException, the whole generator aborts with warning CS8785, and ALL generated output (including for unrelated contexts) is lost, cascading into CS0534 errors on every context class. This is the exact T8 violation the threat model names: a generator exception degrading the user's build instead of a diagnostic.",
+        "evidence": "Probe (net10.0, SDK 10.0.109): namespace Probe.A { [HumlSerializable(typeof(Dto1))] public partial class Ctx : HumlGeneratedContext {} } namespace Probe.B { [HumlSerializable(typeof(Dto2))] public partial class Ctx : HumlGeneratedContext {} } → build output: \"warning CS8785: Generator 'HumlSerializationGenerator' failed to generate source... Exception was of type 'ArgumentException' with message 'The hintName 'Ctx.Huml.g.cs' of the added source file must be unique within a generator.'\" followed by CS0534 on both Ctx classes.",
+        "suggestedFix": "Build the hint name from the fully qualified metadata name (namespace + containing types + name, sanitised for path characters), e.g. $\"{ns.Replace('.', '_')}_{model.ClassName}.Huml.g.cs\". Additionally, for partial declarations, either Collect() the models and merge by symbol identity before RegisterSourceOutput, or use the symbol's full name as the dedup key.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code inspection and live reproduction. Line 146 of src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs is spc.AddSource($\"{model.ClassName}.Huml.g.cs\", ...) — only the simple name is used even though ContextModel.Namespace is available (line 95-98), and no dedup guard exists. A probe project (net10.0, SDK 10.0.109) with Probe.A.Ctx and Probe.B.Ctx both extending HumlGeneratedContext reproduced the exact claimed output: warning CS8785 with ArgumentException \"The hintName 'Ctx.Huml.g.cs' of the added source file must be unique within a generator\" plus CS0534 on both classes. The cascade claim was additionally verified: a third, uniquely-named context (Probe.C.UnrelatedCtx) also failed with CS0534 because the entire generator stops contributing after the exception. The failure is deterministic, build-breaking, triggered by a legitimate consumer pattern, surfaces as misleading CS0534 errors rather than an actionable diagnostic, and is exactly the T8 threat (generator exception degrading the build). Severity high stands.",
+            "confirmedSeverity": "high"
+          },
+          {
+            "refuted": false,
+            "reason": "Confirmed by live reproduction. Line 146 of src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs is spc.AddSource($\"{model.ClassName}.Huml.g.cs\", ...) using only contextSymbol.Name (captured at line 98); the namespace is stored in the model but never included in the hint name, and no uniqueness guard exists. A probe project with Probe.A.Ctx and Probe.B.Ctx (both HumlGeneratedContext subclasses with [HumlSerializable]) built against the generator as an analyzer reproduced the exact failure: CS8785 with ArgumentException \"The hintName 'Ctx.Huml.g.cs' of the added source file must be unique within a generator\", followed by CS0534 on BOTH Ctx classes — the entire generator aborts and all generated output is lost, not just the colliding file. Severity high stands: deterministic build break from plausible user code, cryptic failure mode with no diagnostic, total blast radius across all contexts, and a direct violation of the threat model's T8 (generator exception degrading the build instead of emitting a diagnostic).",
+            "confirmedSeverity": "high"
+          }
+        ]
+      },
+      {
+        "title": "init-only properties produce CS8852 in generated code — registering any record/init POCO breaks the user's build",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 166,
+        "severity": "high",
+        "threat": "T8",
+        "description": "Line 74-75 deliberately treats init-only setters as settable (canSet = ... || prop.SetMethod?.IsInitOnly == true), and line 166 then emits 'Set = static (o, v) => ((T)o).Prop = (PT)v!'. C# forbids assigning an init-only property outside an object initializer/constructor, so the generated file fails with CS8852. Records and init-only DTOs are the dominant modern POCO shape (and the reflection path explicitly supports them per Phase 23), so registering almost any contemporary type breaks the consumer's build. The same emission also fires for non-public init accessors (e.g. 'private init'), adding an accessibility error.",
+        "evidence": "Probe: public sealed class InitDto { public string Name { get; init; } = \"\"; } [HumlSerializable(typeof(InitDto))] partial class Ctx1 : HumlGeneratedContext {} → Ctx1.Huml.g.cs(26,145): error CS8852: Init-only property or indexer 'InitDto.Name' can only be assigned in an object initializer, or on 'this' or 'base' in an instance constructor or an 'init' accessor.",
+        "suggestedFix": "For init-only properties either (a) omit the Set delegate and let HumlPropertyInfo.Set stay null (deserialiser already skips null setters), falling back to the reflection setter, or (b) emit a UnsafeAccessor-based setter on net8.0+, or (c) emit a reflection-based Set delegate. Also require SetMethod.DeclaredAccessibility == Public before emitting any setter.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by direct reproduction. HumlSerializationGenerator.cs lines 74-75 set canSet true for init-only setters (prop.SetMethod?.IsInitOnly == true) and line 166 unconditionally emits 'Set = static (o, v) => ((T)o).Prop = (PT)v!' with no init-only guard. A probe project registering the finding's exact InitDto via [HumlSerializable] fails to build with 'Ctx1.Huml.g.cs(26,145): error CS8852: Init-only property or indexer InitDto.Name can only be assigned in an object initializer...' — identical to the cited evidence including line/column. Existing tests miss it because all registered SG test types (SGDto/SGShape/SGCircle) use get;set; only. Line 75 also ignores accessor accessibility, confirming the private-init secondary claim. High severity stands: any record or init-only POCO breaks the consumer's build, contradicting the Phase 23 contract that init-only is supported; not critical since the generator is opt-in and reflection still works.",
+            "confirmedSeverity": "high"
+          },
+          {
+            "refuted": false,
+            "reason": "Confirmed by reproduction. HumlSerializationGenerator.cs lines 74-75 mark init-only setters as settable (`|| prop.SetMethod?.IsInitOnly == true`) and line 166 emits a plain assignment lambda `Set = static (o, v) => ((T)o).Prop = (PT)v!` with no init-only guard. Building the exact probe (InitDto with `{ get; init; }` registered via [HumlSerializable] on a HumlGeneratedContext subclass) in a fresh project referencing the generator produced `Ctx1.Huml.g.cs(26,145): error CS8852: Init-only property or indexer 'InitDto.Name' can only be assigned in an object initializer...` and Build FAILED — matching the finding's evidence verbatim. No existing test contradicts it: every SG-registered test type (SGDto, SGShape, SGCircle) uses get;set; only. Severity high stands: deterministic consumer build break on the dominant modern POCO shape, diverging from the Phase 23 documented contract that init-only properties are supported.",
+            "confirmedSeverity": "high"
+          }
+        ]
+      },
+      {
+        "title": "CreateObject emits 'new T()' unconditionally — parameterised-ctor types (CS7036), C# required members (CS9035) and abstract types break the build",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 174,
+        "severity": "high",
+        "threat": "T8",
+        "description": "EmitTypeInfoClass always emits 'public override Func<T>? CreateObject => static () => new T();' without checking that T has an accessible parameterless constructor, has no 'required' members, and is not abstract. Registering a type with only a parameterised constructor (a shape the reflection deserialiser explicitly supports via [HumlConstructor]/D-02 constructor binding), or any type using the C# 'required' modifier, fails the consumer's build inside generated code. TransformContext (lines 43-91) collects no constructor or required-member information, so the emitter cannot make the decision.",
+        "evidence": "Probe 1: public sealed class CtorDto { public CtorDto(int x) {...} public int X {get;set;} } → Ctx2.Huml.g.cs(31,102): error CS7036: There is no argument given that corresponds to the required parameter 'x' of 'CtorDto.CtorDto(int)'. Probe 2: public sealed class RequiredDto { public required string Name { get; set; } } → Ctx6.Huml.g.cs(31,106): error CS9035: Required member 'RequiredDto.Name' must be set in the object initializer or attribute constructor.",
+        "suggestedFix": "In TransformContext capture HasAccessibleParameterlessCtor (typeSymbol.InstanceConstructors any public, zero params), IsAbstract, and whether any member IsRequired. Emit 'CreateObject => null' (reflection/ctor-binding fallback) unless a usable parameterless ctor exists and there are no required members; for required members emit 'new T() { Required1 = default!, ... }' is NOT semantically safe — prefer null fallback. For abstract types emit null.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed. HumlSerializationGenerator.cs:174 emits 'CreateObject => static () => new {T}()' unconditionally, and TransformContext (lines 43-91) collects no constructor/required/abstract metadata, so no guard exists. Live out-of-tree probe (generator referenced as Analyzer, same wiring as Huml.Net.Tests.csproj) reproduced both claimed errors in the consumer build: Ctx2.Huml.g.cs(31,104) CS7036 for a parameterised-ctor DTO and Ctx6.Huml.g.cs(31,108) CS9035 for a 'required' member DTO. The affected shapes are first-class supported by the reflection path (docs/constructor-binding.md [HumlConstructor]; docs/required-properties.md C# required), and HumlTypeInfo.cs:43 documents 'CreateObject => null' as the fall-back the generator should have emitted instead. No documented limitation excludes these types from source-gen. Severity high stands: the failure lands in generated code the consumer cannot edit, blocks idiomatic types (positional records, required members, abstract polymorphic bases) from the feature entirely, and matches threat-model T8 (generator output degrading the user's build).",
+            "confirmedSeverity": "high"
+          },
+          {
+            "refuted": false,
+            "reason": "Confirmed by direct reproduction. HumlSerializationGenerator.cs line 174 emits 'CreateObject => static () => new {FQN}()' unconditionally, and TransformContext (lines 36-100) collects no constructor/required-member/abstractness data to gate it. A scratch consumer project registering types via the public [HumlSerializable(typeof(T))] pattern reproduced the exact cited errors: Ctx2.Huml.g.cs(31,102) CS7036 for a parameterised-ctor type, Ctx6.Huml.g.cs(31,106) CS9035 for a 'required' member, plus CS0144 for an abstract type. No documented limitation exists, and the reflection path explicitly supports these shapes (docs/constructor-binding.md, docs/required-properties.md), so source-gen breaks the consumer build for supported types — matching threat model T8 ('degrades the user's build').",
+            "confirmedSeverity": "high"
+          }
+        ]
+      },
+      {
+        "title": "Registering a struct produces CS0445 ('Cannot modify the result of an unboxing conversion') in the generated Set delegate",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 166,
+        "severity": "medium",
+        "threat": "T8",
+        "description": "The generated setter '((T)o).Prop = (PT)v!' is illegal when T is a value type: the unboxing conversion yields a temporary, which cannot be the assignment target. Nothing prevents [HumlSerializable(typeof(SomeStruct))] — the attribute takes any Type — so registering a struct breaks the build. Even if it compiled (e.g. via Unsafe.Unbox), mutating the boxed copy would be required for correct semantics; the current shape would otherwise silently mutate a copy.",
+        "evidence": "Probe: public struct StructDto { public int X { get; set; } } [HumlSerializable(typeof(StructDto))] partial class Ctx3 : HumlGeneratedContext {} → Ctx3.Huml.g.cs(26,138): error CS0445: Cannot modify the result of an unboxing conversion.",
+        "suggestedFix": "Capture typeSymbol.IsValueType in TypeModel. For structs emit 'Set = static (o, v) => System.Runtime.CompilerServices.Unsafe.Unbox<T>(o).Prop = (PT)v!' (mutates the box in place, matching the reflection path), or emit no Set and fall back, or report a diagnostic that struct registration is unsupported.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed. HumlSerializationGenerator.cs line 166 emits `Set = static (o, v) => ((T)o).Prop = (PT)v!` where Set is Action<object, object?> (HumlPropertyInfo.cs line 20); for a value type the cast is an unboxing conversion and assignment to it is illegal. No guard exists: TransformContext (line 46) accepts any INamedTypeSymbol — structs included — and no TypeKind/IsValueType check appears anywhere in the generator. Empirically reproduced in a scratch project with the finding's exact probe: build fails with 'Ctx3.Huml.g.cs(26,140): error CS0445: Cannot modify the result of an unboxing conversion'. Severity medium is correct: build-breaking for struct registration with a confusing error in generated code, but fails loudly at compile time with no runtime corruption or security impact.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Keyword identifiers (e.g. property '@class') are emitted without @-escaping — generated file fails to parse",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 164,
+        "severity": "medium",
+        "threat": "T8",
+        "description": "prop.Name (lines 161, 164, 166), type.Name (lines 125-126, 134, 152), model.ClassName (lines 117, 120) and the namespace string (line 113, from ToDisplayString at generator line 96) are interpolated into generated source verbatim. A property legally declared as 'public int @class { get; set; }' has symbol name 'class', so the emitter produces '((T)o).class' — a parse error that cascades into a wall of CS0102/CS0115/CS0116 errors inside the generated file. The same applies to a registered type, context class, or namespace named with a verbatim keyword identifier. SymbolDisplayFormat.FullyQualifiedFormat already escapes keywords, but the raw .Name accesses do not.",
+        "evidence": "Probe: public sealed class KeywordDto { public int @class { get; set; } } [HumlSerializable(typeof(KeywordDto))] partial class Ctx4 ... → Ctx4.Huml.g.cs(26,183): error CS0102: The type 'Ctx4.KeywordDtoHumlTypeInfo' already contains a definition for ''; Ctx4.Huml.g.cs(29,123): error CS0116: A namespace cannot directly contain members such as fields, methods or statements; plus CS0115 cascade — all inside the generated file.",
+        "suggestedFix": "Run every identifier through an escaper (prefix '@' when SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None || SyntaxFacts.GetContextualKeywordKind(...) requires it), and use SymbolDisplayFormat with EscapeKeywordIdentifiers for all name renderings instead of raw symbol.Name.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and live reproduction. HumlSerializationGenerator.cs line 164 interpolates the raw symbol name into a member access (`Get = static o => ((...)o).{prop.Name},`); for `public int @class { get; set; }` the symbol name is the unescaped 'class', producing the invalid token `.class` in generated source. No keyword escaping exists anywhere in the emitter (prop.Name lines 161/164/166, type.Name lines 125-126/134/152, model.ClassName lines 117/120, namespace line 113). A probe project with exactly the finding's input failed to compile with the exact claimed signature: Ctx4.Huml.g.cs(26,187) CS0102 'Ctx4.KeywordDtoHumlTypeInfo already contains a definition for '''', CS0116 and CS0115 cascade — 5 errors, all inside the generated file. Severity medium stands: legal C# input yields uncompilable generated code the user cannot edit, but it is a compile-time failure on an uncommon construct, not runtime corruption.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Nested (and generic) context classes are emitted as top-level non-generic partials — generated partial never merges, build breaks with CS0534",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 117,
+        "severity": "medium",
+        "threat": "T8",
+        "description": "TransformContext records only contextSymbol.Name and its namespace (lines 95-98); containing types and generic arity are dropped. EmitSource then writes 'partial class {ClassName}' directly under the namespace (line 117). For a context declared inside another type ('class Outer { [HumlSerializable(...)] partial class Inner : HumlGeneratedContext {} }') the generated partial is a *different* type at namespace scope, so its 'override GetTypeInfo' has nothing to override (CS0115) and the user's nested class fails CS0534 ('does not implement inherited abstract member'). By the same code path a generic context 'class MyCtx<T> : HumlGeneratedContext' would emit arity-0 'partial class MyCtx', which is a distinct type — the user's class again fails CS0534.",
+        "evidence": "Probe: public static class Outer { [HumlSerializable(typeof(KeywordDto))] public partial class NestedCtx : HumlGeneratedContext { } } → NestedCtx.Huml.g.cs(15,66): error CS0115: 'NestedCtx.GetTypeInfo(Type, HumlOptions)': no suitable method found to override; Program.cs(17,26): error CS0534: 'Outer.NestedCtx' does not implement inherited abstract member 'HumlGeneratedContext.GetTypeInfo(Type, HumlOptions)'.",
+        "suggestedFix": "Capture the chain of containing types in ContextModel and emit nested 'partial class Outer { partial class Inner ... }' wrappers (the STJ generator does exactly this). Report a diagnostic and skip generation for generic contexts (STJ's SYSLIB1032 equivalent) rather than emitting a colliding type.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and live reproduction. TransformContext (HumlSerializationGenerator.cs lines 95-98) records only contextSymbol.Name plus namespace, dropping containing types and generic arity, and EmitSource line 117 emits 'partial class {ClassName}' at namespace scope. A scratch build with the probe input (nested context 'Outer.NestedCtx') fails exactly as claimed: NestedCtx.Huml.g.cs(15,66) CS0115 and Nested.cs(11,26) CS0534. No guard, analyzer diagnostic, or documented top-level-only restriction exists (HumlGeneratedContext.cs / HumlSerializableAttribute.cs docs say only 'subclass with partial'), and the predicate at line 27 accepts nested ClassDeclarationSyntax, so the path is reachable. Severity medium stands: loud compile-time break with confusing errors on a legitimate STJ-supported pattern, but no runtime impact and a trivial workaround.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Two registered types with the same simple name collide in generated members (CS0102) — type.Name used as member and class identifier",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 125,
+        "severity": "medium",
+        "threat": "T8",
+        "description": "The typed accessor property (line 125), the dispatch branches (line 134) and the nested TypeInfo class name (line 152, '{type.Name}HumlTypeInfo') are all derived from the registered type's simple name. Registering 'A.Foo' and 'B.Foo' on one context — a routine situation in apps with versioned or layered DTO namespaces — generates duplicate members and duplicate nested classes, failing the build inside generated code. Closed generic registrations would collide the same way ('Foo<int>' and 'Foo<string>' both yield Name 'Foo').",
+        "evidence": "Probe: namespace Sub1 { class Foo { int A } } namespace Sub2 { class Foo { int B } } [HumlSerializable(typeof(Sub1.Foo))][HumlSerializable(typeof(Sub2.Foo))] partial class Ctx5 ... → Ctx5.Huml.g.cs(14,80): error CS0102: The type 'Ctx5' already contains a definition for 'Foo'; Ctx5.Huml.g.cs(38,26): error CS0102: ... already contains a definition for 'FooHumlTypeInfo'; CS0263 partial base-class conflict.",
+        "suggestedFix": "Disambiguate generated identifiers from the full metadata name (e.g. replace '.', '+', '<', '>' with '_': 'Sub1_Foo'), mirroring System.Text.Json's generator naming, and report a diagnostic when a registration is duplicated exactly.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code and live repro. HumlSerializationGenerator.cs line 89 captures typeSymbol.Name with no dedup, and lines 125-126/134/152 use it as the accessor property name, dispatch return, and nested class name '{type.Name}HumlTypeInfo'. HumlSerializableAttribute is AllowMultiple=true and the generator has zero ReportDiagnostic calls, so no guard exists. A scratch build registering Sub1.Foo and Sub2.Foo on one context reproduced the exact claimed errors: Ctx5.Huml.g.cs(14,74) CS0102 'Foo', (38,26) CS0102 'FooHumlTypeInfo', (25,26) CS0263 partial base-class conflict. Closed generics collide identically since INamedTypeSymbol.Name drops type arguments. Medium severity is correct: hard build break in generated code for a routine registration pattern with no diagnostic or TypeInfoPropertyName-style escape hatch, but it fails loudly at compile time with a workaround (split contexts), so no runtime impact.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Generator drops [HumlIgnore]/[HumlProperty]/naming metadata — generated path serialises ignored properties (data leak) and uses wrong key names",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 63,
+        "severity": "high",
+        "threat": "T8",
+        "description": "TransformContext's property loop (lines 63-86) captures only Name/TypeName/HasGet/HasSet. It never reads HumlIgnoreAttribute, HumlPropertyAttribute (name override, OmitIfDefault, Inline), HumlNamingPolicyAttribute, HumlConverterAttribute, HumlNumberHandlingAttribute, or HumlExtensionDataAttribute, all of which the reflection path resolves in PropertyDescriptor.BuildDescriptors. Consequences proven at runtime: (1) a property explicitly excluded with [HumlIgnore] IS serialised by the generated path — silent disclosure of data the developer marked as never-serialise — and is also writable from hostile documents during deserialisation; (2) [HumlProperty(\"renamed\")] is ignored, so a document produced by the reflection path ('renamed: ...') silently fails to bind through the generated path and vice versa — silent data loss on round-trip; (3) options.PropertyNamingPolicy is also ignored in the generated path (raw CLR names emitted under SnakeCase policy). This is the 'generated code semantic parity' requirement of T8 violated wholesale.",
+        "evidence": "Runtime probe with ParityDto { [HumlProperty(\"renamed\")] Name; [HumlIgnore] Secret = \"s3cret\"; [HumlRequired] Age }: reflection serialise → 'renamed: \"Alice\"\\nAge: 30'; generated serialise → 'Name: \"Alice\"\\nSecret: \"s3cret\"\\nAge: 30' (Secret leaked, rename ignored); generated serialise with PropertyNamingPolicy=SnakeCase → identical raw names. Deserialising 'Secret: \"injected\"...' via generated context yields Secret=injected (reflection path correctly keeps s3cret).",
+        "suggestedFix": "Extend PropertyModel to carry HumlKey (after applying [HumlProperty] name override), IsIgnored (skip emission), OmitIfDefault, Inline and member naming-policy data, resolved from attributes in TransformContext via attr.AttributeClass full-name matching; have the runtime seam apply options.PropertyNamingPolicy when the resolved key came from the CLR name (requires a flag on HumlPropertyInfo, as STJ does with JsonPropertyInfo.Name vs naming policy).",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by direct code trace. HumlSerializationGenerator.cs lines 63-86 capture only Name/TypeName/canGet/canSet and never call GetAttributes() — [HumlIgnore]/[HumlProperty]/naming metadata is dropped. The consuming resolver path in HumlSerializer.cs lines 405-418 emits every resolver property via EmitEntry(..., propInfo.Name, ...) and returns before the PropertyDescriptor path (line 421) where ignore/rename/OmitIfDefault/PropertyNamingPolicy are applied, so ignored properties are serialised under raw CLR names. HumlDeserializer.cs lines 352-373 match incoming keys against propInfo.Name (OrdinalIgnoreCase, line 361) and invoke Set (line 369), making [HumlIgnore] properties writable from hostile documents and silently dropping [HumlProperty]-renamed keys (line 367 continue). Reachable exactly as SourceGeneratorIntegrationTests.cs line 9 wires it (options.TypeInfoResolver = Context.Default); the package ships and CHANGELOG line 61 advertises 'Source generator full implementation'. CHANGELOG TI-04 documents bypass of required/unmapped checks only — attribute dropping is not a documented contract. Minor inaccuracy: threat-model T8 text covers generator crashes/injection, not 'semantic parity', so the T8 citation is a stretch — but the defect itself is real. Severity high stands: silent disclosure of explicitly never-serialise data plus silent round-trip data loss in an advertised opt-in path.",
+            "confirmedSeverity": "high"
+          },
+          null
+        ]
+      },
+      {
+        "title": "Resolver-driven deserialise path returns early, skipping required-member enforcement, extension data, and UnmappedMemberHandling.Disallow",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 353,
+        "severity": "high",
+        "threat": "CORRECTNESS",
+        "description": "When the resolver supplies Properties, DeserializeMappingEntries populates via delegates (lines 333-353) and returns at line 353 — before the required-property check at line 414, and without any unknown-key handling (the loop at 336-351 silently skips unmatched keys). Three contract violations versus the reflection path: (1) [HumlRequired]/'required' members missing from an untrusted document are silently accepted (Age=0) instead of throwing HumlDeserializeException — a validation bypass that is security-relevant when required fields gate configuration; (2) HumlOptions.UnmappedMemberHandling = Disallow is silently ignored — hostile documents with unknown keys pass; (3) [HumlExtensionData] capture never happens. HumlPropertyInfo even has an IsRequired field (HumlPropertyInfo.cs:23) that is never consulted (the generator also never sets it).",
+        "evidence": "Runtime probe: Deserialize<ParityDto>(\"Name: \\\"x\\\"\", sgOptions) with [HumlRequired] int Age → 'generated missing-required: NO THROW (Age=0)' while reflection path throws HumlDeserializeException. Deserialize<NullDto>(\"Count: 1\\nBogus: 2\", sgOptions with UnmappedMemberHandling.Disallow) → 'NO THROW' while reflection path throws HumlDeserializeException.",
+        "suggestedFix": "After the resolver-path loop, run the same required check (using propInfo.IsRequired, which the generator must populate) and honour UnmappedMemberHandling/extension data for keys with no matching HumlPropertyInfo before returning at line 353.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Code trace confirms the mechanics: HumlDeserializer.cs:372 ('return instance;') exits the resolver path before the required-member check at :433-448, and :367 ('if (propInfo?.Set is null) continue;') silently skips unknown keys, bypassing extension-data/Disallow handling at :379-411; the generator (PropertyModel.cs, HumlSerializationGenerator.cs:158-168) never emits IsRequired and HumlPropertyInfo.IsRequired is never consulted. The probe results are reproducible from the code. BUT the finder missed that this is documented, deliberate design: the CHANGELOG TI-04 entry states 'The resolver path bypasses the required-property check and unmapped-member check; the resolver takes full responsibility for property population', and pin test TRA09 (TypeInfoResolverActivationTests.cs:262-288) explicitly asserts NotThrow for UnmappedMemberHandling.Disallow on the resolver path. So the Disallow and extension-data claims are intended opt-in behaviour, not hidden defects. What survives is the required-member claim: HumlRequiredAttribute.cs:5-6 unconditionally promises HumlDeserializeException for missing members (only Populate<T> is carved out), there is no pin test for the required bypass, and the public HumlPropertyInfo.IsRequired (HumlPropertyInfo.cs:23) is dead API whose doc promises enforcement — a real contract conflict for first-party SourceGeneration users, and a divergence from STJ which does enforce required members in its source-generated path. Given the bypass is documented, opt-in, and partially test-pinned, 'high / hidden validation bypass' is inflated; this is a medium correctness gap (silent [HumlRequired] no-op + misleading IsRequired surface) rather than a latent high-severity bypass.",
+            "confirmedSeverity": "medium"
+          },
+          null
+        ]
+      },
+      {
+        "title": "Resolver-driven deserialise binds keys case-insensitively while the reflection path is case-sensitive",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlDeserializer.cs",
+        "line": 342,
+        "severity": "medium",
+        "threat": "CORRECTNESS",
+        "description": "The resolver path matches mapping keys against property names with StringComparison.OrdinalIgnoreCase, whereas the reflection lookup dictionary is built with StringComparer.Ordinal (PropertyDescriptor.cs:219) and documented as case-sensitive (HumlDeserializer.cs:368). The same document deserialises differently depending on whether a source-generated context is plugged in: 'count: 7' binds to Count via the generated path but is silently dropped by the reflection path. Case-insensitive matching also lets two distinct HUML keys ('Count' and 'count' are different keys to the parser) bind to the same property, last-write-wins, which is a silent data-integrity hazard for documents using case-distinct keys.",
+        "evidence": "Runtime probe: Deserialize<NullDto>(\"count: 7\") → generated path Count=7; reflection path Count=0. Code: line 342 uses OrdinalIgnoreCase; PropertyDescriptor.cs line 219 uses StringComparer.Ordinal.",
+        "suggestedFix": "Use StringComparison.Ordinal at line 342 to match the reflection path (or introduce an explicit HumlOptions.PropertyNameCaseInsensitive applied identically to both paths).",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed by code trace and runtime repro. HumlDeserializer.cs:361 matches resolver-supplied property names with StringComparison.OrdinalIgnoreCase, while the reflection lookup (HumlDeserializer.cs:388) uses the dictionary built with StringComparer.Ordinal at PropertyDescriptor.cs:219, documented case-sensitive at HumlDeserializer.cs:387. Path is reachable via public HumlOptions.TypeInfoResolver (HumlOptions.cs:253); the source generator emits Name = CLR property name (HumlSerializationGenerator.cs:161). Probe: Deserialize<Dto>(\"count: 7\") gives Count=0 on reflection path, Count=7 on resolver path; \"Count: 1\\ncount: 2\" parses as two distinct keys and gives Count=1 (reflection) vs Count=2 (resolver, case-insensitive last-write-wins). Phase 41 CR-06 deliberately standardised Ordinal binding, so the resolver path contradicts the established contract. Medium severity stands: silent path-dependent binding divergence, but requires opt-in resolver usage and case-mismatched keys.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Resolver-driven serialise path ignores HumlOptions.DefaultIgnoreCondition (and any omit-if-default semantics)",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net/Serialization/HumlSerializer.cs",
+        "line": 405,
+        "severity": "medium",
+        "threat": "CORRECTNESS",
+        "description": "The resolver branch (lines 405-418) emits every property whose Get is non-null, with no equivalent of the reflection branch's omission chain (lines 428-453: per-property OmitIfDefault, class-level [HumlIgnoreDefaults], and global options.DefaultIgnoreCondition Always/WhenWritingDefault/WhenWritingNull). Setting DefaultIgnoreCondition on HumlOptions therefore silently does nothing once a TypeInfoResolver supplies metadata for the type — same options object, different output depending on resolver presence. HumlPropertyInfo also documents an 'Order' field ('lower values are emitted first', HumlPropertyInfo.cs:26) that this loop never sorts by.",
+        "evidence": "Code-path walk: line 405 'if (typeInfo?.Properties is { } resolverProps)' → loop at 408-415 calls EmitEntry unconditionally for each gettable property and returns at 417; options.DefaultIgnoreCondition is only consulted at line 438 in the reflection branch, which is unreachable when Properties is non-null. Probe output corroborates: generated path emits 'Age: 30' style raw dumps of all properties regardless of options.",
+        "suggestedFix": "Apply the same DefaultIgnoreCondition switch in the resolver branch (null check is type-agnostic; WhenWritingDefault needs a default-value comparison — add DefaultValue or IsDefault delegate to HumlPropertyInfo), sort by Order when any non-zero Order is present, or document the divergence explicitly before API freeze.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "refuted": false,
+            "reason": "Confirmed. HumlSerializer.cs:405-418: the resolver branch checks only 'propInfo.Get is null' (line 410), calls EmitEntry unconditionally, and returns at line 417, making the omission chain at lines 428-453 unreachable; grep confirms options.DefaultIgnoreCondition is consulted only at line 438 in all of src/. No hidden guard exists: HumlPropertyInfo has no ShouldSerialize, and the source generator (Huml.Net.SourceGeneration) contains no handling of Ignore/OmitIfDefault/Order, so generated metadata cannot compensate. The documented contract (HumlOptions.cs:129, 'applies globally to every property during serialisation') is violated; the only contrary remark (HumlOptions.cs:250-251 'resolver result is not yet consumed') is stale and contradicted by HumlSerializer.cs:378. The Order claim also holds: HumlPropertyInfo.Order (HumlPropertyInfo.cs:26) is never read anywhere in Huml.Net. Severity medium is correct: silent divergence of a documented option, but requires combining two opt-in features and output remains valid HUML.",
+            "confirmedSeverity": "medium"
+          }
+        ]
+      },
+      {
+        "title": "Property/type names from referenced-assembly metadata are embedded unescaped in generated string literals and member accesses (injection per T8)",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 161,
+        "severity": "medium",
+        "threat": "T8",
+        "description": "Line 161 emits 'Name = \"{prop.Name}\"' with no escaping. C# source identifiers cannot contain '\"' or '\\', but [HumlSerializable(typeof(T))] accepts types from *referenced assemblies*, where IL and F# double-backtick identifiers may contain quotes, backslashes, newlines, and arbitrary text (ECMA-335 places almost no restriction on member names). A property named '\"); } } class Injected { //' in a referenced assembly terminates the literal and injects arbitrary tokens into the consumer's compilation — the generated file becomes attacker-shaped source. The practical blast radius is bounded (the referenced assembly is already trusted executable code), but the threat model calls this out explicitly: 'string literals from user type/property names must be escaped when embedded in generated source'. C#-source-only identifiers can still smuggle Unicode format (Cf) characters such as ZWJ into the emitted Name literal, producing keys that look identical to clean ones in review.",
+        "evidence": "Code-path walk: TransformContext line 79-84 stores prop.Name verbatim from IPropertySymbol.Name (no character validation); EmitTypeInfoClass line 161 interpolates it inside a regular (non-verbatim) string literal, and lines 164/166 interpolate it as a member-access token. No call to SymbolDisplay.FormatLiteral or any escaper exists in the file (verified by reading the full 177-line source).",
+        "suggestedFix": "Render the key with Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(prop.Name, quote: true); for the member-access positions, validate the name with SyntaxFacts.IsValidIdentifier and skip the property (with a diagnostic) when it is not a valid C# identifier.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "reason": "Defect is real and reachable. Line 161 (`sb.Append($\" Name = \\\"{prop.Name}\\\",\")`) interpolates prop.Name into a non-verbatim C# string literal with no escaping; lines 164/166 emit it/DeclaringTypeFqn as member-access tokens. prop.Name (stored verbatim at line 80) comes from IPropertySymbol.Name, which for a type pulled in via [HumlSerializable(typeof(T))] is read from metadata (t.GetMembers(), lines 66-85). A referenced IL/F# assembly can carry member names containing '\"', '\\', or newlines (ECMA-335 imposes near-zero restriction), so such a name would break out of the literal and inject tokens into the generated .g.cs. No SymbolDisplay.FormatLiteral or escaper exists anywhere in the 177-line file. So the missing-escaping defect is genuine and the path is reachable. However the claimed medium severity is one level high: exploitation requires the victim to already reference a malicious assembly (trusted, executing code at build time) AND deliberately register one of its types — the trust boundary is already crossed, making this build-time hardening (low), as the finding itself concedes ('blast radius is bounded'). One-level inflation is within tolerance, so the finding stands.",
+            "refuted": false,
+            "confirmedSeverity": "low"
+          }
+        ]
+      },
+      {
+        "title": "Invalid registrations (array types, zero valid types) are silently dropped with no diagnostic, leaving an inexplicable CS0534 on the user's class",
+        "file": "C:/Users/Shady/source/repos/Shade666/huml-dotnet/src/Huml.Net.SourceGeneration/HumlSerializationGenerator.cs",
+        "line": 46,
+        "severity": "low",
+        "threat": "T8",
+        "description": "Line 46 ('if (... is not INamedTypeSymbol) continue') silently discards registrations such as typeof(int[]) or typeof(T[]) (IArrayTypeSymbol), and line 93 returns null when no registrations survive — in that case no source is generated at all, so the user's abstract-member override is missing and the build fails with CS0534 pointing at their class with no hint as to why. The generator emits zero diagnostics anywhere (no DiagnosticDescriptor exists in the project), contrary to the T8 posture that malformed user source must produce diagnostics. Unbound generic registrations (typeof(List<>)) pass the INamedTypeSymbol check and instead emit 'HumlTypeInfo<global::...List<T>>' referencing an undefined T — another silent build break.",
+        "evidence": "Code-path walk: TransformContext line 46 'if (attr.ConstructorArguments[0].Value is not INamedTypeSymbol typeSymbol) continue;' — IArrayTypeSymbol is not INamedTypeSymbol, so the registration vanishes; line 93 'if (types.Count == 0) return null;' suppresses all output; HumlGeneratedContext.GetTypeInfo is abstract (HumlGeneratedContext.cs:23) so the user's partial class no longer compiles. Grep of the generator project confirms no Diagnostic/DiagnosticDescriptor usage.",
+        "suggestedFix": "Define DiagnosticDescriptors (unsupported registered type kind, unbound generic, no valid registrations, non-partial context) and report them via SourceProductionContext.ReportDiagnostic instead of silently skipping; check typeSymbol.IsUnboundGenericType and reject.",
+        "slice": "sourcegen",
+        "verdicts": [
+          {
+            "confirmedSeverity": "low",
+            "reason": "Confirmed by code trace and live repro. HumlSerializationGenerator.cs:46 ('is not INamedTypeSymbol typeSymbol) continue;') drops IArrayTypeSymbol registrations and line 93 ('if (types.Count == 0) return null;') suppresses all output; with GetTypeInfo abstract at HumlGeneratedContext.cs:23, a temp project with [HumlSerializable(typeof(int[]))] built to exactly 'error CS0534 ... does not implement ... GetTypeInfo(Type, HumlOptions)' on the user's class and no generator diagnostic (grep confirms zero Diagnostic/DiagnosticDescriptor usage in the project). typeof(List<>) likewise reproduced a silent generated-code build break — three CS7003 'Unexpected use of an unbound generic name' errors (the finding said 'List<T> with undefined T'; actual emission is 'List<>'/CS7003 — immaterial to the substance). Severity 'low' is accurate: build fails loudly but confusingly, no runtime or security impact.",
+            "refuted": false
+          }
+        ]
+      }
+    ],
+    "rejected": [
+      {
+        "title": "ValidateDuplicateKeysOnWrite does not cover POCO property key collisions",
+        "slice": "serializer",
+        "reasons": [
+          "The probe reproduces (POCO loop at HumlSerializer.cs:424-456 has no seenKeys check; output 'Value: 1\\nValue: 2' reparses with HumlParseException), but the behaviour is correct per the documented contract. ValidateDuplicateKeysOnWrite is explicitly scoped to dictionaries in every doc surface — decisively HumlOptions.cs:191-193: 'this check covers the multiline dictionary path (SerializeDictionaryBody) only', plus the XML summary (lines 169-173: 'two entries in the same dictionary'), README.md:221, docs/options-reference.md:20/:73, and docs/error-handling.md:95-97. The POCO duplicate-key case was deliberately dispositioned, not overlooked: PropertyDescriptor.cs:218 'last-write-wins on duplicate HumlKey — duplicate keys are an application-level misuse'. Triggering it requires the user to deliberately map two CLR properties to the same HUML key. Extending the flag to POCO/inline paths is a low-priority enhancement, not a medium correctness defect."
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <!-- Standalone tool: deliberately not part of Huml.Net.sln so the CI build/test
+         surface is unchanged. Run with: dotnet run -c Release (project tools/Huml.Net.Fuzz) -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Huml.Net\Huml.Net.csproj" />
+  </ItemGroup>
+
+</Project>
