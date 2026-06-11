@@ -28,6 +28,15 @@ public static class Huml
     /// <param name="options">Serialisation options; defaults to <see cref="HumlOptions.Default"/>.</param>
     /// <returns>A HUML-formatted string.</returns>
     /// <exception cref="HumlSerializeException">Thrown when serialisation fails.</exception>
+    /// <example>
+    /// <code>
+    /// var config = new ServerConfig { Host = "localhost", Port = 8080 };
+    /// string huml = Huml.Serialize(config);
+    /// // %HUML v0.2.0
+    /// // Host: "localhost"
+    /// // Port: 8080
+    /// </code>
+    /// </example>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static string Serialize<T>(T value, HumlOptions? options = null)
@@ -55,6 +64,17 @@ public static class Huml
     /// <returns>A populated instance of <typeparamref name="T"/>.</returns>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
     /// <exception cref="HumlDeserializeException">Thrown when mapping to <typeparamref name="T"/> fails.</exception>
+    /// <example>
+    /// <code>
+    /// var huml = """
+    ///     %HUML v0.2.0
+    ///     Host: "localhost"
+    ///     Port: 8080
+    ///     """;
+    /// var config = Huml.Deserialize&lt;ServerConfig&gt;(huml);
+    /// // config.Host == "localhost", config.Port == 8080
+    /// </code>
+    /// </example>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static T Deserialize<T>(string huml, HumlOptions? options = null)
@@ -104,6 +124,17 @@ public static class Huml
     /// <exception cref="ArgumentException">Thrown when <typeparamref name="T"/> is a value type (struct).</exception>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
     /// <exception cref="HumlDeserializeException">Thrown when mapping to <typeparamref name="T"/> fails.</exception>
+    /// <example>
+    /// <code>
+    /// var config = new ServerConfig { Host = "localhost", Port = 10 };
+    /// Huml.Populate("""
+    ///     %HUML v0.2.0
+    ///     Port: 50
+    ///     """, config);
+    /// // config.Host is still "localhost" (absent from the document)
+    /// // config.Port is now 50 (overwritten)
+    /// </code>
+    /// </example>
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     public static void Populate<T>(string huml, T existing, HumlOptions? options = null)
@@ -145,6 +176,15 @@ public static class Huml
     /// <param name="options">Parsing options; defaults to <see cref="HumlOptions.Default"/>.</param>
     /// <returns>The <see cref="HumlDocument"/> AST root.</returns>
     /// <exception cref="HumlParseException">Thrown when the HUML input is invalid.</exception>
+    /// <example>
+    /// <code>
+    /// // Validate without binding to a type — throws HumlParseException on invalid input.
+    /// HumlDocument doc = Huml.Parse("""
+    ///     %HUML v0.2.0
+    ///     name: "example"
+    ///     """);
+    /// </code>
+    /// </example>
     public static HumlDocument Parse(string huml, HumlOptions? options = null)
         => new HumlParser(huml.AsSpan(), options ?? HumlOptions.Default).Parse();
 }
