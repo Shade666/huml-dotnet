@@ -9,4 +9,11 @@ namespace Huml.Net.Parser;
 /// produce a <see cref="HumlDocument"/> node, not a <see cref="HumlInlineMapping"/>.
 /// </remarks>
 /// <param name="Entries">The key-value mapping entries in this inline block.</param>
-public sealed record HumlInlineMapping(IReadOnlyList<HumlNode> Entries) : HumlNode;
+public sealed record HumlInlineMapping(IReadOnlyList<HumlNode> Entries) : HumlNode
+{
+    /// <inheritdoc/>
+    public bool Equals(HumlInlineMapping? other) => HumlNodeEquality.DeepEquals(this, other);
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HumlNodeEquality.DeepHashCode(this);
+}

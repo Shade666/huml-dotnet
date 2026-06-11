@@ -28,4 +28,10 @@ public sealed record HumlDocument(IReadOnlyList<HumlNode> Entries) : HumlNode
     /// </code>
     /// </remarks>
     public HumlSpecVersion? DetectedVersion { get; init; }
+
+    /// <inheritdoc/>
+    public bool Equals(HumlDocument? other) => HumlNodeEquality.DeepEquals(this, other);
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => HumlNodeEquality.DeepHashCode(this);
 }
