@@ -1,0 +1,7 @@
+- name: Home
+  href: index.md
+- name: Docs
+  href: docs/toc.yml
+  homepage: docs/getting-started.md
+- name: API
+  href: docs/api/toc.yml

@@ -112,3 +112,8 @@ packages/
 userDefinedLanguages/
 .bg-shell/
 .tmp-spec/
+
+# DocFX build artefacts
+_site/
+api/
+docs/api/

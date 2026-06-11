@@ -1,0 +1,50 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "src/Huml.Net",
+          "files": [ "**/*.csproj" ]
+        }
+      ],
+      "dest": "docs/api",
+      "properties": {
+        "TargetFramework": "net10.0"
+      }
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [ "**/*.{md,yml}" ],
+        "src": "docs",
+        "dest": "docs",
+        "exclude": [
+          "internals/threat-model.md",
+          "internals/g3-security-review.md",
+          "internals/api-freeze.md",
+          "nuget-publish-checklist.md",
+          "public-api.txt",
+          "documentation-plan.md",
+          "spec-compliance-report.md",
+          "plans/**"
+        ]
+      },
+      {
+        "files": [ "toc.yml", "index.md" ]
+      }
+    ],
+    "output": "_site",
+    "template": [ "default", "modern" ],
+    "globalMetadata": {
+      "_appName": "Huml.Net",
+      "_appTitle": "Huml.Net",
+      "_enableSearch": true,
+      "_appFooter": "Huml.Net — HUML for .NET. MIT licensed.",
+      "pdf": false
+    },
+    "sitemap": {
+      "baseUrl": "https://primeberi.github.io/huml-dotnet/"
+    }
+  }
+}

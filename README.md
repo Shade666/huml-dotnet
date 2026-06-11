@@ -4,159 +4,70 @@
 
 # Huml.Net
 
-A full-featured HUML v0.1/v0.2 parser, serialiser, and deserialiser for .NET with a System.Text.Json-style API and zero runtime dependencies.
+**HUML for .NET.** A full-featured [HUML](https://huml.io) v0.1/v0.2 parser, serialiser, and
+deserialiser with a `System.Text.Json`-style API and **zero runtime dependencies**.
 
-> **Pre-1.0 alpha.** API may change before 1.0.0.
+> **Beta.** The public API is frozen for the `0.2.0-beta.1` line; breaking changes (if any) will
+> wait for the next minor version.
 
-## Installation
+📖 **[Documentation](https://primeberi.github.io/huml-dotnet/)** · 📦 **[NuGet](https://www.nuget.org/packages/Huml.Net/)** · 📝 **[Changelog](CHANGELOG.md)**
+
+## Install
 
 ```bash
 dotnet add package Huml.Net
 ```
 
-## Quick Start
+## 30-second example
 
-### Example 1: Deserialise to POCO
+If you know `JsonSerializer`, you already know `Huml`:
 
 ```csharp
 using Huml.Net;
 
-var huml = """
+var config = Huml.Deserialize<ServerConfig>("""
     %HUML v0.2.0
     Host: "localhost"
     Port: 8080
-    Debug: false
-    """;
+    Debug: true
+    """);
 
-var config = Huml.Deserialize<ServerConfig>(huml);
-// config.Host == "localhost", config.Port == 8080, config.Debug == false
-```
-
-### Example 2: Serialise from POCO
-
-```csharp
-using Huml.Net;
-
-var config = new ServerConfig { Host = "prod.example.com", Port = 443 };
-string huml = Huml.Serialize(config);
-// %HUML v0.2.0
-// Host: "prod.example.com"
-// Port: 443
-```
-
-### Example 3: Attributes
-
-```csharp
-using Huml.Net;
-using Huml.Net.Serialization;
+string roundTrip = Huml.Serialize(config);
 
 public class ServerConfig
 {
-    [HumlProperty("host")]
-    public string Host { get; set; } = string.Empty;
-
-    [HumlProperty("port", OmitIfDefault = true)]
+    public string Host { get; set; } = "";
     public int Port { get; set; }
-
-    [HumlIgnore]
-    public string InternalToken { get; set; } = string.Empty;
+    public bool Debug { get; set; }
 }
 ```
 
-### Example 4: Naming policy
+New to the library? The **[Getting Started tutorial](https://primeberi.github.io/huml-dotnet/docs/getting-started.html)**
+takes you from install to round-trip in five minutes.
 
-```csharp
-using Huml.Net;
-using Huml.Net.Serialization;
+## Coming from System.Text.Json?
 
-public class ServerConfig
-{
-    public string HostName { get; set; } = string.Empty;
-    public int MaxConnections { get; set; }
-}
+The mental model is the same; the table maps what you know to its Huml.Net equivalent.
 
-var options = new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase };
-var config = Huml.Deserialize<ServerConfig>("""
-    %HUML v0.2.0
-    host-name: "db.example.com"
-    max-connections: 100
-    """, options);
-// config.HostName == "db.example.com", config.MaxConnections == 100
-```
-
-### Example 5: Populate existing instance
-
-```csharp
-using Huml.Net;
-
-var defaults = new ServerConfig { HostName = "localhost", MaxConnections = 10 };
-Huml.Populate("""
-    %HUML v0.2.0
-    max-connections: 50
-    """, defaults, new HumlOptions { PropertyNamingPolicy = HumlNamingPolicy.KebabCase });
-// defaults.HostName is still "localhost" (not in the document)
-// defaults.MaxConnections is now 50 (overwritten)
-```
-
-### Example 6: Constructor binding
-
-```csharp
-using Huml.Net;
-using Huml.Net.Serialization;
-
-public record ServerConfig(
-    [HumlProperty("host")] string Host,
-    [HumlProperty("port")] int Port);
-
-var config = Huml.Deserialize<ServerConfig>("""
-    %HUML v0.2.0
-    host: "db.example.com"
-    port: 5432
-    """);
-// config.Host == "db.example.com", config.Port == 5432
-```
-
-### Example 7: Required properties
-
-```csharp
-using Huml.Net;
-using Huml.Net.Serialization;
-
-public class ApiConfig
-{
-    [HumlRequired]
-    public string ApiKey { get; set; } = string.Empty;
-
-    public int TimeoutMs { get; set; } = 5000;
-}
-
-// Throws HumlDeserializeException: "Missing required member(s) on type 'ApiConfig': 'ApiKey'."
-var cfg = Huml.Deserialize<ApiConfig>("""
-    %HUML v0.2.0
-    TimeoutMs: 3000
-    """);
-```
-
-### Example 8: Options presets
-
-```csharp
-using Huml.Net;
-using Huml.Net.Exceptions;
-using Huml.Net.Versioning;
-
-// Maximum strictness — throws on unknown version headers, unrecognised keys, and duplicate dict keys
-try
-{
-    var result = Huml.Deserialize<MyDto>(humlText, HumlOptions.Strict);
-}
-catch (HumlDeserializeException ex)
-{
-    Console.WriteLine($"Strict validation rejected unknown key: {ex.Message}");
-}
-
-// Lenient version-detection — silently falls back to latest when header version is unrecognised
-var lenient = Huml.Deserialize<MyDto>(humlText, HumlOptions.LatestSupportedAutoDetect);
-```
+| System.Text.Json | Huml.Net | Notes |
+| ---------------- | -------- | ----- |
+| `JsonSerializer.Serialize` / `Deserialize` | `Huml.Serialize` / `Huml.Deserialize` | Same static-facade shape. |
+| `JsonSerializer.Deserialize<T>(ReadOnlySpan<char>)` | `Huml.Deserialize<T>(ReadOnlySpan<char>)` | Zero-copy span path (`ref struct` lexer/parser). |
+| `JsonDocument.Parse` | `Huml.Parse` | Returns the `HumlDocument` AST for validation/inspection. |
+| `[JsonPropertyName]` | `[HumlProperty]` | Plus `OmitIfDefault` and per-member inline control. |
+| `[JsonIgnore]` | `[HumlIgnore]` | |
+| `[JsonRequired]` / `required` | `[HumlRequired]` / `required` | |
+| `[JsonExtensionData]` | `[HumlExtensionData]` | Captures unmatched keys. |
+| `[JsonConstructor]` | `[HumlConstructor]` | Constructor / record binding. |
+| `JsonConverter<T>` | `HumlConverter<T>` | Same priority chain (member → type → options). |
+| `JsonNamingPolicy` | `HumlNamingPolicy` | KebabCase, SnakeCase, CamelCase, PascalCase built in. |
+| `[JsonPolymorphic]` / `[JsonDerivedType]` | `[HumlPolymorphic]` / `[HumlDerivedType]` | Discriminator-based dispatch. |
+| `JsonSerializerContext` (source gen) | `HumlGeneratedContext` (source gen) | Reflection-free metadata for AOT/trim. |
+| `JsonNumberHandling` | `[HumlNumberHandling]` / `HumlOptions.NumberHandling` | |
+| `JsonSerializerOptions` | `HumlOptions` | Plus presets: `Default`, `LatestSupported`, `Strict`. |
+| Populate (`PopulateObject`, .NET 9+) | `Huml.Populate<T>` | Overlay a document onto an existing instance. |
+| `Utf8JsonReader` / `Utf8JsonWriter` streaming | — | **Not provided** — streaming is out of scope by design. |
+| Mutable `JsonNode` DOM | — | **Not provided** — the `HumlDocument` AST is read-only. |
 
 ## Features
 
@@ -236,6 +147,12 @@ var lenient = Huml.Deserialize<MyDto>(humlText, HumlOptions.LatestSupportedAutoD
 
 ## Documentation
 
+The full documentation site — tutorial, how-to guides, API reference, and explanation — is at
+**[primeberi.github.io/huml-dotnet](https://primeberi.github.io/huml-dotnet/)**. Key pages:
+
+- [Getting Started](docs/getting-started.md) — the five-minute tutorial
+- [Attributes Reference](docs/attributes-reference.md) — every `[Huml*]` attribute
+- [Use the Source Generator](docs/source-generator.md) — reflection-free metadata for AOT
 - [Options Reference](docs/options-reference.md)
 - [Versioning Policy](docs/versioning.md)
 - [AST Usage Guide](docs/ast-usage.md)

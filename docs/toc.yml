@@ -1,0 +1,54 @@
+# Diátaxis-organised docs sidebar (see documentation-plan.md).
+- name: Tutorial
+  items:
+    - name: Getting started
+      href: getting-started.md
+
+- name: How-to guides
+  items:
+    - name: Customize property names
+      href: naming-policy.md
+    - name: Control inline vs multiline
+      href: inline-serialisation.md
+    - name: Work with enums
+      href: enum-serialisation.md
+    - name: Bind constructors & records
+      href: constructor-binding.md
+    - name: Require properties
+      href: required-properties.md
+    - name: Capture unknown keys
+      href: extension-data.md
+    - name: Overlay onto an instance
+      href: populate.md
+    - name: Write a custom converter
+      href: custom-converters.md
+    - name: Serialize dates & times
+      href: date-time.md
+    - name: Handle errors
+      href: error-handling.md
+    - name: Publish AOT / trimmed
+      href: aot-trimming.md
+    - name: Use the source generator
+      href: source-generator.md
+
+- name: Reference
+  items:
+    - name: API reference
+      href: api/toc.yml
+    - name: Options reference
+      href: options-reference.md
+    - name: Attributes reference
+      href: attributes-reference.md
+
+- name: Explanation
+  items:
+    - name: Versioning model
+      href: versioning.md
+    - name: The pipeline
+      href: internals/pipeline.md
+    - name: Version gates
+      href: internals/version-gates.md
+    - name: Working with the AST
+      href: ast-usage.md
+    - name: Extending the pipeline
+      href: internals/extending.md
