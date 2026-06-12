@@ -10,6 +10,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+(no changes yet)
+
+## [0.2.0-beta.1] - 2026-06-13
+
 ### Changed
 
 - **BREAKING: the static facade `Huml` is renamed to `HumlSerializer`.** The old name collided with the root `Huml` namespace, so `using Huml.Net; Huml.Deserialize(...)` failed to compile for any consumer outside the `Huml.Net.*` namespace tree (`CS0234`). Replace `Huml.Serialize/Deserialize/Parse/Populate` with `HumlSerializer.Serialize/Deserialize/Parse/Populate`. This is the only intentional breaking change in the beta.
@@ -201,7 +205,9 @@ Initial alpha release.
 - **Public API:** `System.Text.Json`-style static `Huml` facade with `Serialize`, `Deserialize`, and `Parse` overloads.
 - **CI/NuGet:** GitHub Actions pipeline with SourceLink, MinVer, and OIDC Trusted Publishing.
 
-[Unreleased]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.3...HEAD
+[Unreleased]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-beta.1...HEAD
+[0.2.0-beta.1]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.4...v0.2.0-beta.1
+[0.2.0-alpha.4]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.3...v0.2.0-alpha.4
 [0.2.0-alpha.3]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.2...v0.2.0-alpha.3
 [0.2.0-alpha.2]: https://github.com/primeBeri/huml-dotnet/compare/v0.2.0-alpha.1...v0.2.0-alpha.2
 [0.2.0-alpha.1]: https://github.com/primeBeri/huml-dotnet/compare/v0.1.0-alpha.1...v0.2.0-alpha.1
