@@ -2,7 +2,7 @@ project_name: "huml-dotnet"
 default_status: "To Do"
 statuses: ["To Do", "In Progress", "Done"]
 labels: []
-definition_of_done: []
+definition_of_done: ["dotnet build succeeds with zero warnings (TreatWarningsAsErrors is on; full rebuild to surface cached analyzer results)", "dotnet test green on net8.0 / net9.0 / net10.0", "CHANGELOG.md [Unreleased] section updated for every user-visible change", "Any public API change is additive and justified in writing per docs/internals/api-freeze.md", "New/changed public members have XML docs; tests use AwesomeAssertions (never FluentAssertions)", "New error-or-no-error parse behaviours assessed against .claude/rules/fixture-gaps.md and staged in fixtures/extensions/ when language-agnostic"]
 date_format: yyyy-mm-dd
 max_column_width: 20
 default_editor: "code --wait"
