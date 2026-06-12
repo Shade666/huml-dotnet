@@ -1,9 +1,11 @@
 ---
 id: TASK-002
 title: Switch examples repo CI to the published NuGet package by default
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - claude
 created_date: '2026-06-12 23:27'
+updated_date: '2026-06-12 23:41'
 labels:
   - ci
   - examples-repo
@@ -31,6 +33,22 @@ Now that Huml.Net 0.2.0-beta.1 and Huml.Net.SourceGeneration 0.2.0-beta.1 are li
 - [ ] #5 A dependabot (or equivalent) config keeps the examples repo's actions and packages updated
 - [ ] #6 CI is green in both modes after the change
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Investigation findings: Directory.Build.props already defaults HumlNetVersion to 0.2.0-beta.1 (= latest published), so default-mode restore from nuget.org needs no version plumbing. One subtlety: now that 0.2.0-beta.1 exists on nuget.org, a pack-from-source run that packs the SAME version into local-feed would race the two sources — the pack mode must use a distinct version so restore is deterministic.
+
+Plan (all in huml-dotnet-examples):
+1. Rework .github/workflows/examples.yml:
+   - Default (push / PR / dispatch without flag): no main-repo checkout, no pack; restore Huml.Net from nuget.org via the Directory.Build.props default. Keep the unconditional 'Ensure local-feed exists' step (nuget.config still declares the source).
+   - workflow_dispatch inputs: keep huml_version (test any published version); add boolean pack_from_source (default false) — when true, checkout primeBeri/huml-dotnet, pack both packages as version 0.0.0-source into local-feed, and run examples with -HumlNetVersion 0.0.0-source.
+   - Pin actions by SHA: checkout v6.0.3 (df4cb1c0...), setup-dotnet v5.3.0 (9a946fdb...) — Node-24-safe and consistent with the main repo.
+2. Update the stale nuget.config comment (local feed is now only for pack-from-source CI and local development).
+3. Add .github/dependabot.yml (nuget + github-actions, weekly, same shape as the main repo's).
+4. README: document the two CI modes and the pack_from_source dispatch flag.
+5. Verify both modes: the push of these changes runs default mode; then manually dispatch with pack_from_source=true and watch it green.
+<!-- SECTION:PLAN:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

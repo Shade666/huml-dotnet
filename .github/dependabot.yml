@@ -5,6 +5,14 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # The source generator loads inside the consumer's compiler process, so its
+      # Microsoft.CodeAnalysis.* reference is a COMPATIBILITY FLOOR, not a normal
+      # dependency: compiling against a newer Roslyn than the consumer's SDK ships
+      # makes the generator fail to load (CS9057, see PR #23). Bump these only as a
+      # deliberate decision to drop support for older SDKs.
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp"
+      - dependency-name: "Microsoft.CodeAnalysis.Analyzers"
 
   - package-ecosystem: github-actions
     directory: "/"

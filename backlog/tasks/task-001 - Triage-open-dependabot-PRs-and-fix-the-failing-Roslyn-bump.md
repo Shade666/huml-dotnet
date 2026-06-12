@@ -1,9 +1,11 @@
 ---
 id: TASK-001
 title: Triage open dependabot PRs and fix the failing Roslyn bump
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - claude
 created_date: '2026-06-12 23:27'
+updated_date: '2026-06-12 23:40'
 labels:
   - ci
   - dependencies
@@ -31,6 +33,19 @@ Six dependabot PRs are open on primeBeri/huml-dotnet: #17-#20 bump docs.yml GitH
 - [ ] #4 No workflow in the repo still triggers the Node 20 deprecation annotation
 - [ ] #5 Docs site still deploys successfully after the action bumps (verify the Pages run)
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Investigation findings: PRs #17-#21 are CI-green; #23 fails with CS9057 — the generator DLL, compiled against Microsoft.CodeAnalysis.CSharp 5.3.0, cannot be loaded by the SDK's Roslyn 5.0 compiler. A source generator must compile against the OLDEST Roslyn it intends to support; 4.9.2 is a deliberate compatibility floor, so the bump is wrong by design, not broken by accident.
+
+Plan:
+1. Merge PR #21 (Meziantou.Analyzer 3.0.102) — green, plain package bump.
+2. Close PRs #17-#20 (docs.yml action tag bumps) as superseded: apply one local commit to docs.yml that bumps AND pins all four actions by commit SHA (checkout v6.0.3 df4cb1c0..., setup-dotnet v5.3.0 9a946fdb..., upload-pages-artifact v5.0.0 fc324d35..., deploy-pages v5.0.0 cd2ce8fc...), matching ci.yml/publish.yml pinning style. Merging the four tag-based PRs and then re-pinning would churn docs.yml five times.
+3. Close PR #23 with the CS9057 rationale; add dependabot ignore rules for Microsoft.CodeAnalysis.CSharp and Microsoft.CodeAnalysis.Analyzers in .github/dependabot.yml so the bump is not re-proposed.
+4. Pull main, full local rebuild + three-TFM test run (Meziantou bump can surface new analyzer diagnostics under TreatWarningsAsErrors).
+5. Push; verify CI green and the Pages deploy run succeeds with the new pinned actions.
+<!-- SECTION:PLAN:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
