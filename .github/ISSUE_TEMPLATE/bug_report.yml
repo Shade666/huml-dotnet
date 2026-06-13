@@ -25,6 +25,18 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: spec-version
+    attributes:
+      label: HUML spec version
+      description: Which HUML spec version are you targeting? (the `%HUML` directive, or your `HumlOptions.SpecVersion`)
+      options:
+        - "v0.2"
+        - "v0.1"
+        - "Not sure"
+    validations:
+      required: false
+
   - type: textarea
     id: input
     attributes:

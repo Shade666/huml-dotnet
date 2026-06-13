@@ -39,3 +39,14 @@ body:
       label: Additional context
     validations:
       required: false
+
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Are you willing to contribute a PR?
+      options:
+        - "Yes, I'd like to implement this"
+        - "Yes, with guidance"
+        - "No, just proposing"
+    validations:
+      required: false

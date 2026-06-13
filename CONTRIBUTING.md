@@ -5,6 +5,10 @@
 Contributions to Huml.Net are welcome — including AI-assisted ones. Whether you are reporting a
 bug, requesting a feature, or opening a pull request, your involvement is appreciated.
 
+Before you start, please also see the [Code of Conduct](CODE_OF_CONDUCT.md), the
+[Security Policy](SECURITY.md) for reporting vulnerabilities, and [Support](SUPPORT.md) for where
+to ask questions.
+
 ## Getting Started
 
 1. Fork the repository on GitHub.
@@ -101,6 +105,17 @@ AI-assisted contributions are explicitly welcome, subject to these conditions:
 - Both fixture suites must pass with a non-zero Theory count.
 - The contribution must be submitted as a pull request for maintainer review.
 
+## Licensing & Sign-off
+
+By submitting a contribution you certify that:
+
+- You wrote the contribution, or otherwise have the right to submit it under the project licence.
+- You agree that your contribution is licensed under the project's [MIT Licence](LICENSE).
+
+For AI-assisted contributions, the submitter takes responsibility for the contribution's
+correctness and its licensing — confirm the generated content does not introduce third-party code
+under an incompatible licence.
+
 ## Understanding the Codebase
 
 These guides explain the internal architecture for contributors:
@@ -121,7 +136,7 @@ Full policy — including the alpha/beta/rc/stable release tier progression and 
 what earns a patch bump — is documented in [docs/versioning.md](docs/versioning.md).
 
 **Pre-release identifier syntax:** always use hyphens as required by SemVer 2.0
-(`0.2.0-alpha.1`, never `0.2.0_alpha.1`). MinVer enforces this when deriving versions from git
+(`0.2.0-beta.1`, never `0.2.0_beta.1`). MinVer enforces this when deriving versions from git
 tags.
 
 ## Pull Request Process

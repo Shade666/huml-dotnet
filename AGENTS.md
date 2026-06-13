@@ -1,3 +1,46 @@
+# AGENTS.md
+
+Guidance for AI coding agents working in this repository. For the full architecture and
+conventions, see [CLAUDE.md](CLAUDE.md); this file is the short orientation.
+
+## What this is
+
+**Huml.Net** — the first-party .NET implementation of HUML (Human-oriented Markup Language).
+Parsing, serialisation, and deserialisation with a `System.Text.Json`-style API and zero runtime
+dependencies.
+
+## Public API
+
+The sole public entry point is the static facade **`HumlSerializer`** (`src/Huml.Net/HumlSerializer.cs`):
+`Serialize` / `Deserialize` / `Parse` / `Populate`. Everything else is `internal`. The committed
+public-surface baseline is `docs/public-api.txt` — treat it as the source of truth, and keep public
+API changes additive per `docs/internals/api-freeze.md`.
+
+## Commands
+
+```bash
+dotnet build                                            # build all TFMs
+dotnet test                                             # run all tests
+dotnet test --framework net10.0                         # single TFM
+dotnet test --filter "FullyQualifiedName~SharedSuiteTests"   # one class
+```
+
+Clone with `--recurse-submodules` — the `fixtures/v0.1` and `fixtures/v0.2` directories are
+submodules; without them the fixture Theory tests find zero rows.
+
+## Conventions (non-negotiable)
+
+- **British English** in all docs and comments (`serialisation`, `behaviour`, `recognised`).
+- **xUnit v3 + AwesomeAssertions** — never FluentAssertions.
+- **Zero warnings** (`TreatWarningsAsErrors`) across `netstandard2.1`/`net8.0`/`net9.0`/`net10.0`.
+- **No external runtime dependencies** in `Huml.Net.csproj`.
+- **CHANGELOG discipline** — add user-visible changes under `## [Unreleased]` as you go.
+- New error-or-no-error parse behaviours: assess against `.claude/rules/fixture-gaps.md` and stage
+  language-agnostic cases in `fixtures/extensions/`.
+
+## Task tracking
+
+Work is tracked in `backlog/` via the Backlog.md MCP — see the workflow below.
 
 <!-- BACKLOG.MD MCP GUIDELINES START -->
 
