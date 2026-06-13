@@ -42,13 +42,16 @@ dotnet pack src/Huml.Net/Huml.Net.csproj -c Release
 
 ### Public API Surface
 
-`src/Huml.Net/Huml.cs` — the **sole public entry point**, a static facade mirroring `System.Text.Json.JsonSerializer`. All internal pipeline classes are `internal sealed`; consumers never touch them directly.
+`src/Huml.Net/HumlSerializer.cs` — the **sole public entry point**, a static facade mirroring `System.Text.Json.JsonSerializer`. All internal pipeline classes are `internal sealed`; consumers never touch them directly.
 
 ```
-Huml.Serialize<T>(value, options?)        → string
-Huml.Deserialize<T>(string/Span, options?) → T
-Huml.Parse(string, options?)              → HumlDocument (AST)
+HumlSerializer.Serialize<T>(value, options?)         → string
+HumlSerializer.Deserialize<T>(string/Span, options?) → T
+HumlSerializer.Parse(string, options?)               → HumlDocument (AST)
+HumlSerializer.Populate<T>(string/Span, target, options?) → void  (overlay onto an instance)
 ```
+
+> The facade was renamed `Huml` → `HumlSerializer` in `0.2.0-beta.1` (the old name collided with the root `Huml` namespace). There is no `Huml` class or `Huml.cs` file.
 
 ### Pipeline Flow
 
@@ -57,23 +60,26 @@ Input string
     └─► Lexer          (Lexer/Lexer.cs)         — pull-based tokeniser
          └─► HumlParser (Parser/HumlParser.cs)   — recursive-descent, produces AST
               └─► HumlDocument (AST root)
-                   ├─► HumlDeserializer           — AST → .NET objects
-                   └─► HumlSerializer             — .NET objects → HUML text
+                   ├─► HumlDeserializer           — AST → .NET objects (internal)
+                   └─► HumlSerializerImpl         — .NET objects → HUML text (internal)
 ```
+
+The public `HumlSerializer` facade delegates to the internal `HumlSerializerImpl` (serialise) and `HumlDeserializer` (deserialise); don't confuse the public facade with the internal serialiser.
 
 ### AST Node Hierarchy
 
-All nodes in `src/Huml.Net/Parser/` are `public sealed record` types:
+All nodes in `src/Huml.Net/Parser/` are `public sealed record` types. Every node carries `Line` and `Column` source positions (via the `HumlNode` base):
 
-| Type           | Role                                                           |
-| -------------- | -------------------------------------------------------------- |
-| `HumlNode`     | Abstract base record                                           |
-| `HumlDocument` | Root / mapping block — holds `IReadOnlyList<HumlNode>` entries |
-| `HumlMapping`  | Single key-value pair (`Key: string`, `Value: HumlNode`)       |
-| `HumlScalar`   | Leaf value (`Kind: ScalarKind`, `Value: object?`)              |
-| `HumlSequence` | Ordered list of `HumlNode` items                               |
+| Type                | Role                                                           |
+| ------------------- | -------------------------------------------------------------- |
+| `HumlNode`          | Abstract base record (`Line`, `Column`)                        |
+| `HumlDocument`      | Root / nested mapping block — holds `IReadOnlyList<HumlNode>` `Entries`; exposes `DetectedVersion` |
+| `HumlMapping`       | Single key-value pair (`Key: string`, `Value: HumlNode`)       |
+| `HumlInlineMapping` | Inline dict (`{ a: 1, b: 2 }`) — holds `IReadOnlyList<HumlNode>` `Entries` |
+| `HumlScalar`        | Leaf value (`Kind: ScalarKind`, `Value: object?`)              |
+| `HumlSequence`      | Ordered list of `HumlNode` `Items`                             |
 
-`HumlDocument` is reused for both the document root and nested mapping blocks (inline dicts also produce a `HumlDocument`).
+`HumlDocument` is used for both the document root and nested **block** mapping blocks; **inline** dicts produce a `HumlInlineMapping`.
 
 ### Versioning Model
 
@@ -111,15 +117,15 @@ Each JSON fixture row has `name`, `input`, and `error` (bool). When `error` is t
 
 ```csharp
 // Positive assertion
-var act = () => Huml.Parse(input, HumlOptions.Default);
+var act = () => HumlSerializer.Parse(input, HumlOptions.Default);
 act.Should().NotThrow();
 
 // Negative assertion
-var act = () => Huml.Parse(input, HumlOptions.Default);
+var act = () => HumlSerializer.Parse(input, HumlOptions.Default);
 act.Should().Throw<HumlParseException>();
 
 // Deserialise
-var result = Huml.Deserialize<MyDto>(humlText);
+var result = HumlSerializer.Deserialize<MyDto>(humlText);
 result.Property.Should().Be(expected);
 ```
 

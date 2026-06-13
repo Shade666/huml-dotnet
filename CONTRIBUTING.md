@@ -74,11 +74,11 @@ dotnet test --framework net10.0
 
 ```csharp
 // Positive — expect successful parse
-var act = () => Huml.Parse(input, HumlOptions.Default);
+var act = () => HumlSerializer.Parse(input, HumlOptions.Default);
 act.Should().NotThrow();
 
 // Negative — expect a parse error
-var act = () => Huml.Parse(input, HumlOptions.Default);
+var act = () => HumlSerializer.Parse(input, HumlOptions.Default);
 act.Should().Throw<HumlParseException>();
 ```
 

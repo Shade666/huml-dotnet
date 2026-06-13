@@ -48,13 +48,13 @@ var result = HumlSerializer.Deserialize<MyDto>(humlText);
 #pragma warning restore IL2026, IL3050
 ```
 
-## Future: Source-Generator Path
+## Source-Generator Path (reflection-free)
 
-The `IHumlTypeInfoResolver` / `HumlTypeInfo<T>` seam (see [Options Reference](options-reference.md))
-is the planned integration point for a future `Huml.Net.SourceGeneration` package that will
-provide a fully AOT-compatible, reflection-free serialisation path. When that package is
-available, you can register a source-generated resolver via `HumlOptions.TypeInfoResolver`
-and remove the pragma suppressions entirely.
+For a fully AOT-compatible, reflection-free path, use the built-in source generator. Declare a
+`partial` `HumlGeneratedContext` subclass annotated with `[HumlSerializable(typeof(MyDto))]` and
+register it via `HumlOptions.TypeInfoResolver`; the generator emits the metadata at compile time
+so no runtime reflection is needed and the `IL2026`/`IL3050` warnings no longer apply to those
+types. See **[Use the source generator](source-generator.md)** for the full walkthrough.
 
 ## IsTrimmable
 

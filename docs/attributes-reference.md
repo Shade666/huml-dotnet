@@ -14,7 +14,7 @@ namespace unless noted; the source-generation attributes are in
 | `[HumlExtensionData]` | property of `Dictionary<string, HumlNode>` or `Dictionary<string, object?>` | Captures HUML keys that match no property. Suppresses `UnmappedMemberHandling.Disallow`. |
 | `[HumlConverter(typeof(C))]` | property, type | Uses converter `C` for this member/type. Highest precedence in the converter chain. |
 | `[HumlNumberHandling(…)]` | property, type | Per-member number-handling (e.g. read/write numbers as strings). |
-| `[HumlNamingPolicy(typeof(P))]` | property | Overrides the container's naming policy for this one member. |
+| `[HumlNamingPolicy(HumlKnownNamingPolicy.KebabCase)]` | property | Overrides the container's naming policy for this one member. Takes a `HumlKnownNamingPolicy` value (`CamelCase`, `KebabCase`, `PascalCase`, `SnakeCase`, or `Unspecified` to defer to the global policy). |
 
 ## Type-level attributes
 

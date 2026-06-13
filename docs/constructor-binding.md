@@ -1,12 +1,12 @@
 # Constructor Binding
 
-`HumlDeserializer` supports types with parameterised constructors — including C# records and
-classes that rely on constructor injection rather than property setters. This allows
+`HumlSerializer.Deserialize` supports types with parameterised constructors — including C# records
+and classes that rely on constructor injection rather than property setters. This allows
 deserialising directly into immutable or read-only types.
 
 ## Constructor Selection
 
-`HumlDeserializer` selects a constructor using the same priority as `System.Text.Json`:
+Huml.Net selects a constructor using the same priority as `System.Text.Json`:
 
 1. A constructor annotated with `[HumlConstructor]`
 2. A single non-parameterless public constructor (auto-selected when unambiguous)

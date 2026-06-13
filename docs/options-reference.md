@@ -15,7 +15,8 @@ instance must not be mutated; the built-in instances are pre-frozen at type-load
 | `CollectionFormat`          | `CollectionFormat`          | `Multiline` | `Multiline`, `Inline`                                     | Global default for collection serialisation format; per-property override via `[HumlProperty(Inline = InlineMode.Inline)]`. See [Inline Serialisation](inline-serialisation.md). |
 | `MaxRecursionDepth`         | `int`                       | `64`        | `1`–`1024`                                                | Max nesting depth before `HumlParseException` is thrown |
 | `PropertyNamingPolicy`      | `HumlNamingPolicy?`         | `null`      | `null` or any `HumlNamingPolicy`                          | Converts .NET property names to HUML keys. `null` = use property name as-is. Built-ins: `KebabCase`, `SnakeCase`, `CamelCase`, `PascalCase`. `[HumlProperty]` name always takes precedence. |
-| `Converters`                | `IList<HumlConverter>`      | `[]`        | any list of `HumlConverter`                               | Custom converters consulted during (de)serialisation. First converter whose `CanConvert` returns `true` wins. Do not modify after first use. |
+| `Converters`                | `IReadOnlyList<HumlConverter>` | `[]`     | any sequence of `HumlConverter`                          | Custom converters consulted during (de)serialisation. First converter whose `CanConvert` returns `true` wins. Assign a fully populated list via the object initialiser; the property is `init`-only. |
+| `NumberHandling`            | `HumlNumberHandling`        | `Strict`    | `Strict`, `AllowReadingFromString`, `WriteAsString`       | Global default for reading/writing numbers. `Strict` = numbers only; `AllowReadingFromString` = accept quoted numbers on read; `WriteAsString` = emit numbers as quoted strings. Per-member `[HumlNumberHandling(…)]` overrides. |
 | `DefaultIgnoreCondition`    | `HumlIgnoreCondition`       | `Never`     | `Never`, `WhenWritingNull`, `WhenWritingDefault`, `Always` | Global default for when to omit properties during serialisation. Precedence: per-property `OmitIfDefault` → `[HumlIgnoreDefaults]` → this option. |
 | `ValidateDuplicateKeysOnWrite` | `bool`                   | `false`     | `true`, `false`                                           | When `true`, throws `HumlSerializeException` on duplicate dictionary keys (ordinal). Multiline path only; inline dicts are not checked. |
 | `UnmappedMemberHandling`    | `UnmappedMemberHandling`    | `Skip`      | `Skip`, `Disallow`                                        | `Skip` silently ignores unknown HUML keys (forward-compatible). `Disallow` throws `HumlDeserializeException` listing the key. Suppressed when a `[HumlExtensionData]` property captures unknown keys. |
@@ -64,7 +65,7 @@ var result2 = HumlSerializer.Deserialize<MyDto>(humlText, custom);
 
 ## Notes
 
-- Passing `null` for `options` in any `Huml.*` method is equivalent to passing `HumlOptions.Default` (header-aware auto-detect).
+- Passing `null` for `options` in any `HumlSerializer.*` method is equivalent to passing `HumlOptions.Default` (header-aware auto-detect).
 - `MaxRecursionDepth` throws `ArgumentOutOfRangeException` at construction time if the value is outside `[1, 1024]`.
 - `CollectionFormat.Inline` is silently ignored for collection properties containing non-scalar items — those always emit in multiline format.
 - `PropertyNamingPolicy` applies only to .NET property names — it does not affect `Dictionary<string, T>` string keys or `[HumlProperty]` explicit names.
@@ -72,7 +73,7 @@ var result2 = HumlSerializer.Deserialize<MyDto>(humlText, custom);
 - `DefaultIgnoreCondition` applies only to serialisation — it has no effect during deserialisation.
 - `ValidateDuplicateKeysOnWrite` uses `StringComparer.Ordinal`; keys differing only in casing are treated as distinct. Inline dictionaries are not validated in this release.
 - `UnmappedMemberHandling.Disallow` is suppressed when the target type has a `[HumlExtensionData]` property — the unknown key is routed there instead of throwing.
-- `TypeInfoResolver` is a low-level seam for source-generator integration. Do not implement `IHumlTypeInfoResolver` directly; wait for the `Huml.Net.SourceGeneration` package.
+- `TypeInfoResolver` is a low-level seam for source-generator integration. Rather than implementing `IHumlTypeInfoResolver` by hand, register a source-generated `HumlGeneratedContext` — see [Use the source generator](source-generator.md).
 
 ## Document Size Limitation
 
