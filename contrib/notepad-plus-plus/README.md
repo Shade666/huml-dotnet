@@ -1,6 +1,6 @@
 # HUML — Notepad++ User Defined Language
 
-Syntax highlighting for [HUML v0.2](https://github.com/Shade666/huml-dotnet) in Notepad++.
+Syntax highlighting for [HUML v0.2](https://github.com/primeBeri/huml-dotnet) in Notepad++.
 
 Two variants are provided — install **one** per Notepad++ instance (both share the language
 name `HUML`, so installing both causes a conflict):

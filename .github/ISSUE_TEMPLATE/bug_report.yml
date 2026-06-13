@@ -13,7 +13,7 @@ body:
     attributes:
       label: Huml.Net version
       description: Run `dotnet list package` in your project to find the version.
-      placeholder: "e.g. 0.1.0-alpha.1"
+      placeholder: "e.g. 0.2.0-beta.1"
     validations:
       required: true
 
