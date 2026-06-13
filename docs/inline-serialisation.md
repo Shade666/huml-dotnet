@@ -146,3 +146,8 @@ it is silently ignored. Only list and dictionary properties are affected.
 Inline format is valid in both HUML v0.1 and v0.2. The serialiser emits the same inline syntax
 regardless of `HumlOptions.SpecVersion`. Inline output round-trips through `HumlSerializer.Parse` without
 error on both spec versions.
+
+## See also
+
+- [Options reference](options-reference.md) — `CollectionFormat`.
+- [Attributes reference](attributes-reference.md) — `[HumlProperty(Inline = …)]`.

@@ -90,3 +90,8 @@ var config = HumlSerializer.Deserialize<Config>("""
     """);
 // config.Level == null
 ```
+
+## See also
+
+- [Attributes reference](attributes-reference.md) — `[HumlEnumValue]`.
+- [Customize property names](naming-policy.md) — how the naming policy transforms member names.
