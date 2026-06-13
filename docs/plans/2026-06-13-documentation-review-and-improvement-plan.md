@@ -4,7 +4,18 @@
 **Author:** Documentation review pass (branch `claude/docs-review-improvement-wwlw9j`)
 **Scope:** All Markdown documentation in `primeBeri/huml-dotnet`, the DocFX site, and the
 companion `huml-dotnet-examples` repo (see access note in §1).
-**Status:** Review complete — this document is the proposed implementation plan, not yet executed.
+**Status:** Phases 0–4 **executed** on branch `claude/docs-review-improvement-wwlw9j`
+(see commit history). Phase 5 (companion examples repo) remains **blocked on repo access**.
+
+> **Execution note — archival course-correction (Phase 2).** While executing, the "archive batch"
+> in §3 was found to be **still load-bearing**: `api-freeze.md`, `g3-security-review.md`, and
+> `g3-review-raw.json` are referenced by `backlog/config.yml`'s definition-of-done and by open
+> post-beta tasks (milestone m-1, findings M4/M5/M8/M10/M15). Relocating them would break the live
+> task system, so they were **kept in place** (they are already excluded from the published site).
+> Only `documentation-plan.md` (genuinely executed, dependency-free) and the stale
+> `spec-compliance-report.md` snapshot were given historical/status banners rather than moved.
+> The `contrib/` one-off files were left in place: their upstream PRs have not merged
+> (`fixtures/extensions/**` are still present), so they are not yet deletable.
 
 ---
 
