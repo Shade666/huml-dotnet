@@ -1,5 +1,20 @@
 # HUML Spec Compliance Report — Huml.Net
 
+> **Status — point-in-time snapshot (2026-06-10).** This report records the G1.3 compliance sweep
+> as it stood *before* the `0.2.0-beta.1` release. Several divergences listed below as "deferred"
+> were subsequently **closed in `0.2.0-beta.1`** (see [CHANGELOG.md](../CHANGELOG.md), which is the
+> authoritative record of current behaviour):
+> - **L2** (`key::1`), **L4** (`[ ]`/`{  }`), **S1** (quoted keys in inline dicts), **S4** (spaces
+>   before a trailing comment after `::`) and the comment-after-opening-multiline-delimiter case —
+>   all now behave per spec.
+> - The **hex/octal/binary two's-complement** note (§2, implementation-defined) is resolved:
+>   over-`Int64` literals now overflow loudly like decimals.
+> - **BOM** rejection was *ratified* (kept) with a clearer error message, not relaxed.
+>
+> The still-living, intentional divergences a consumer needs to know about are **L1 (CRLF/CR
+> accepted)**, **BOM rejection**, and the **`\/` escape**. The deferred items that remain genuinely
+> open are tracked in `backlog/` (e.g. M4/M5 numeric-coercion policy).
+
 **Date:** 2026-06-10 (G1.3 of the [beta release programme](plans/2026-06-10-beta-release-goals.md))
 **Spec sources:** [HUML v0.2.0](https://huml.io/specifications/v0-2-0/) and [v0.1.0](https://huml.io/specifications/v0-1-0/) (verbatim markdown from `huml-lang/website`), cross-checked against the `go-huml` reference implementation where the spec is silent or ambiguous.
 **Method:** three parallel audit passes (lexical / scalar / structural rules) enumerating every normative rule, each verified against (a) upstream + extension fixture coverage and (b) implementation code, with 48 runtime probes for anything not statically resolvable.
