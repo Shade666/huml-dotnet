@@ -15,7 +15,7 @@ Input string / ReadOnlySpan<char>
                    └─► HumlSerializer             — .NET objects → HUML text
 ```
 
-The public entry point is the static `Huml` facade (`src/Huml.Net/Huml.cs`). All pipeline classes
+The public entry point is the static `HumlSerializer` facade (`src/Huml.Net/HumlSerializer.cs`). All pipeline classes
 are `internal sealed` — consumers never interact with them directly.
 
 ## Lexer
@@ -141,5 +141,5 @@ Key implementation details:
 | Serialiser | `src/Huml.Net/Serialization/HumlSerializer.cs` |
 | Deserialiser | `src/Huml.Net/Serialization/HumlDeserializer.cs` |
 | Property cache | `src/Huml.Net/Serialization/PropertyDescriptor.cs` |
-| Public facade | `src/Huml.Net/Huml.cs` |
+| Public facade | `src/Huml.Net/HumlSerializer.cs` |
 | Options | `src/Huml.Net/Versioning/HumlOptions.cs` |

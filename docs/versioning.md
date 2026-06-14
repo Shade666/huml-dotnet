@@ -115,9 +115,9 @@ var opts = new HumlOptions { SpecVersion = doc.DetectedVersion ?? HumlSpecVersio
 // Round-trip: deserialise with the detected version, then re-serialise with the same version
 var dto    = HumlSerializer.Deserialize<MyDto>(humlText, opts);
 var output = HumlSerializer.Serialize(dto, opts);
+```
 
 ## See also
 
 - [Options reference](options-reference.md) — `VersionSource`, `UnknownVersionBehaviour`, and `SpecVersion` in the full options table.
 - [E13.Versioning](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E13.Versioning) — runnable example (`DetectedVersion`, version-preserving round-trip, `UseLatest`, and `Throw`).
-```
