@@ -1,5 +1,10 @@
 # Documentation Plan — Huml.Net beta docs
 
+> **Status — executed / historical.** This plan (G4.1) has been implemented: the DocFX site,
+> `docfx.json`, `toc.yml`, and the GitHub Pages workflow all now exist and embody these decisions.
+> It is retained for rationale and is excluded from the published site. The live structure is
+> defined by `docfx.json` + `docs/toc.yml`, not by this document.
+
 **Date:** 2026-06-11 (G4.1 of the beta release programme).
 **Purpose:** decide the structure of the beta documentation site before writing it, grounded in
 the best-in-class examples the goal calls out.

@@ -77,3 +77,8 @@ Prior to 0.2.0-alpha.2, all five types fell through to the POCO reflection path.
 and `DateTimeOffset` produced incorrect output and `DateOnly`/`TimeOnly` would throw
 `InvalidCastException` during deserialisation. Any custom converter previously used to work
 around this can be removed.
+
+## See also
+
+- [Write a custom converter](custom-converters.md) — for non-default date/time formats.
+- [Handle errors](error-handling.md) — what a malformed date scalar throws.

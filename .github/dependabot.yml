@@ -5,6 +5,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      nuget-minor-patch:
+        update-types:
+          - minor
+          - patch
     ignore:
       # The source generator loads inside the consumer's compiler process, so its
       # Microsoft.CodeAnalysis.* reference is a COMPATIBILITY FLOOR, not a normal
@@ -19,6 +24,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      actions-all:
+        patterns:
+          - "*"
 
   # gitsubmodule intentionally omitted — fixtures/v0.1 and fixtures/v0.2 are
   # pinned to specific upstream spec-version tags and must be updated manually.

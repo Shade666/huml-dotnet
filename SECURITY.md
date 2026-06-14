@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-During the alpha phase only the **latest published version** receives security fixes.
+During the beta phase only the **latest published version** receives security fixes.
 
 | Version | Supported |
 |---------|-----------|

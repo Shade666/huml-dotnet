@@ -14,13 +14,18 @@ Please include:
 ## General Questions
 
 For questions about the HUML language itself (syntax, spec behaviour), please refer to
-the [HUML specification](https://huml.io) or open an issue on the
-[huml-lang/tests](https://github.com/huml-lang/tests) repository.
+the [HUML specification](https://huml.io) and the upstream
+[huml-lang](https://github.com/huml-lang) project. (The
+[huml-lang/tests](https://github.com/huml-lang/tests) repository is the shared fixture suite —
+use it for fixture issues, not general language questions.)
 
 For questions specific to this .NET implementation, open a GitHub Issue with the
 `question` label.
 
 ## Compatibility & Version Support
 
-During the alpha phase (0.x), only the latest published version is maintained. See
+During the beta phase (0.x), only the latest published version is maintained. See
 [SECURITY.md](SECURITY.md) for the full support matrix.
+
+For runnable, worked examples of every feature, see the companion
+[huml-dotnet-examples](https://github.com/primeBeri/huml-dotnet-examples) repository.

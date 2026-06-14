@@ -20,3 +20,4 @@ Closes #<!-- issue number, or "N/A" -->
 - [ ] `CHANGELOG.md` updated under `[Unreleased]`
 - [ ] No fixture regressions (`dotnet test`)
 - [ ] No new compiler warnings
+- [ ] If AI-assisted, this change has been human-reviewed (see [CONTRIBUTING.md](../CONTRIBUTING.md))

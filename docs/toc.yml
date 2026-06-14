@@ -8,10 +8,16 @@
   items:
     - name: Customize property names
       href: naming-policy.md
+    - name: Ignore properties & omit defaults
+      href: ignore-properties.md
     - name: Control inline vs multiline
       href: inline-serialisation.md
     - name: Work with enums
       href: enum-serialisation.md
+    - name: Read & write numbers as strings
+      href: number-handling.md
+    - name: Serialize polymorphic types
+      href: polymorphism.md
     - name: Bind constructors & records
       href: constructor-binding.md
     - name: Require properties

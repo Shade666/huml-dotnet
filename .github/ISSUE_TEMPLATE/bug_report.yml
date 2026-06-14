@@ -13,7 +13,7 @@ body:
     attributes:
       label: Huml.Net version
       description: Run `dotnet list package` in your project to find the version.
-      placeholder: "e.g. 0.1.0-alpha.1"
+      placeholder: "e.g. 0.2.0-beta.1"
     validations:
       required: true
 
@@ -24,6 +24,18 @@ body:
       placeholder: "e.g. net10.0, net8.0, netstandard2.1"
     validations:
       required: true
+
+  - type: dropdown
+    id: spec-version
+    attributes:
+      label: HUML spec version
+      description: Which HUML spec version are you targeting? (the `%HUML` directive, or your `HumlOptions.SpecVersion`)
+      options:
+        - "v0.2"
+        - "v0.1"
+        - "Not sure"
+    validations:
+      required: false
 
   - type: textarea
     id: input

@@ -68,6 +68,14 @@ public enum ConnectionState { Connected, Disconnected, ReconnectingNow }
 Deserialisation uses a case-sensitive lookup first, falling back to case-insensitive lookup if no
 case-sensitive match is found. `HumlDeserializeException` is thrown if no match is found at all.
 
+## Limitations
+
+- **`[Flags]` enums are not supported for serialisation.** A combined flags value has no single
+  member name, so serialising one throws `HumlSerializeException`.
+- **Undefined numeric values throw.** Serialising an enum value that does not correspond to a
+  defined member (for example `(LogLevel)99`) throws `HumlSerializeException` rather than emitting
+  the raw number.
+
 ## Nullable Enums
 
 Nullable enum properties (`LogLevel?`) are fully supported. A HUML `null` scalar maps to `null`
@@ -82,3 +90,8 @@ var config = HumlSerializer.Deserialize<Config>("""
     """);
 // config.Level == null
 ```
+
+## See also
+
+- [Attributes reference](attributes-reference.md) — `[HumlEnumValue]`.
+- [Customize property names](naming-policy.md) — how the naming policy transforms member names.

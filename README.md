@@ -159,7 +159,10 @@ The full documentation site — tutorial, how-to guides, API reference, and expl
 - [Error Handling](docs/error-handling.md)
 - [Inline Serialisation](docs/inline-serialisation.md)
 - [Naming Policy](docs/naming-policy.md)
+- [Ignore Properties & Omit Defaults](docs/ignore-properties.md)
 - [Enum Serialisation](docs/enum-serialisation.md)
+- [Number Handling](docs/number-handling.md)
+- [Polymorphic Types](docs/polymorphism.md)
 - [Custom Converters](docs/custom-converters.md)
 - [Populate](docs/populate.md)
 - [Constructor Binding](docs/constructor-binding.md)
@@ -167,6 +170,9 @@ The full documentation site — tutorial, how-to guides, API reference, and expl
 - [Date and Time](docs/date-time.md)
 - [Required Properties](docs/required-properties.md)
 - [AOT and Trimming](docs/aot-trimming.md)
+
+Runnable, worked examples of every feature live in the companion
+**[huml-dotnet-examples](https://github.com/primeBeri/huml-dotnet-examples)** repository.
 
 ## Links
 
