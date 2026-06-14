@@ -91,3 +91,9 @@ var result = HumlSerializer.Deserialize<MyDto>(humlText, HumlOptions.Default);
 
 A dedicated `HumlOptions.MaxDocumentSize` property may be added in a future release as a
 non-breaking, additive change.
+
+## See also
+
+- [Customize property names](naming-policy.md) — `PropertyNamingPolicy` in depth.
+- [Custom converters](custom-converters.md) — the `Converters` list and priority chain.
+- [E09.Options](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E09.Options) — runnable example (naming policy, collection format, ignore condition, number handling).

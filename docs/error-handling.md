@@ -102,3 +102,8 @@ catch (HumlDeserializeException ex)
   listing the first unrecognised key encountered. This check is suppressed when the target type
   declares a `[HumlExtensionData]` property — unknown keys are captured there instead.
   See [Options Reference](options-reference.md) for the full preset comparison table.
+
+## See also
+
+- [Options reference](options-reference.md) — `UnmappedMemberHandling`, `ValidateDuplicateKeysOnWrite`, and preset instances.
+- [E07.ErrorHandling](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E07.ErrorHandling) — runnable example (parse errors, required members, `HumlOptions.Strict`).

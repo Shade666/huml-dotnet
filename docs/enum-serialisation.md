@@ -95,3 +95,4 @@ var config = HumlSerializer.Deserialize<Config>("""
 
 - [Attributes reference](attributes-reference.md) — `[HumlEnumValue]`.
 - [Customize property names](naming-policy.md) — how the naming policy transforms member names.
+- [E03.Enums](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E03.Enums) — runnable example.

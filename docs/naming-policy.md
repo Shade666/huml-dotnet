@@ -79,3 +79,9 @@ overridden `Equals`/`GetHashCode` on `HumlNamingPolicy`), so stateless subclasse
 - Acronyms in built-in kebab/snake policies split letter-by-letter (`URL` → `u-r-l`). For
   acronym-aware conversion, use `[HumlProperty]` directly.
 - The policy is applied once at descriptor build time and cached per `(Type, HumlNamingPolicy?)` pair.
+
+## See also
+
+- [Options reference](options-reference.md) — `PropertyNamingPolicy` in context with all other options.
+- [E02.NamingPolicies](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E02.NamingPolicies) — runnable example (kebab-case + `[HumlProperty]` override).
+- [E09.Options](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E09.Options) — runnable example (snake_case policy alongside other options).

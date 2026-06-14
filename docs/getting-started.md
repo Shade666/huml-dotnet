@@ -110,3 +110,4 @@ catch (HumlParseException ex)
 - Require certain keys to be present: **[Require properties](required-properties.md)**.
 - See every option in one place: **[Options reference](options-reference.md)**.
 - Browse the full surface: **<xref:Huml.Net.HumlSerializer>**.
+- Run the code yourself: **[E01.GettingStarted](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E01.GettingStarted)** in the companion examples repo.

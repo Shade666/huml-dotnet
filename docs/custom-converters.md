@@ -107,3 +107,4 @@ public sealed class ReadOnlyListConverter : HumlConverter<object>
 - [Attributes reference](attributes-reference.md) — `[HumlConverter]`.
 - [Options reference](options-reference.md) — the `Converters` list and its precedence.
 - [Working with the AST](ast-usage.md) — the `HumlNode` types a converter's `Read` receives.
+- [E05.CustomConverters](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E05.CustomConverters) — runnable example (value-type converter with compact string form).

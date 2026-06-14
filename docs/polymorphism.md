@@ -94,3 +94,4 @@ public abstract class Shape { /* … */ }
 - [Attributes reference](attributes-reference.md) — `[HumlPolymorphic]` / `[HumlDerivedType]`.
 - [Handle errors](error-handling.md) — `HumlDeserializeException` details.
 - <xref:Huml.Net.HumlSerializer> — facade signatures.
+- [E04.Polymorphism](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E04.Polymorphism) — runnable example (including nested types and collection elements).

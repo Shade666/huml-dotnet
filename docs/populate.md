@@ -94,3 +94,9 @@ HumlSerializer.Populate("""
 - `Populate` does not clear existing collection contents before appending. If the property holds a
   `List<T>` and the HUML document contains a sequence for that key, the list is **replaced** (not
   appended to).
+
+## See also
+
+- [Options reference](options-reference.md) — `UnmappedMemberHandling` and `DefaultIgnoreCondition` apply during population.
+- [Extension data](extension-data.md) — unknown keys encountered during population are captured into `[HumlExtensionData]`.
+- [E06.Populate](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E06.Populate) — runnable example (defaults + overrides pattern).

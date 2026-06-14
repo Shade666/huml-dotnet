@@ -67,3 +67,9 @@ The extension data property may be typed as either:
 ## Populate Participation
 
 `HumlSerializer.Populate<T>()` also captures unknown keys into the extension data property.
+
+## See also
+
+- [Options reference](options-reference.md) — `UnmappedMemberHandling.Disallow` and its interaction with `[HumlExtensionData]`.
+- [Populate](populate.md) — unknown keys during population are routed to the extension data property.
+- [E11.ExtensionData](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E11.ExtensionData) — runnable example (capture, round-trip, and `Disallow` contrast).

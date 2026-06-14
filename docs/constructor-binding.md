@@ -108,3 +108,9 @@ var cfg = HumlSerializer.Deserialize<Config>("""
 | `HumlDeserializeException` | No suitable constructor found (ambiguous or missing `[HumlConstructor]`)   |
 | `HumlDeserializeException` | A required constructor parameter has no corresponding HUML key             |
 | `HumlDeserializeException` | A HUML value cannot be coerced to the parameter's declared type            |
+
+## See also
+
+- [Attributes reference](attributes-reference.md) — `[HumlConstructor]`.
+- [Required properties](required-properties.md) — constructor parameters without a default value behave like `[HumlRequired]`.
+- [E10.ConstructorBinding](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E10.ConstructorBinding) — runnable example (record primary ctor, `[HumlConstructor]`, `init`-only properties).

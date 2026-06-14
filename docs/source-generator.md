@@ -66,3 +66,5 @@ them. `init`-only properties bind via the constructor rather than a generated se
 - [Publish AOT / trimmed](aot-trimming.md) — the wider AOT story.
 - [Extending the pipeline](internals/extending.md) — the <xref:Huml.Net.Serialization.IHumlTypeInfoResolver> seam the
   generated context plugs into.
+- [E08.SourceGeneration](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E08.SourceGeneration) — runnable example.
+- [E12.AotPublish](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E12.AotPublish) — runnable example showing the AOT-safe Parse path alongside the source-gen path.

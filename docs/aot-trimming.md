@@ -62,3 +62,8 @@ types. See **[Use the source generator](source-generator.md)** for the full walk
 target frameworks (net8.0, net9.0, net10.0). This tells the ILLink trimmer that Huml.Net
 has been audited for trimming and that the trimmer may remove unused code paths within the
 library itself. On `netstandard2.1`, trimmer support is absent and `IsTrimmable` is not set.
+
+## See also
+
+- [Use the source generator](source-generator.md) — the source-gen path that removes IL2026/IL3050 at call sites.
+- [E12.AotPublish](https://github.com/primeBeri/huml-dotnet-examples/tree/main/src/examples/E12.AotPublish) — runnable example (AOT-safe Parse path, pragma suppression, source-gen path).

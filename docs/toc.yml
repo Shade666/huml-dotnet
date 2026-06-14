@@ -58,3 +58,5 @@
       href: ast-usage.md
     - name: Extending the pipeline
       href: internals/extending.md
+    - name: Performance benchmarks
+      href: benchmarks.md
