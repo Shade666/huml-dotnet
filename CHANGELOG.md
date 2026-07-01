@@ -10,6 +10,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+(no changes yet)
+
+## [0.2.0-beta.2] - 2026-07-01
+
 ### Added
 
 - **`HumlConverterFactory`** — a new abstract base for a converter that produces a different concrete `HumlConverter` per requested type, mirroring `System.Text.Json.Serialization.JsonConverterFactory`. Register one via `HumlOptions.Converters` or `[HumlConverter(typeof(MyFactory))]`; `CreateConverter(Type, HumlOptions)` returns the converter to use, or `null` to decline and fall through to the next candidate. See [Custom Converters — Converter Factories](docs/custom-converters.md#converter-factories).
