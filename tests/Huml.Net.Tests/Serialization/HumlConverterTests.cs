@@ -356,4 +356,204 @@ public class HumlConverterTests
         var result = HumlSerializer.Serialize(new { P = new Point(1, 2) }, options);
         result.Should().Contain("\"1,2\"");
     }
+
+    // ── CONV-FACTORY-* — HumlConverterFactory and Nullable<T> auto-unwrap (issue #30) ──
+
+    // Plain HumlConverter<Status>, registered globally — used to reproduce the exact issue #30
+    // symptom: does a converter registered for T also serve T? with no extra CanConvert override?
+    private enum Status { Active, Inactive }
+
+    private sealed class StatusConverter : HumlConverter<Status>
+    {
+        public override Status Read(HumlNode node)
+        {
+            if (node is not HumlScalar { Kind: ScalarKind.String, Value: string s })
+                throw new HumlDeserializeException("Expected string for Status.");
+            return Enum.Parse<Status>(s);
+        }
+
+        public override void Write(HumlWriterContext context, Status value)
+            => context.AppendRaw($"\"{value}\"");
+    }
+
+    private class NullableStatusPoco
+    {
+        public Status? State { get; set; }
+    }
+
+    // A factory producing a lenient converter for ANY enum type — the motivating use case from
+    // issue #30 ("a general-purpose lenient enum converter usable across an entire schema").
+    private sealed class LenientEnumConverterFactory : HumlConverterFactory
+    {
+        public int CreateConverterCallCount;
+
+        public override bool CanConvert(Type typeToConvert) => typeToConvert.IsEnum;
+
+        public override HumlConverter? CreateConverter(Type typeToConvert, HumlOptions options)
+        {
+            CreateConverterCallCount++;
+            var converterType = typeof(LenientEnumConverter<>).MakeGenericType(typeToConvert);
+            return (HumlConverter)Activator.CreateInstance(converterType)!;
+        }
+    }
+
+    private sealed class LenientEnumConverter<TEnum> : HumlConverter<TEnum> where TEnum : struct, Enum
+    {
+        public override TEnum Read(HumlNode node)
+        {
+            if (node is HumlScalar { Kind: ScalarKind.String, Value: string s } &&
+                Enum.TryParse<TEnum>(s, ignoreCase: true, out var parsed))
+                return parsed;
+            return default; // lenient: falls back to default rather than throwing
+        }
+
+        public override void Write(HumlWriterContext context, TEnum value)
+            => context.AppendRaw($"\"{value}\"");
+    }
+
+    // A factory that always declines (CreateConverter returns null) — resolution must fall
+    // through to the next candidate rather than short-circuiting.
+    private sealed class DecliningFactory : HumlConverterFactory
+    {
+        public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Point);
+        public override HumlConverter? CreateConverter(Type typeToConvert, HumlOptions options) => null;
+    }
+
+    // Struct resolved through a factory via the type-level [HumlConverter] attribute.
+    private sealed class MoneyConverter : HumlConverter<Money>
+    {
+        public override Money Read(HumlNode node)
+        {
+            if (node is not HumlScalar { Kind: ScalarKind.Integer } scalar)
+                throw new HumlDeserializeException("Expected integer for Money.");
+            return new Money(Convert.ToInt64(scalar.Value, System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        public override void Write(HumlWriterContext context, Money value)
+            => context.AppendRaw(value.Cents.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    private sealed class MoneyConverterFactory : HumlConverterFactory
+    {
+        public override bool CanConvert(Type typeToConvert) => typeToConvert == typeof(Money);
+        public override HumlConverter? CreateConverter(Type typeToConvert, HumlOptions options) => new MoneyConverter();
+    }
+
+    [HumlConverter(typeof(MoneyConverterFactory))]
+    [StructLayout(LayoutKind.Auto)]
+    private record struct Money(long Cents);
+
+    private class MoneyPoco
+    {
+        public Money Price { get; set; }
+    }
+
+    [Fact]
+    public void Factory_ViaOptionsConverters_ProducesConcreteConverter()
+    {
+        var options = new HumlOptions { Converters = new List<HumlConverter> { new LenientEnumConverterFactory() } };
+        var huml = HumlSerializer.Serialize(new { S = Status.Active }, options);
+        huml.Should().Contain("\"Active\"");
+    }
+
+    [Fact]
+    public void Factory_DecliningViaNullCreateConverter_FallsThroughToNextConverter()
+    {
+        var options = new HumlOptions
+        {
+            Converters = new List<HumlConverter> { new DecliningFactory(), new PointConverter() }
+        };
+        var result = HumlSerializer.Serialize(new { P = new Point(1, 2) }, options);
+        result.Should().Contain("\"1,2\"");
+    }
+
+    [Fact]
+    public void Factory_ViaTypeLevelAttribute_ResolvesConcreteConverter()
+    {
+        var result = HumlSerializer.Serialize(new MoneyPoco { Price = new Money(1050) }, new HumlOptions());
+        result.Should().Contain("1050");
+    }
+
+    [Fact]
+    public void Factory_ViaTypeLevelAttribute_RoundTrips()
+    {
+        var original = new MoneyPoco { Price = new Money(2500) };
+        var huml = HumlSerializer.Serialize(original, HumlOptions.LatestSupported);
+        var restored = HumlSerializer.Deserialize<MoneyPoco>(huml, HumlOptions.LatestSupported);
+        restored.Price.Should().Be(original.Price);
+    }
+
+    [Fact]
+    public void Factory_CreateConverter_IsMemoisedPerTargetType()
+    {
+        var factory = new LenientEnumConverterFactory();
+        var options = new HumlOptions { Converters = new List<HumlConverter> { factory } };
+        HumlSerializer.Serialize(new { S = Status.Active }, options);
+        HumlSerializer.Serialize(new { S = Status.Inactive }, options);
+        HumlSerializer.Serialize(new { S = Status.Active }, options);
+        factory.CreateConverterCallCount.Should().Be(1);
+    }
+
+    // Reported symptom (issue #30 regression): a plain HumlConverter<TEnum>, registered
+    // globally, now applies to a TEnum? property automatically — both directions.
+
+    [Fact]
+    public void GlobalConverterForEnum_AppliesToNullableEnumProperty_OnSerialise()
+    {
+        var options = new HumlOptions { Converters = new List<HumlConverter> { new StatusConverter() } };
+        var huml = HumlSerializer.Serialize(new NullableStatusPoco { State = Status.Active }, options);
+        huml.Should().Contain("\"Active\"");
+    }
+
+    [Fact]
+    public void GlobalConverterForEnum_AppliesToNullableEnumProperty_OnDeserialise()
+    {
+        var huml = "%HUML v0.2.0\nState: \"Active\"\n";
+        var options = new HumlOptions
+        {
+            VersionSource = VersionSource.Header,
+            Converters = new List<HumlConverter> { new StatusConverter() }
+        };
+        var result = HumlSerializer.Deserialize<NullableStatusPoco>(huml, options);
+        result.State.Should().Be(Status.Active);
+    }
+
+    [Fact]
+    public void NullableAutoUnwrap_NullValue_EmitsNullKeyword()
+    {
+        var options = new HumlOptions { Converters = new List<HumlConverter> { new StatusConverter() } };
+        var huml = HumlSerializer.Serialize(new NullableStatusPoco { State = null }, options);
+        huml.Should().Contain("State: null");
+    }
+
+    [Fact]
+    public void NullableAutoUnwrap_NullScalar_DeserialisesToNull_WithoutInvokingInnerConverter()
+    {
+        // StatusConverter.Read throws on anything that isn't a string scalar — if the null
+        // scalar reached it, this would throw HumlDeserializeException instead of succeeding.
+        var huml = "%HUML v0.2.0\nState: null\n";
+        var options = new HumlOptions
+        {
+            VersionSource = VersionSource.Header,
+            Converters = new List<HumlConverter> { new StatusConverter() }
+        };
+        var result = HumlSerializer.Deserialize<NullableStatusPoco>(huml, options);
+        result.State.Should().BeNull();
+    }
+
+    // A factory cannot be used via a property-level [HumlConverter] — property-level converters
+    // are resolved directly, without an HumlOptions context for CreateConverter to run against.
+    private sealed class BadFactoryPropertyPoco
+    {
+        [HumlConverter(typeof(LenientEnumConverterFactory))]
+        public Status State { get; set; }
+    }
+
+    [Fact]
+    public void Factory_ViaPropertyLevelAttribute_ThrowsInvalidOperationException()
+    {
+        var act = () => PropertyDescriptor.GetDescriptors(typeof(BadFactoryPropertyPoco));
+        act.Should().Throw<InvalidOperationException>()
+           .WithMessage("*HumlConverterFactory*property-level*");
+    }
 }

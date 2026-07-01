@@ -10,7 +10,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
-(no changes yet)
+### Added
+
+- **`HumlConverterFactory`** — a new abstract base for a converter that produces a different concrete `HumlConverter` per requested type, mirroring `System.Text.Json.Serialization.JsonConverterFactory`. Register one via `HumlOptions.Converters` or `[HumlConverter(typeof(MyFactory))]`; `CreateConverter(Type, HumlOptions)` returns the converter to use, or `null` to decline and fall through to the next candidate. See [Custom Converters — Converter Factories](docs/custom-converters.md#converter-factories).
+- **A converter registered for `T` now automatically applies to `T?`** — `ConverterCache` unwraps `Nullable<T>` when resolving a converter, wrapping the underlying converter in a null-aware adapter so a plain `HumlConverter<TEnum>` (or a factory) transparently serves `TEnum?` without any extra `CanConvert` override. Fixes [#30](https://github.com/primeBeri/huml-dotnet/issues/30) — mirrors System.Text.Json's `NullableConverterFactory` behaviour ([dotnet/runtime#102006](https://github.com/dotnet/runtime/issues/102006)). See [Custom Converters — Nullable Types](docs/custom-converters.md#nullable-types).
 
 ## [0.2.0-beta.1] - 2026-06-13
 

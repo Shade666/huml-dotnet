@@ -73,6 +73,10 @@ When multiple registrations could match, priority is:
 3. `HumlOptions.Converters` list (first match wins)
 4. Built-in type dispatch
 
+A `HumlConverterFactory` participates at whichever tier it is registered — tier 2 via
+`[HumlConverter(typeof(MyFactory))]`, or tier 3 via `HumlOptions.Converters` — it is not a
+separate tier of its own. See [Converter Factories](#converter-factories) below.
+
 ## HumlWriterContext Methods
 
 | Method                                 | Use When                                                                 |
@@ -101,6 +105,56 @@ public sealed class ReadOnlyListConverter : HumlConverter<object>
     public override void Write(HumlWriterContext context, object value) { /* ... */ }
 }
 ```
+
+## Nullable Types
+
+A converter registered for `T` automatically applies to `T?` (`Nullable<T>`) as well — no extra
+`CanConvert` override is needed. When resolution finds no converter matching `T?` directly, it
+looks for one matching the underlying type `T` and, if found, wraps it in an internal null-aware
+adapter: a `null` HUML value short-circuits to `null` without invoking the converter, and any other
+value is passed straight through. For example, a single globally-registered `HumlConverter<Status>`
+transparently serves both a `Status` property and a `Status?` property.
+
+## Converter Factories
+
+Extend `HumlConverterFactory` when one converter *implementation* needs to serve many concrete
+types dynamically — for example a lenient converter usable for any enum in a schema. This mirrors
+`System.Text.Json.Serialization.JsonConverterFactory`:
+
+```csharp
+public sealed class LenientEnumConverterFactory : HumlConverterFactory
+{
+    public override bool CanConvert(Type typeToConvert) => typeToConvert.IsEnum;
+
+    public override HumlConverter? CreateConverter(Type typeToConvert, HumlOptions options)
+    {
+        var converterType = typeof(LenientEnumConverter<>).MakeGenericType(typeToConvert);
+        return (HumlConverter)Activator.CreateInstance(converterType)!;
+    }
+}
+
+public sealed class LenientEnumConverter<TEnum> : HumlConverter<TEnum> where TEnum : struct, Enum
+{
+    public override TEnum Read(HumlNode node) =>
+        node is HumlScalar { Kind: ScalarKind.String, Value: string s } &&
+        Enum.TryParse<TEnum>(s, ignoreCase: true, out var parsed) ? parsed : default;
+
+    public override void Write(HumlWriterContext context, TEnum value) =>
+        context.AppendRaw($"\"{value}\"");
+}
+```
+
+Register a factory via `HumlOptions.Converters`, or via a **type-level**
+`[HumlConverter(typeof(LenientEnumConverterFactory))]`. During resolution, `CreateConverter` is
+called once per requested type and the returned converter is cached — it is not re-created on
+every value. Returning `null` from `CreateConverter` declines the match and resolution falls
+through to the next candidate converter, then built-in dispatch. A factory's own `Read`/`Write`
+are never invoked directly; only the converter it produces is used.
+
+A factory cannot be used via a **property-level** `[HumlConverter]` attribute: property-level
+converters are resolved once, directly, without the active `HumlOptions` that `CreateConverter`
+needs — attempting it throws `InvalidOperationException` as soon as the declaring type's property
+metadata is built. Register the factory globally or attach it to the type instead.
 
 ## See also
 

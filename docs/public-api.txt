@@ -157,6 +157,9 @@ Huml.Net.Serialization.HumlConverter
 Huml.Net.Serialization.HumlConverterAttribute
     ctor (Type)
     property Type ConverterType
+Huml.Net.Serialization.HumlConverterFactory
+    method Boolean CanConvert(Type)
+    method HumlConverter CreateConverter(Type, HumlOptions)
 Huml.Net.Serialization.HumlConverter`1
     method Boolean CanConvert(Type)
     method T Read(HumlNode)

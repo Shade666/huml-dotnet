@@ -69,7 +69,7 @@ var result2 = HumlSerializer.Deserialize<MyDto>(humlText, custom);
 - `MaxRecursionDepth` throws `ArgumentOutOfRangeException` at construction time if the value is outside `[1, 1024]`.
 - `CollectionFormat.Inline` is silently ignored for collection properties containing non-scalar items — those always emit in multiline format.
 - `PropertyNamingPolicy` applies only to .NET property names — it does not affect `Dictionary<string, T>` string keys or `[HumlProperty]` explicit names.
-- The `Converters` list is checked in order; the first converter whose `CanConvert(type)` returns `true` is used. A property-level or type-level `[HumlConverter]` attribute always takes precedence.
+- The `Converters` list is checked in order; the first converter whose `CanConvert(type)` returns `true` is used. A property-level or type-level `[HumlConverter]` attribute always takes precedence. An entry may be a `HumlConverterFactory`, in which case its `CreateConverter` result is used instead of the factory itself (see [Custom Converters — Converter Factories](custom-converters.md#converter-factories)). A converter registered for `T` also applies automatically to `T?` (see [Custom Converters — Nullable Types](custom-converters.md#nullable-types)).
 - `DefaultIgnoreCondition` applies only to serialisation — it has no effect during deserialisation.
 - `ValidateDuplicateKeysOnWrite` uses `StringComparer.Ordinal`; keys differing only in casing are treated as distinct. Inline dictionaries are not validated in this release.
 - `UnmappedMemberHandling.Disallow` is suppressed when the target type has a `[HumlExtensionData]` property — the unknown key is routed there instead of throwing.

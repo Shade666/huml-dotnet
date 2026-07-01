@@ -201,6 +201,18 @@ internal sealed record PropertyDescriptor(
                     converter = instance as HumlConverter
                         ?? throw new InvalidOperationException(
                             $"Converter type '{converterAttr.ConverterType.Name}' does not derive from HumlConverter.");
+
+                    // A property-level [HumlConverter] is used directly, without going through
+                    // ConverterCache — so HumlConverterFactory.CreateConverter (which needs the
+                    // active HumlOptions) never runs here. Fail fast with an actionable message
+                    // instead of throwing NotSupportedException deep inside serialise/deserialise.
+                    if (converter is HumlConverterFactory)
+                        throw new InvalidOperationException(
+                            $"Converter type '{converterAttr.ConverterType.Name}' is a HumlConverterFactory " +
+                            $"and cannot be used via a property-level [HumlConverter] attribute on " +
+                            $"'{type.Name}.{prop.Name}' — property-level converters are resolved without " +
+                            "an HumlOptions context, so CreateConverter cannot run. Register the factory via " +
+                            "HumlOptions.Converters or a type-level [HumlConverter] attribute instead.");
                 }
 
                 var numberHandlingAttr = prop.GetCustomAttribute<HumlNumberHandlingAttribute>();

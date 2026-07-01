@@ -12,7 +12,7 @@ namespace unless noted; the source-generation attributes are in
 | `[HumlIgnore]` | property | Excludes the property from both serialisation and deserialisation. |
 | `[HumlRequired]` | property | The key must be present when deserialising, else `HumlDeserializeException`. (The C# `required` modifier is honoured equivalently.) |
 | `[HumlExtensionData]` | property of `Dictionary<string, HumlNode>` or `Dictionary<string, object?>` | Captures HUML keys that match no property. Suppresses `UnmappedMemberHandling.Disallow`. |
-| `[HumlConverter(typeof(C))]` | property, type | Uses converter `C` for this member/type. Highest precedence in the converter chain. |
+| `[HumlConverter(typeof(C))]` | property, type | Uses converter `C` for this member/type. Highest precedence in the converter chain. At **type level**, `C` may be a `HumlConverterFactory` — see [Custom Converters — Converter Factories](custom-converters.md#converter-factories). At **property level**, `C` must be a concrete converter; a factory throws `InvalidOperationException` (property-level converters resolve without an `HumlOptions` context, so `CreateConverter` cannot run). |
 | `[HumlNumberHandling(…)]` | property, type | Per-member number-handling (e.g. read/write numbers as strings). |
 | `[HumlNamingPolicy(HumlKnownNamingPolicy.KebabCase)]` | property | Overrides the container's naming policy for this one member. Takes a `HumlKnownNamingPolicy` value (`CamelCase`, `KebabCase`, `PascalCase`, `SnakeCase`, or `Unspecified` to defer to the global policy). |
 
