@@ -4,6 +4,7 @@ title: Add IBufferWriter<char> / TextWriter serialise overload (999.45)
 status: To Do
 assignee: []
 created_date: '2026-06-12 23:29'
+updated_date: '2026-07-07 08:12'
 labels:
   - performance
   - serializer
@@ -42,3 +43,13 @@ Deferred backlog item 999.45 (docs/plans/2026-06-10-backlog-disposition.md): Hum
 - [ ] #5 New/changed public members have XML docs; tests use AwesomeAssertions (never FluentAssertions)
 - [ ] #6 New error-or-no-error parse behaviours assessed against .claude/rules/fixture-gaps.md and staged in fixtures/extensions/ when language-agnostic
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: comprehensive-review-2026-07-07
+created: 2026-07-07 08:12
+---
+2026-07-07 architecture review note: when designing the IBufferWriter<char>/TextWriter overload, also evaluate whether an IBufferWriter<byte>/UTF-8 output path is worth a follow-up — all output currently funnels through a UTF-16 pooled StringBuilder into a string, which structurally caps write throughput (STJ's write speed comes largely from Utf8JsonWriter). A UTF-8 path is a larger change and may not be justified for a config-format library, but the overload's shape should not preclude adding one later (e.g. keep the emission core encoding-agnostic). Related: Token.Value being string? (src/Huml.Net/Lexer/Token.cs:10) means every scalar/key allocates a substring on the read side — that half is covered by TASK-013.
+---
+<!-- COMMENTS:END -->

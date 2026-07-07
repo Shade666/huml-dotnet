@@ -4,7 +4,7 @@ title: Run the beta feedback window and ship 0.2.0 stable
 status: To Do
 assignee: []
 created_date: '2026-06-12 23:28'
-updated_date: '2026-06-12 23:30'
+updated_date: '2026-07-07 08:12'
 labels:
   - release
 milestone: m-0
@@ -43,3 +43,13 @@ ordinal: 4000
 - [ ] #5 New/changed public members have XML docs; tests use AwesomeAssertions (never FluentAssertions)
 - [ ] #6 New error-or-no-error parse behaviours assessed against .claude/rules/fixture-gaps.md and staged in fixtures/extensions/ when language-agnostic
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: comprehensive-review-2026-07-07
+created: 2026-07-07 08:12
+---
+2026-07-07 comprehensive review note: 0.2.0-beta.2 shipped on 2026-07-01 (HumlConverterFactory + Nullable<T> auto-unwrap), so the beta soak now covers beta.2. Two routine dependabot PRs are open and should be merged before cutting stable: #31 (nuget-minor-patch group) and #28 (actions-all group). Additionally, TASK-019 (duplicate serialisation of overridden/shadowed properties — verified round-trip-breaking bug) has been raised into m-0 and should gate the stable release.
+---
+<!-- COMMENTS:END -->

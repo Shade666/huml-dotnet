@@ -4,6 +4,7 @@ title: Design a coercion policy for lossy numeric conversions (G3 findings M4 an
 status: To Do
 assignee: []
 created_date: '2026-06-12 23:28'
+updated_date: '2026-07-07 08:12'
 labels:
   - deserializer
   - design
@@ -28,6 +29,8 @@ Deferred from the G3 adversarial review (docs/internals/g3-security-review.md). 
 - [ ] #3 Out-of-range enum coercion and lossy ChangeType conversions behave per the agreed policy, with tests for each conversion class (float-to-int, int-to-bool, bool-to-string, narrow enum)
 - [ ] #4 Error messages name the source value, target type, and the option that would permit the coercion
 - [ ] #5 docs/error-handling.md (or equivalent guide) documents the policy
+- [ ] #6 Bool-to-numeric/string coercion via Convert.ChangeType is gated or rejected per the designed policy (Deserialize<int>("true") must not silently return 1)
+- [ ] #7 decimal round-trip behaviour is defined by the policy: out-of-range/high-precision decimals either round-trip or fail loudly at serialise time, never producing output the parser rejects
 <!-- AC:END -->
 
 ## Definition of Done
@@ -39,3 +42,13 @@ Deferred from the G3 adversarial review (docs/internals/g3-security-review.md). 
 - [ ] #5 New/changed public members have XML docs; tests use AwesomeAssertions (never FluentAssertions)
 - [ ] #6 New error-or-no-error parse behaviours assessed against .claude/rules/fixture-gaps.md and staged in fixtures/extensions/ when language-agnostic
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: comprehensive-review-2026-07-07
+created: 2026-07-07 08:12
+---
+2026-07-07 comprehensive review found two additional coercion behaviours that belong in this policy design: (1) Bool scalars are silently coerced to numeric/string targets via the ungated Convert.ChangeType fallback in CoerceScalar (src/Huml.Net/Serialization/HumlDeserializer.cs:792-795) — verified: Deserialize<int>("true") returns 1 and Deserialize<string>("true") returns "True"; STJ rejects both, and unlike string-to-number this is not even gated behind HumlNumberHandling.AllowReadingFromString. (2) decimal values outside double/Int64 range fail to round-trip through the library's own output — decimal.MaxValue serialises to a literal the parser rejects with an int64-overflow error, and high-precision decimals silently truncate (1.0000000000000000000000001m round-trips as 1), a consequence of the parser modelling all ints as Int64 and all floats as double. Two acceptance criteria added to cover these.
+---
+<!-- COMMENTS:END -->

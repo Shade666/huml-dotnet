@@ -4,6 +4,7 @@ title: Close the resolver-path parity gaps (G3 finding M15 remainder)
 status: To Do
 assignee: []
 created_date: '2026-06-12 23:28'
+updated_date: '2026-07-07 08:12'
 labels:
   - source-generator
   - deserializer
@@ -39,3 +40,13 @@ Partially fixed in G3 (case-sensitivity was aligned); the remainder is tracked f
 - [ ] #5 New/changed public members have XML docs; tests use AwesomeAssertions (never FluentAssertions)
 - [ ] #6 New error-or-no-error parse behaviours assessed against .claude/rules/fixture-gaps.md and staged in fixtures/extensions/ when language-agnostic
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: comprehensive-review-2026-07-07
+created: 2026-07-07 08:12
+---
+Correction from the 2026-07-07 comprehensive review: the description says case-sensitivity 'was aligned' in G3, but the resolver deserialise path currently matches property keys with StringComparison.OrdinalIgnoreCase (src/Huml.Net/Serialization/HumlDeserializer.cs:370) while the reflection path uses StringComparer.Ordinal (src/Huml.Net/Serialization/PropertyDescriptor.cs:231) — verified in code today, so the comparer divergence is live, not fixed. The comparer alignment is now scoped into TASK-020 (PropertyNameCaseInsensitive + unified key matching), which depends on this task; the structural metadata-model remainder is TASK-026. The architecture review also recommends the parity fixture in AC #3 be a shared-DTO matrix asserting both identical accepted/rejected documents AND identical serialised output across the two paths.
+---
+<!-- COMMENTS:END -->
