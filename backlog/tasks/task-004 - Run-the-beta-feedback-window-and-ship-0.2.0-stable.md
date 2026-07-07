@@ -4,7 +4,7 @@ title: Run the beta feedback window and ship 0.2.0 stable
 status: To Do
 assignee: []
 created_date: '2026-06-12 23:28'
-updated_date: '2026-07-07 19:05'
+updated_date: '2026-07-07 20:05'
 labels:
   - release
 milestone: m-0
@@ -65,5 +65,16 @@ Completed this run:
 - **RC readiness verified** (commit 4671d98): zero-warning full rebuild; 1342 tests green on net8.0/net9.0/net10.0; `dotnet pack -c Release` succeeds; CHANGELOG [Unreleased] rolled to [0.2.0-rc.1] - 2026-07-07 with fresh [Unreleased]; draft release notes in docs/plans/2026-07-07-0.2.0-rc.1-release-notes.md.
 
 **Deliberately NOT done (needs explicit approval):** pushing the `v0.2.0-rc.1` tag (publish.yml auto-publishes to NuGet.org via OIDC on tag push), publishing any package, or creating a GitHub Release. The release-notes draft includes the exact mechanics for when the tag decision is made. TASK-005 and all m-1+ work were excluded per the 0.2.x bug-fix-only policy.
+---
+
+author: Claude
+created: 2026-07-07 20:05
+---
+**0.2.0-rc.1 RELEASED** (2026-07-07, with Richard's explicit approval).
+
+- Tag `v0.2.0-rc.1` pushed at main HEAD (0d30d00, CI green).
+- Publish workflow run 28894954547 succeeded: **both** packages pushed to NuGet.org via OIDC — `Huml.Net.0.2.0-rc.1` and `Huml.Net.SourceGeneration.0.2.0-rc.1` (HTTP Created on both).
+- GitHub pre-release live: https://github.com/primeBeri/huml-dotnet/releases/tag/v0.2.0-rc.1 (marked pre-release, notes from the docs/plans draft).
+- Release-notes doc updated to RELEASED status (commit 02d55c3). NuGet indexing verification in progress; examples-repo CI against the published rc.1 remains outstanding (AC #4 applies to stable 0.2.0 but a soak run against rc.1 is recommended).
 ---
 <!-- COMMENTS:END -->
