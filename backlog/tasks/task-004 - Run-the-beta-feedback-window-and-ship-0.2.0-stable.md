@@ -4,7 +4,7 @@ title: Run the beta feedback window and ship 0.2.0 stable
 status: To Do
 assignee: []
 created_date: '2026-06-12 23:28'
-updated_date: '2026-07-07 08:12'
+updated_date: '2026-07-07 19:05'
 labels:
   - release
 milestone: m-0
@@ -51,5 +51,19 @@ author: comprehensive-review-2026-07-07
 created: 2026-07-07 08:12
 ---
 2026-07-07 comprehensive review note: 0.2.0-beta.2 shipped on 2026-07-01 (HumlConverterFactory + Nullable<T> auto-unwrap), so the beta soak now covers beta.2. Two routine dependabot PRs are open and should be merged before cutting stable: #31 (nuget-minor-patch group) and #28 (actions-all group). Additionally, TASK-019 (duplicate serialisation of overridden/shadowed properties — verified round-trip-breaking bug) has been raised into m-0 and should gate the stable release.
+---
+
+author: Claude
+created: 2026-07-07 19:05
+---
+**0.2.0-rc.1 is staged and awaiting the tag decision** (2026-07-07, autonomous m-0 run).
+
+Completed this run:
+- **TASK-019 Done** (commit 0339281): overridden/`new`-shadowed properties now serialise exactly once, derived-most declaration wins; the source generator received the matching fix for shadowed properties (it silently read the base value); reflection vs source-gen parity is pinned by test. 13 new regression tests.
+- **Dependabot PRs merged**: #28 (actions-all) and #31 (Meziantou.Analyzer 3.0.117, Test.Sdk 18.7.0) — both squash-merged with green checks, full suite re-verified locally afterwards. No blockages to record.
+- **TASK-003 Done** (commit 6618bb8): PublicApiAnalyzers enforces the API freeze at build time against per-TFM baselines in src/Huml.Net/PublicAPI/; RS0016 failure demonstrated locally and in CI (run 28891269950 on a throwaway branch, since deleted); docs/public-api.txt retired.
+- **RC readiness verified** (commit 4671d98): zero-warning full rebuild; 1342 tests green on net8.0/net9.0/net10.0; `dotnet pack -c Release` succeeds; CHANGELOG [Unreleased] rolled to [0.2.0-rc.1] - 2026-07-07 with fresh [Unreleased]; draft release notes in docs/plans/2026-07-07-0.2.0-rc.1-release-notes.md.
+
+**Deliberately NOT done (needs explicit approval):** pushing the `v0.2.0-rc.1` tag (publish.yml auto-publishes to NuGet.org via OIDC on tag push), publishing any package, or creating a GitHub Release. The release-notes draft includes the exact mechanics for when the tag decision is made. TASK-005 and all m-1+ work were excluded per the 0.2.x bug-fix-only policy.
 ---
 <!-- COMMENTS:END -->
