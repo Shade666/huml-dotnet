@@ -58,7 +58,8 @@ docs site (DocFX)
 
 **Not on the public site** (project-internal, stay in `docs/internals/` but excluded from `toc.yml`):
 `threat-model.md`, `g3-security-review.md`, `g3-review-raw.json`, `api-freeze.md`,
-`nuget-publish-checklist.md`, `public-api.txt`, and everything under `docs/plans/`.
+`nuget-publish-checklist.md`, and everything under `docs/plans/`. (`public-api.txt` was retired
+in favour of the `PublicAPI.Shipped.txt` analyzer baselines in `src/Huml.Net/PublicAPI/`.)
 
 ## 3. Mapping the 13 existing docs
 

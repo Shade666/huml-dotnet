@@ -24,7 +24,6 @@
           "internals/g3-security-review.md",
           "internals/api-freeze.md",
           "nuget-publish-checklist.md",
-          "public-api.txt",
           "documentation-plan.md",
           "spec-compliance-report.md",
           "plans/**"

@@ -10,6 +10,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+### Added
+
+- **Build-time public API freeze enforcement** — `Microsoft.CodeAnalysis.PublicApiAnalyzers` (analyzer-only, `PrivateAssets="All"`, no runtime dependency) now guards the public surface against the per-TFM baselines in `src/Huml.Net/PublicAPI/`; any undeclared public API change fails the build (RS0016/RS0017). The hand-maintained `docs/public-api.txt` is retired in favour of these baselines. See [docs/internals/api-freeze.md](docs/internals/api-freeze.md). No change to the shipped package. (TASK-003)
+
 ### Fixed
 
 - **Overridden and `new`-shadowed properties no longer serialise twice.** The reflection binding path collected one descriptor per declaration when walking the inheritance chain, so a `virtual`/`override` (or `new`-shadowed) property emitted its key twice — invalid HUML that the library's own parser rejected on round-trip with "Duplicate key". `PropertyDescriptor` now de-duplicates by property name with the derived-most declaration winning, at the base-most declaration's position. The source generator applied the same fix for `new`-shadowed properties, which previously emitted the *base* declaration's value; both paths now produce identical output for the same hierarchy. (TASK-019, review finding H1)

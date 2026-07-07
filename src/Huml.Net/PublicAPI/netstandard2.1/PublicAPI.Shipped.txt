@@ -1,0 +1,331 @@
+#nullable enable
+abstract Huml.Net.Parser.HumlNode.<Clone>$() -> Huml.Net.Parser.HumlNode!
+abstract Huml.Net.Serialization.HumlConverter.CanConvert(System.Type! typeToConvert) -> bool
+abstract Huml.Net.Serialization.HumlConverter<T>.Read(Huml.Net.Parser.HumlNode! node) -> T?
+abstract Huml.Net.Serialization.HumlConverter<T>.Write(Huml.Net.Serialization.HumlWriterContext! context, T value) -> void
+abstract Huml.Net.Serialization.HumlConverterFactory.CreateConverter(System.Type! typeToConvert, Huml.Net.Versioning.HumlOptions! options) -> Huml.Net.Serialization.HumlConverter?
+abstract Huml.Net.Serialization.HumlGeneratedContext.GetTypeInfo(System.Type! type, Huml.Net.Versioning.HumlOptions! options) -> Huml.Net.Serialization.HumlTypeInfo?
+abstract Huml.Net.Serialization.HumlNamingPolicy.ConvertName(string! name) -> string!
+Huml.HumlKnownNamingPolicy
+Huml.HumlKnownNamingPolicy.CamelCase = 1 -> Huml.HumlKnownNamingPolicy
+Huml.HumlKnownNamingPolicy.KebabCase = 3 -> Huml.HumlKnownNamingPolicy
+Huml.HumlKnownNamingPolicy.PascalCase = 4 -> Huml.HumlKnownNamingPolicy
+Huml.HumlKnownNamingPolicy.SnakeCase = 2 -> Huml.HumlKnownNamingPolicy
+Huml.HumlKnownNamingPolicy.Unspecified = 0 -> Huml.HumlKnownNamingPolicy
+Huml.Net.Exceptions.HumlDeserializeException
+Huml.Net.Exceptions.HumlDeserializeException.Column.get -> int?
+Huml.Net.Exceptions.HumlDeserializeException.HumlDeserializeException(string! message) -> void
+Huml.Net.Exceptions.HumlDeserializeException.HumlDeserializeException(string! message, string? key, int line) -> void
+Huml.Net.Exceptions.HumlDeserializeException.HumlDeserializeException(string! message, string? key, int line, int column) -> void
+Huml.Net.Exceptions.HumlDeserializeException.HumlDeserializeException(string! message, System.Exception! innerException) -> void
+Huml.Net.Exceptions.HumlDeserializeException.Key.get -> string?
+Huml.Net.Exceptions.HumlDeserializeException.Line.get -> int?
+Huml.Net.Exceptions.HumlParseException
+Huml.Net.Exceptions.HumlParseException.Column.get -> int
+Huml.Net.Exceptions.HumlParseException.HumlParseException(string! message, int line, int column) -> void
+Huml.Net.Exceptions.HumlParseException.Line.get -> int
+Huml.Net.Exceptions.HumlSerializeException
+Huml.Net.Exceptions.HumlSerializeException.HumlSerializeException(string! message) -> void
+Huml.Net.Exceptions.HumlSerializeException.HumlSerializeException(string! message, System.Exception! innerException) -> void
+Huml.Net.Exceptions.HumlUnsupportedVersionException
+Huml.Net.Exceptions.HumlUnsupportedVersionException.DeclaredVersion.get -> string!
+Huml.Net.Exceptions.HumlUnsupportedVersionException.HumlUnsupportedVersionException(string! declaredVersion) -> void
+Huml.Net.HumlSerializer
+Huml.Net.Lexer.Token
+Huml.Net.Lexer.Token.Column.get -> int
+Huml.Net.Lexer.Token.Column.init -> void
+Huml.Net.Lexer.Token.Equals(Huml.Net.Lexer.Token other) -> bool
+Huml.Net.Lexer.Token.Indent.get -> int
+Huml.Net.Lexer.Token.Indent.init -> void
+Huml.Net.Lexer.Token.Line.get -> int
+Huml.Net.Lexer.Token.Line.init -> void
+Huml.Net.Lexer.Token.SpaceBefore.get -> bool
+Huml.Net.Lexer.Token.SpaceBefore.init -> void
+Huml.Net.Lexer.Token.Token() -> void
+Huml.Net.Lexer.Token.Type.get -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.Token.Type.init -> void
+Huml.Net.Lexer.Token.Value.get -> string?
+Huml.Net.Lexer.Token.Value.init -> void
+Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Bool = 12 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Comma = 8 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.EmptyDict = 17 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.EmptyList = 16 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Eof = 0 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Error = 1 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Float = 11 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Inf = 15 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Int = 10 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Key = 3 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.ListItem = 7 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.NaN = 14 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Null = 13 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.QuotedKey = 4 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.ScalarIndicator = 5 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.String = 9 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.VectorIndicator = 6 -> Huml.Net.Lexer.TokenType
+Huml.Net.Lexer.TokenType.Version = 2 -> Huml.Net.Lexer.TokenType
+Huml.Net.Parser.HumlDocument
+Huml.Net.Parser.HumlDocument.Deconstruct(out System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>! Entries) -> void
+Huml.Net.Parser.HumlDocument.DetectedVersion.get -> Huml.Net.Versioning.HumlSpecVersion?
+Huml.Net.Parser.HumlDocument.DetectedVersion.init -> void
+Huml.Net.Parser.HumlDocument.Entries.get -> System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>!
+Huml.Net.Parser.HumlDocument.Entries.init -> void
+Huml.Net.Parser.HumlDocument.Equals(Huml.Net.Parser.HumlDocument? other) -> bool
+Huml.Net.Parser.HumlDocument.HumlDocument(System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>! Entries) -> void
+Huml.Net.Parser.HumlInlineMapping
+Huml.Net.Parser.HumlInlineMapping.Deconstruct(out System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>! Entries) -> void
+Huml.Net.Parser.HumlInlineMapping.Entries.get -> System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>!
+Huml.Net.Parser.HumlInlineMapping.Entries.init -> void
+Huml.Net.Parser.HumlInlineMapping.Equals(Huml.Net.Parser.HumlInlineMapping? other) -> bool
+Huml.Net.Parser.HumlInlineMapping.HumlInlineMapping(System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>! Entries) -> void
+Huml.Net.Parser.HumlMapping
+Huml.Net.Parser.HumlMapping.Deconstruct(out string! Key, out Huml.Net.Parser.HumlNode! Value) -> void
+Huml.Net.Parser.HumlMapping.Equals(Huml.Net.Parser.HumlMapping? other) -> bool
+Huml.Net.Parser.HumlMapping.HumlMapping(string! Key, Huml.Net.Parser.HumlNode! Value) -> void
+Huml.Net.Parser.HumlMapping.Key.get -> string!
+Huml.Net.Parser.HumlMapping.Key.init -> void
+Huml.Net.Parser.HumlMapping.Value.get -> Huml.Net.Parser.HumlNode!
+Huml.Net.Parser.HumlMapping.Value.init -> void
+Huml.Net.Parser.HumlNode
+Huml.Net.Parser.HumlNode.Column.get -> int
+Huml.Net.Parser.HumlNode.Column.init -> void
+Huml.Net.Parser.HumlNode.HumlNode() -> void
+Huml.Net.Parser.HumlNode.HumlNode(Huml.Net.Parser.HumlNode! original) -> void
+Huml.Net.Parser.HumlNode.Line.get -> int
+Huml.Net.Parser.HumlNode.Line.init -> void
+Huml.Net.Parser.HumlScalar
+Huml.Net.Parser.HumlScalar.Deconstruct(out Huml.Net.Parser.ScalarKind Kind, out object? Value) -> void
+Huml.Net.Parser.HumlScalar.Equals(Huml.Net.Parser.HumlScalar? other) -> bool
+Huml.Net.Parser.HumlScalar.HumlScalar(Huml.Net.Parser.ScalarKind Kind, object? Value) -> void
+Huml.Net.Parser.HumlScalar.Kind.get -> Huml.Net.Parser.ScalarKind
+Huml.Net.Parser.HumlScalar.Kind.init -> void
+Huml.Net.Parser.HumlScalar.Value.get -> object?
+Huml.Net.Parser.HumlScalar.Value.init -> void
+Huml.Net.Parser.HumlSequence
+Huml.Net.Parser.HumlSequence.Deconstruct(out System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>! Items) -> void
+Huml.Net.Parser.HumlSequence.Equals(Huml.Net.Parser.HumlSequence? other) -> bool
+Huml.Net.Parser.HumlSequence.HumlSequence(System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>! Items) -> void
+Huml.Net.Parser.HumlSequence.Items.get -> System.Collections.Generic.IReadOnlyList<Huml.Net.Parser.HumlNode!>!
+Huml.Net.Parser.HumlSequence.Items.init -> void
+Huml.Net.Parser.ScalarKind
+Huml.Net.Parser.ScalarKind.Bool = 3 -> Huml.Net.Parser.ScalarKind
+Huml.Net.Parser.ScalarKind.Float = 2 -> Huml.Net.Parser.ScalarKind
+Huml.Net.Parser.ScalarKind.Inf = 6 -> Huml.Net.Parser.ScalarKind
+Huml.Net.Parser.ScalarKind.Integer = 1 -> Huml.Net.Parser.ScalarKind
+Huml.Net.Parser.ScalarKind.NaN = 5 -> Huml.Net.Parser.ScalarKind
+Huml.Net.Parser.ScalarKind.Null = 4 -> Huml.Net.Parser.ScalarKind
+Huml.Net.Parser.ScalarKind.String = 0 -> Huml.Net.Parser.ScalarKind
+Huml.Net.Serialization.Attributes.HumlSerializableAttribute
+Huml.Net.Serialization.Attributes.HumlSerializableAttribute.HumlSerializableAttribute(System.Type! serializableType) -> void
+Huml.Net.Serialization.Attributes.HumlSerializableAttribute.SerializableType.get -> System.Type!
+Huml.Net.Serialization.HumlConstructorAttribute
+Huml.Net.Serialization.HumlConstructorAttribute.HumlConstructorAttribute() -> void
+Huml.Net.Serialization.HumlConverter
+Huml.Net.Serialization.HumlConverter.HumlConverter() -> void
+Huml.Net.Serialization.HumlConverter<T>
+Huml.Net.Serialization.HumlConverter<T>.HumlConverter() -> void
+Huml.Net.Serialization.HumlConverterAttribute
+Huml.Net.Serialization.HumlConverterAttribute.ConverterType.get -> System.Type!
+Huml.Net.Serialization.HumlConverterAttribute.HumlConverterAttribute(System.Type! converterType) -> void
+Huml.Net.Serialization.HumlConverterFactory
+Huml.Net.Serialization.HumlConverterFactory.HumlConverterFactory() -> void
+Huml.Net.Serialization.HumlDerivedTypeAttribute
+Huml.Net.Serialization.HumlDerivedTypeAttribute.DerivedType.get -> System.Type!
+Huml.Net.Serialization.HumlDerivedTypeAttribute.HumlDerivedTypeAttribute(System.Type! derivedType, string! typeDiscriminator) -> void
+Huml.Net.Serialization.HumlDerivedTypeAttribute.TypeDiscriminator.get -> string!
+Huml.Net.Serialization.HumlEnumValueAttribute
+Huml.Net.Serialization.HumlEnumValueAttribute.HumlEnumValueAttribute(string! name) -> void
+Huml.Net.Serialization.HumlEnumValueAttribute.Name.get -> string!
+Huml.Net.Serialization.HumlExtensionDataAttribute
+Huml.Net.Serialization.HumlExtensionDataAttribute.HumlExtensionDataAttribute() -> void
+Huml.Net.Serialization.HumlGeneratedContext
+Huml.Net.Serialization.HumlGeneratedContext.HumlGeneratedContext() -> void
+Huml.Net.Serialization.HumlIgnoreAttribute
+Huml.Net.Serialization.HumlIgnoreAttribute.HumlIgnoreAttribute() -> void
+Huml.Net.Serialization.HumlIgnoreCondition
+Huml.Net.Serialization.HumlIgnoreCondition.Always = Huml.Net.Serialization.HumlIgnoreCondition.WhenWritingNull | Huml.Net.Serialization.HumlIgnoreCondition.WhenWritingDefault -> Huml.Net.Serialization.HumlIgnoreCondition
+Huml.Net.Serialization.HumlIgnoreCondition.Never = 0 -> Huml.Net.Serialization.HumlIgnoreCondition
+Huml.Net.Serialization.HumlIgnoreCondition.WhenWritingDefault = 2 -> Huml.Net.Serialization.HumlIgnoreCondition
+Huml.Net.Serialization.HumlIgnoreCondition.WhenWritingNull = 1 -> Huml.Net.Serialization.HumlIgnoreCondition
+Huml.Net.Serialization.HumlIgnoreDefaultsAttribute
+Huml.Net.Serialization.HumlIgnoreDefaultsAttribute.HumlIgnoreDefaultsAttribute() -> void
+Huml.Net.Serialization.HumlNamingPolicy
+Huml.Net.Serialization.HumlNamingPolicy.HumlNamingPolicy() -> void
+Huml.Net.Serialization.HumlNamingPolicyAttribute
+Huml.Net.Serialization.HumlNamingPolicyAttribute.HumlNamingPolicyAttribute(Huml.HumlKnownNamingPolicy policy) -> void
+Huml.Net.Serialization.HumlNamingPolicyAttribute.Policy.get -> Huml.HumlKnownNamingPolicy
+Huml.Net.Serialization.HumlNumberHandlingAttribute
+Huml.Net.Serialization.HumlNumberHandlingAttribute.Handling.get -> Huml.Net.Versioning.HumlNumberHandling
+Huml.Net.Serialization.HumlNumberHandlingAttribute.HumlNumberHandlingAttribute(Huml.Net.Versioning.HumlNumberHandling handling) -> void
+Huml.Net.Serialization.HumlPolymorphicAttribute
+Huml.Net.Serialization.HumlPolymorphicAttribute.HumlPolymorphicAttribute(string! typeDiscriminatorPropertyName = "_type") -> void
+Huml.Net.Serialization.HumlPolymorphicAttribute.TypeDiscriminatorPropertyName.get -> string!
+Huml.Net.Serialization.HumlPolymorphicAttribute.UnknownDerivedTypeHandling.get -> Huml.Net.Versioning.HumlUnknownDerivedTypeHandling
+Huml.Net.Serialization.HumlPolymorphicAttribute.UnknownDerivedTypeHandling.set -> void
+Huml.Net.Serialization.HumlPropertyAttribute
+Huml.Net.Serialization.HumlPropertyAttribute.HumlPropertyAttribute(string? name = null) -> void
+Huml.Net.Serialization.HumlPropertyAttribute.Inline.get -> Huml.Net.Serialization.InlineMode
+Huml.Net.Serialization.HumlPropertyAttribute.Inline.init -> void
+Huml.Net.Serialization.HumlPropertyAttribute.Name.get -> string?
+Huml.Net.Serialization.HumlPropertyAttribute.OmitIfDefault.get -> bool
+Huml.Net.Serialization.HumlPropertyAttribute.OmitIfDefault.init -> void
+Huml.Net.Serialization.HumlPropertyInfo
+Huml.Net.Serialization.HumlPropertyInfo.Get.get -> System.Func<object!, object?>?
+Huml.Net.Serialization.HumlPropertyInfo.Get.set -> void
+Huml.Net.Serialization.HumlPropertyInfo.HumlPropertyInfo() -> void
+Huml.Net.Serialization.HumlPropertyInfo.IsRequired.get -> bool
+Huml.Net.Serialization.HumlPropertyInfo.IsRequired.set -> void
+Huml.Net.Serialization.HumlPropertyInfo.Name.get -> string!
+Huml.Net.Serialization.HumlPropertyInfo.Name.set -> void
+Huml.Net.Serialization.HumlPropertyInfo.Order.get -> int
+Huml.Net.Serialization.HumlPropertyInfo.Order.set -> void
+Huml.Net.Serialization.HumlPropertyInfo.PropertyType.get -> System.Type?
+Huml.Net.Serialization.HumlPropertyInfo.PropertyType.set -> void
+Huml.Net.Serialization.HumlPropertyInfo.Set.get -> System.Action<object!, object?>?
+Huml.Net.Serialization.HumlPropertyInfo.Set.set -> void
+Huml.Net.Serialization.HumlRequiredAttribute
+Huml.Net.Serialization.HumlRequiredAttribute.HumlRequiredAttribute() -> void
+Huml.Net.Serialization.HumlTypeInfo
+Huml.Net.Serialization.HumlTypeInfo.HumlTypeInfo() -> void
+Huml.Net.Serialization.HumlTypeInfo<T>
+Huml.Net.Serialization.HumlTypeInfo<T>.HumlTypeInfo() -> void
+Huml.Net.Serialization.HumlTypeInfo<T>.Type.get -> System.Type!
+Huml.Net.Serialization.HumlWriterContext
+Huml.Net.Serialization.HumlWriterContext.AppendRaw(string! huml) -> void
+Huml.Net.Serialization.HumlWriterContext.AppendSerializedValue(object? value) -> void
+Huml.Net.Serialization.HumlWriterContext.Depth.get -> int
+Huml.Net.Serialization.HumlWriterContext.Options.get -> Huml.Net.Versioning.HumlOptions!
+Huml.Net.Serialization.IHumlTypeInfoResolver
+Huml.Net.Serialization.IHumlTypeInfoResolver.GetTypeInfo(System.Type! type, Huml.Net.Versioning.HumlOptions! options) -> Huml.Net.Serialization.HumlTypeInfo?
+Huml.Net.Serialization.InlineMode
+Huml.Net.Serialization.InlineMode.Inherit = 0 -> Huml.Net.Serialization.InlineMode
+Huml.Net.Serialization.InlineMode.Inline = 1 -> Huml.Net.Serialization.InlineMode
+Huml.Net.Serialization.InlineMode.Multiline = 2 -> Huml.Net.Serialization.InlineMode
+Huml.Net.Versioning.CollectionFormat
+Huml.Net.Versioning.CollectionFormat.Inline = 1 -> Huml.Net.Versioning.CollectionFormat
+Huml.Net.Versioning.CollectionFormat.Multiline = 0 -> Huml.Net.Versioning.CollectionFormat
+Huml.Net.Versioning.HumlNumberHandling
+Huml.Net.Versioning.HumlNumberHandling.AllowReadingFromString = 1 -> Huml.Net.Versioning.HumlNumberHandling
+Huml.Net.Versioning.HumlNumberHandling.Strict = 0 -> Huml.Net.Versioning.HumlNumberHandling
+Huml.Net.Versioning.HumlNumberHandling.WriteAsString = 2 -> Huml.Net.Versioning.HumlNumberHandling
+Huml.Net.Versioning.HumlOptions
+Huml.Net.Versioning.HumlOptions.CollectionFormat.get -> Huml.Net.Versioning.CollectionFormat
+Huml.Net.Versioning.HumlOptions.CollectionFormat.init -> void
+Huml.Net.Versioning.HumlOptions.Converters.get -> System.Collections.Generic.IReadOnlyList<Huml.Net.Serialization.HumlConverter!>!
+Huml.Net.Versioning.HumlOptions.Converters.init -> void
+Huml.Net.Versioning.HumlOptions.DefaultIgnoreCondition.get -> Huml.Net.Serialization.HumlIgnoreCondition
+Huml.Net.Versioning.HumlOptions.DefaultIgnoreCondition.init -> void
+Huml.Net.Versioning.HumlOptions.HumlOptions() -> void
+Huml.Net.Versioning.HumlOptions.IsReadOnly.get -> bool
+Huml.Net.Versioning.HumlOptions.MakeReadOnly() -> void
+Huml.Net.Versioning.HumlOptions.MaxRecursionDepth.get -> int
+Huml.Net.Versioning.HumlOptions.MaxRecursionDepth.init -> void
+Huml.Net.Versioning.HumlOptions.NumberHandling.get -> Huml.Net.Versioning.HumlNumberHandling
+Huml.Net.Versioning.HumlOptions.NumberHandling.init -> void
+Huml.Net.Versioning.HumlOptions.PropertyNamingPolicy.get -> Huml.Net.Serialization.HumlNamingPolicy?
+Huml.Net.Versioning.HumlOptions.PropertyNamingPolicy.init -> void
+Huml.Net.Versioning.HumlOptions.SpecVersion.get -> Huml.Net.Versioning.HumlSpecVersion
+Huml.Net.Versioning.HumlOptions.SpecVersion.init -> void
+Huml.Net.Versioning.HumlOptions.TypeInfoResolver.get -> Huml.Net.Serialization.IHumlTypeInfoResolver?
+Huml.Net.Versioning.HumlOptions.TypeInfoResolver.init -> void
+Huml.Net.Versioning.HumlOptions.UnknownVersionBehaviour.get -> Huml.Net.Versioning.UnknownVersionBehaviour
+Huml.Net.Versioning.HumlOptions.UnknownVersionBehaviour.init -> void
+Huml.Net.Versioning.HumlOptions.UnmappedMemberHandling.get -> Huml.Net.Versioning.UnmappedMemberHandling
+Huml.Net.Versioning.HumlOptions.UnmappedMemberHandling.init -> void
+Huml.Net.Versioning.HumlOptions.ValidateDuplicateKeysOnWrite.get -> bool
+Huml.Net.Versioning.HumlOptions.ValidateDuplicateKeysOnWrite.init -> void
+Huml.Net.Versioning.HumlOptions.VersionSource.get -> Huml.Net.Versioning.VersionSource
+Huml.Net.Versioning.HumlOptions.VersionSource.init -> void
+Huml.Net.Versioning.HumlSpecVersion
+Huml.Net.Versioning.HumlSpecVersion.V0_1 = 1 -> Huml.Net.Versioning.HumlSpecVersion
+Huml.Net.Versioning.HumlSpecVersion.V0_2 = 2 -> Huml.Net.Versioning.HumlSpecVersion
+Huml.Net.Versioning.HumlUnknownDerivedTypeHandling
+Huml.Net.Versioning.HumlUnknownDerivedTypeHandling.FallBackToBaseType = 1 -> Huml.Net.Versioning.HumlUnknownDerivedTypeHandling
+Huml.Net.Versioning.HumlUnknownDerivedTypeHandling.Throw = 0 -> Huml.Net.Versioning.HumlUnknownDerivedTypeHandling
+Huml.Net.Versioning.UnknownVersionBehaviour
+Huml.Net.Versioning.UnknownVersionBehaviour.Throw = 0 -> Huml.Net.Versioning.UnknownVersionBehaviour
+Huml.Net.Versioning.UnknownVersionBehaviour.UseLatest = 1 -> Huml.Net.Versioning.UnknownVersionBehaviour
+Huml.Net.Versioning.UnknownVersionBehaviour.UsePrevious = 2 -> Huml.Net.Versioning.UnknownVersionBehaviour
+Huml.Net.Versioning.UnmappedMemberHandling
+Huml.Net.Versioning.UnmappedMemberHandling.Disallow = 1 -> Huml.Net.Versioning.UnmappedMemberHandling
+Huml.Net.Versioning.UnmappedMemberHandling.Skip = 0 -> Huml.Net.Versioning.UnmappedMemberHandling
+Huml.Net.Versioning.VersionSource
+Huml.Net.Versioning.VersionSource.Header = 1 -> Huml.Net.Versioning.VersionSource
+Huml.Net.Versioning.VersionSource.Options = 0 -> Huml.Net.Versioning.VersionSource
+override abstract Huml.Net.Serialization.HumlConverterFactory.CanConvert(System.Type! typeToConvert) -> bool
+override Huml.Net.Lexer.Token.GetHashCode() -> int
+override Huml.Net.Parser.HumlDocument.<Clone>$() -> Huml.Net.Parser.HumlNode!
+override Huml.Net.Parser.HumlDocument.Equals(object? obj) -> bool
+override Huml.Net.Parser.HumlDocument.GetHashCode() -> int
+override Huml.Net.Parser.HumlDocument.ToString() -> string!
+override Huml.Net.Parser.HumlInlineMapping.<Clone>$() -> Huml.Net.Parser.HumlNode!
+override Huml.Net.Parser.HumlInlineMapping.Equals(object? obj) -> bool
+override Huml.Net.Parser.HumlInlineMapping.GetHashCode() -> int
+override Huml.Net.Parser.HumlInlineMapping.ToString() -> string!
+override Huml.Net.Parser.HumlMapping.<Clone>$() -> Huml.Net.Parser.HumlNode!
+override Huml.Net.Parser.HumlMapping.Equals(object? obj) -> bool
+override Huml.Net.Parser.HumlMapping.GetHashCode() -> int
+override Huml.Net.Parser.HumlMapping.ToString() -> string!
+override Huml.Net.Parser.HumlNode.Equals(object? obj) -> bool
+override Huml.Net.Parser.HumlNode.GetHashCode() -> int
+override Huml.Net.Parser.HumlNode.ToString() -> string!
+override Huml.Net.Parser.HumlScalar.<Clone>$() -> Huml.Net.Parser.HumlNode!
+override Huml.Net.Parser.HumlScalar.Equals(object? obj) -> bool
+override Huml.Net.Parser.HumlScalar.GetHashCode() -> int
+override Huml.Net.Parser.HumlScalar.ToString() -> string!
+override Huml.Net.Parser.HumlSequence.<Clone>$() -> Huml.Net.Parser.HumlNode!
+override Huml.Net.Parser.HumlSequence.Equals(object? obj) -> bool
+override Huml.Net.Parser.HumlSequence.GetHashCode() -> int
+override Huml.Net.Parser.HumlSequence.ToString() -> string!
+override Huml.Net.Serialization.HumlConverter<T>.CanConvert(System.Type! typeToConvert) -> bool
+override Huml.Net.Serialization.HumlNamingPolicy.Equals(object? obj) -> bool
+override Huml.Net.Serialization.HumlNamingPolicy.GetHashCode() -> int
+override sealed Huml.Net.Parser.HumlDocument.Equals(Huml.Net.Parser.HumlNode? other) -> bool
+override sealed Huml.Net.Parser.HumlInlineMapping.Equals(Huml.Net.Parser.HumlNode? other) -> bool
+override sealed Huml.Net.Parser.HumlMapping.Equals(Huml.Net.Parser.HumlNode? other) -> bool
+override sealed Huml.Net.Parser.HumlScalar.Equals(Huml.Net.Parser.HumlNode? other) -> bool
+override sealed Huml.Net.Parser.HumlSequence.Equals(Huml.Net.Parser.HumlNode? other) -> bool
+static Huml.Net.HumlSerializer.Deserialize(string! huml, System.Type! targetType, Huml.Net.Versioning.HumlOptions? options = null) -> object?
+static Huml.Net.HumlSerializer.Deserialize<T>(string! huml, Huml.Net.Versioning.HumlOptions? options = null) -> T
+static Huml.Net.HumlSerializer.Deserialize<T>(System.ReadOnlySpan<char> huml, Huml.Net.Versioning.HumlOptions? options = null) -> T
+static Huml.Net.HumlSerializer.Parse(string! huml, Huml.Net.Versioning.HumlOptions? options = null) -> Huml.Net.Parser.HumlDocument!
+static Huml.Net.HumlSerializer.Populate<T>(string! huml, T existing, Huml.Net.Versioning.HumlOptions? options = null) -> void
+static Huml.Net.HumlSerializer.Populate<T>(System.ReadOnlySpan<char> huml, T existing, Huml.Net.Versioning.HumlOptions? options = null) -> void
+static Huml.Net.HumlSerializer.Serialize(object? value, System.Type! type, Huml.Net.Versioning.HumlOptions? options = null) -> string!
+static Huml.Net.HumlSerializer.Serialize<T>(T value, Huml.Net.Versioning.HumlOptions? options = null) -> string!
+static Huml.Net.Lexer.Token.operator !=(Huml.Net.Lexer.Token left, Huml.Net.Lexer.Token right) -> bool
+static Huml.Net.Lexer.Token.operator ==(Huml.Net.Lexer.Token left, Huml.Net.Lexer.Token right) -> bool
+static Huml.Net.Parser.HumlDocument.operator !=(Huml.Net.Parser.HumlDocument? left, Huml.Net.Parser.HumlDocument? right) -> bool
+static Huml.Net.Parser.HumlDocument.operator ==(Huml.Net.Parser.HumlDocument? left, Huml.Net.Parser.HumlDocument? right) -> bool
+static Huml.Net.Parser.HumlInlineMapping.operator !=(Huml.Net.Parser.HumlInlineMapping? left, Huml.Net.Parser.HumlInlineMapping? right) -> bool
+static Huml.Net.Parser.HumlInlineMapping.operator ==(Huml.Net.Parser.HumlInlineMapping? left, Huml.Net.Parser.HumlInlineMapping? right) -> bool
+static Huml.Net.Parser.HumlMapping.operator !=(Huml.Net.Parser.HumlMapping? left, Huml.Net.Parser.HumlMapping? right) -> bool
+static Huml.Net.Parser.HumlMapping.operator ==(Huml.Net.Parser.HumlMapping? left, Huml.Net.Parser.HumlMapping? right) -> bool
+static Huml.Net.Parser.HumlNode.operator !=(Huml.Net.Parser.HumlNode? left, Huml.Net.Parser.HumlNode? right) -> bool
+static Huml.Net.Parser.HumlNode.operator ==(Huml.Net.Parser.HumlNode? left, Huml.Net.Parser.HumlNode? right) -> bool
+static Huml.Net.Parser.HumlScalar.operator !=(Huml.Net.Parser.HumlScalar? left, Huml.Net.Parser.HumlScalar? right) -> bool
+static Huml.Net.Parser.HumlScalar.operator ==(Huml.Net.Parser.HumlScalar? left, Huml.Net.Parser.HumlScalar? right) -> bool
+static Huml.Net.Parser.HumlSequence.operator !=(Huml.Net.Parser.HumlSequence? left, Huml.Net.Parser.HumlSequence? right) -> bool
+static Huml.Net.Parser.HumlSequence.operator ==(Huml.Net.Parser.HumlSequence? left, Huml.Net.Parser.HumlSequence? right) -> bool
+static Huml.Net.Serialization.HumlNamingPolicy.CamelCase.get -> Huml.Net.Serialization.HumlNamingPolicy!
+static Huml.Net.Serialization.HumlNamingPolicy.KebabCase.get -> Huml.Net.Serialization.HumlNamingPolicy!
+static Huml.Net.Serialization.HumlNamingPolicy.PascalCase.get -> Huml.Net.Serialization.HumlNamingPolicy!
+static Huml.Net.Serialization.HumlNamingPolicy.SnakeCase.get -> Huml.Net.Serialization.HumlNamingPolicy!
+static readonly Huml.Net.Versioning.HumlOptions.AutoDetect -> Huml.Net.Versioning.HumlOptions!
+static readonly Huml.Net.Versioning.HumlOptions.Default -> Huml.Net.Versioning.HumlOptions!
+static readonly Huml.Net.Versioning.HumlOptions.LatestSupported -> Huml.Net.Versioning.HumlOptions!
+static readonly Huml.Net.Versioning.HumlOptions.LatestSupportedAutoDetect -> Huml.Net.Versioning.HumlOptions!
+static readonly Huml.Net.Versioning.HumlOptions.Strict -> Huml.Net.Versioning.HumlOptions!
+virtual Huml.Net.Parser.HumlNode.EqualityContract.get -> System.Type!
+virtual Huml.Net.Parser.HumlNode.Equals(Huml.Net.Parser.HumlNode? other) -> bool
+virtual Huml.Net.Parser.HumlNode.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Huml.Net.Serialization.HumlGeneratedContext.GetTypeInfo<T>() -> Huml.Net.Serialization.HumlTypeInfo<T>?
+virtual Huml.Net.Serialization.HumlTypeInfo.OnDeserialized.get -> System.Action<object!>?
+virtual Huml.Net.Serialization.HumlTypeInfo.OnDeserializing.get -> System.Action<object!>?
+virtual Huml.Net.Serialization.HumlTypeInfo.OnSerialized.get -> System.Action<object!>?
+virtual Huml.Net.Serialization.HumlTypeInfo.OnSerializing.get -> System.Action<object!>?
+virtual Huml.Net.Serialization.HumlTypeInfo.Properties.get -> System.Collections.Generic.IReadOnlyList<Huml.Net.Serialization.HumlPropertyInfo!>?
+virtual Huml.Net.Serialization.HumlTypeInfo<T>.CreateObject.get -> System.Func<T>?
+~override Huml.Net.Lexer.Token.Equals(object obj) -> bool
+~override Huml.Net.Lexer.Token.ToString() -> string

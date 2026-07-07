@@ -3,9 +3,11 @@ id: TASK-003
 title: >-
   Adopt Microsoft.CodeAnalysis.PublicApiAnalyzers to enforce the API freeze in
   CI
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - Claude
 created_date: '2026-06-12 23:28'
+updated_date: '2026-07-07 18:55'
 labels:
   - api-freeze
   - ci
@@ -31,6 +33,24 @@ The public API of Huml.Net is frozen (docs/internals/api-freeze.md) with a hand-
 - [ ] #3 Multi-TFM surface differences (netstandard2.1 vs net8/9/10) are handled correctly
 - [ ] #4 docs/internals/api-freeze.md is updated to describe the automated enforcement and the role (or retirement) of docs/public-api.txt
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+## Implementation Plan
+
+**Approach:** Microsoft.CodeAnalysis.PublicApiAnalyzers 5.6.0 (latest stable) referenced `PrivateAssets="All"` in src/Huml.Net — analyzer-only, no runtime dependency. All TFM-conditional code in src/Huml.Net (IsExternalInit, TrimShims, RequiredMemberAttribute, DateOnly/TimeOnly branches) is `internal`, so the public surface is expected TFM-invariant → a single shared PublicAPI.Shipped.txt/PublicAPI.Unshipped.txt pair serves all four TFMs; the multi-TFM build itself is the proof (RS0016 'undeclared API' / RS0017 'declared but missing' would fail any TFM whose surface diverges) — satisfies AC #3.
+
+**Steps:**
+1. Add the package reference + `<AdditionalFiles>` for PublicAPI.Shipped.txt / PublicAPI.Unshipped.txt (both seeded with `#nullable enable`).
+2. Seed Shipped.txt from the CURRENT surface (= published 0.2.0-beta.2; beta.2's additions were additive and already shipped, so the baseline is the beta.2 surface, superset of beta.1) using `dotnet format analyzers --diagnostics RS0016` to auto-apply the DeclarePublicApiFix, then move all entries Unshipped → Shipped. Handle any RS0026/RS0027 (overloads-with-optional-parameters) findings via .editorconfig with a documented rationale if they fire on the existing frozen API.
+3. Verify zero-warning build on all four TFMs (analyzer enforcement piggy-backs on TreatWarningsAsErrors, so existing CI `dotnet build` enforces automatically — CI wiring needs no workflow change; document this).
+4. AC #2 demonstration: add a public member locally → confirm dotnet build fails with RS0016; push the same change on a throwaway branch to let CI fail (if CI triggers on non-main branches), then revert/delete the branch.
+5. AC #4: update docs/internals/api-freeze.md — automated enforcement section (workflow: additive change ⇒ entry in PublicAPI.Unshipped.txt + justification; release ⇒ roll Unshipped into Shipped) and RETIRE docs/public-api.txt (delete, with Shipped.txt as the single source of truth; update references).
+6. CHANGELOG [Unreleased] note (Added/infrastructure), full suite green, commit `chore: ...` + push.
+
+**Scope notes:** No product code changes; no public API change (DoD #4 n/a). No parse behaviour changes (DoD #6 n/a).
+<!-- SECTION:PLAN:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

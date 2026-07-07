@@ -12,9 +12,11 @@ dependencies.
 ## Public API
 
 The sole public entry point is the static facade **`HumlSerializer`** (`src/Huml.Net/HumlSerializer.cs`):
-`Serialize` / `Deserialize` / `Parse` / `Populate`. Everything else is `internal`. The committed
-public-surface baseline is `docs/public-api.txt` — treat it as the source of truth, and keep public
-API changes additive per `docs/internals/api-freeze.md`.
+`Serialize` / `Deserialize` / `Parse` / `Populate`. Everything else is `internal`. The public
+surface is enforced at build time by `Microsoft.CodeAnalysis.PublicApiAnalyzers` against the
+baselines in `src/Huml.Net/PublicAPI/` — an undeclared public-surface change fails the build.
+Keep public API changes additive per `docs/internals/api-freeze.md`: declare additions in the
+matching `PublicAPI.Unshipped.txt` with a written justification.
 
 ## Commands
 

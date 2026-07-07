@@ -26,6 +26,22 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All" />
     <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
+    <!-- API-freeze enforcement (docs/internals/api-freeze.md): any public-surface change not
+         declared in PublicAPI.Shipped.txt/PublicAPI.Unshipped.txt fails the build (RS0016/RS0017).
+         PrivateAssets=All keeps this analyzer-only — no runtime dependency for consumers. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" PrivateAssets="All" />
+  </ItemGroup>
+  <!-- Public API baselines are per-TFM because record `<Clone>$` methods use covariant returns
+       on net8.0+ (`-> HumlDocument!`) but return the base type on netstandard2.1, which lacks
+       covariant-return support. net8.0/net9.0/net10.0 share one identical baseline (PublicAPI/net);
+       the multi-TFM build enforces that — a divergent TFM fails with RS0016 or RS0017. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <AdditionalFiles Include="PublicAPI/netstandard2.1/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/netstandard2.1/PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.1'">
+    <AdditionalFiles Include="PublicAPI/net/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/net/PublicAPI.Unshipped.txt" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Huml.Net.Tests" />
