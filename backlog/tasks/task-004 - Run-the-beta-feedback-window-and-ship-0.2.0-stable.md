@@ -4,7 +4,7 @@ title: Run the beta feedback window and ship 0.2.0 stable
 status: To Do
 assignee: []
 created_date: '2026-06-12 23:28'
-updated_date: '2026-07-07 20:05'
+updated_date: '2026-07-07 20:08'
 labels:
   - release
 milestone: m-0
@@ -76,5 +76,11 @@ created: 2026-07-07 20:05
 - Publish workflow run 28894954547 succeeded: **both** packages pushed to NuGet.org via OIDC — `Huml.Net.0.2.0-rc.1` and `Huml.Net.SourceGeneration.0.2.0-rc.1` (HTTP Created on both).
 - GitHub pre-release live: https://github.com/primeBeri/huml-dotnet/releases/tag/v0.2.0-rc.1 (marked pre-release, notes from the docs/plans draft).
 - Release-notes doc updated to RELEASED status (commit 02d55c3). NuGet indexing verification in progress; examples-repo CI against the published rc.1 remains outstanding (AC #4 applies to stable 0.2.0 but a soak run against rc.1 is recommended).
+---
+
+author: Claude
+created: 2026-07-07 20:08
+---
+NuGet indexing verified: both `Huml.Net 0.2.0-rc.1` and `Huml.Net.SourceGeneration 0.2.0-rc.1` are now listed in the public flat-container index. Release mechanics for rc.1 are fully complete. Remaining before stable 0.2.0: RC soak over the feedback window, examples-repo CI against the published rc.1, then the non-prerelease v0.2.0 tag/release with README/docs beta-caveat removal.
 ---
 <!-- COMMENTS:END -->
