@@ -11,7 +11,10 @@ namespace Huml.Net.Serialization;
 /// </summary>
 /// <remarks>
 /// Properties are ordered base-class-first within each type, then by <c>MetadataToken</c>
-/// (declaration order). Properties decorated with <see cref="HumlIgnoreAttribute"/> are excluded.
+/// (declaration order). A property re-declared in a derived type (<c>override</c> or
+/// <c>new</c>-shadowing) yields a single descriptor: the derived-most declaration wins,
+/// occupying the base-most declaration's position — mirroring the source generator.
+/// Properties decorated with <see cref="HumlIgnoreAttribute"/> are excluded.
 /// <see cref="HumlPropertyAttribute"/> name overrides and <c>OmitIfDefault</c> flags are resolved once at
 /// build time and cached.
 /// <c>ClassIgnoresDefaults</c> is <c>true</c> when the declaring type carries
@@ -118,6 +121,12 @@ internal sealed record PropertyDescriptor(
 
         var result = new List<PropertyDescriptor>();
 
+        // De-duplicate by CLR property name: an override or new-shadowed property is
+        // re-declared in the derived type's metadata, so without this both declarations
+        // would be emitted (invalid HUML — duplicate key). The derived-most declaration
+        // wins (replace-in-place at the base-most position), matching the source generator.
+        var indexByName = new Dictionary<string, int>(StringComparer.Ordinal);
+
         foreach (var t in typeChain)
         {
             // Scan [HumlIgnoreDefaults] once per declaring type (inherit:true so a type decorated
@@ -218,9 +227,19 @@ internal sealed record PropertyDescriptor(
                 var numberHandlingAttr = prop.GetCustomAttribute<HumlNumberHandlingAttribute>();
                 var numberHandling = numberHandlingAttr?.Handling;
 
-                result.Add(new PropertyDescriptor(
+                var descriptor = new PropertyDescriptor(
                     humlKey, prop, omitIfDefault, classIgnoresDefaults,
-                    isInitOnly, isRequired, defaultValue, inline, converter, numberHandling, memberPolicy));
+                    isInitOnly, isRequired, defaultValue, inline, converter, numberHandling, memberPolicy);
+
+                if (indexByName.TryGetValue(prop.Name, out var existingIndex))
+                {
+                    result[existingIndex] = descriptor;
+                }
+                else
+                {
+                    indexByName[prop.Name] = result.Count;
+                    result.Add(descriptor);
+                }
             }
         }
 

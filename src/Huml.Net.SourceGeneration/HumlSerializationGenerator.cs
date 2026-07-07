@@ -63,7 +63,7 @@ public sealed class HumlSerializationGenerator : IIncrementalGenerator
             }
             hierarchy.Reverse();
 
-            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var indexByName = new Dictionary<string, int>(StringComparer.Ordinal);
             var properties = new List<PropertyModel>();
             foreach (var t in hierarchy)
             {
@@ -73,7 +73,6 @@ public sealed class HumlSerializationGenerator : IIncrementalGenerator
                     if (member is not IPropertySymbol prop) continue;
                     if (prop.DeclaredAccessibility != Accessibility.Public) continue;
                     if (prop.IsStatic || prop.IsIndexer || prop.IsAbstract) continue;
-                    if (!seen.Add(prop.Name)) continue; // skip overrides / hidden properties
 
                     // [HumlIgnore] excludes the property entirely (parity with the reflection path).
                     if (HasAttribute(prop, IgnoreAttributeFqn)) continue;
@@ -88,13 +87,27 @@ public sealed class HumlSerializationGenerator : IIncrementalGenerator
                     // [HumlProperty("name")] overrides the HUML key.
                     var humlKey = GetHumlPropertyName(prop) ?? prop.Name;
 
-                    properties.Add(new PropertyModel(
+                    var model = new PropertyModel(
                         prop.Name,
                         humlKey,
                         prop.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         canGet,
                         canSet,
-                        declaringFqn));
+                        declaringFqn);
+
+                    // Overridden / new-shadowed properties: the derived-most declaration wins
+                    // (its DeclaringTypeFqn cast makes the accessor read the derived slot for
+                    // shadowed properties), keeping the base-most declaration's position so
+                    // ordering matches the reflection path.
+                    if (indexByName.TryGetValue(prop.Name, out var existingIndex))
+                    {
+                        properties[existingIndex] = model;
+                    }
+                    else
+                    {
+                        indexByName[prop.Name] = properties.Count;
+                        properties.Add(model);
+                    }
                 }
             }
 

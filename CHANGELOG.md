@@ -12,6 +12,7 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ### Fixed
 
+- **Overridden and `new`-shadowed properties no longer serialise twice.** The reflection binding path collected one descriptor per declaration when walking the inheritance chain, so a `virtual`/`override` (or `new`-shadowed) property emitted its key twice — invalid HUML that the library's own parser rejected on round-trip with "Duplicate key". `PropertyDescriptor` now de-duplicates by property name with the derived-most declaration winning, at the base-most declaration's position. The source generator applied the same fix for `new`-shadowed properties, which previously emitted the *base* declaration's value; both paths now produce identical output for the same hierarchy. (TASK-019, review finding H1)
 - **Stale XML doc on `HumlOptions.TypeInfoResolver`** — the remarks claimed the resolver "is not yet consumed by the deserialiser or serialiser"; it has been consumed by both since the source-generator work (0.2.0-alpha.4). The doc now describes the actual behaviour.
 
 ## [0.2.0-beta.2] - 2026-07-01
