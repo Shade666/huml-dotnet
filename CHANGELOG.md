@@ -10,6 +10,10 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
+(no changes yet)
+
+## [0.2.0-rc.1] - 2026-07-07
+
 ### Added
 
 - **Build-time public API freeze enforcement** — `Microsoft.CodeAnalysis.PublicApiAnalyzers` (analyzer-only, `PrivateAssets="All"`, no runtime dependency) now guards the public surface against the per-TFM baselines in `src/Huml.Net/PublicAPI/`; any undeclared public API change fails the build (RS0016/RS0017). The hand-maintained `docs/public-api.txt` is retired in favour of these baselines. See [docs/internals/api-freeze.md](docs/internals/api-freeze.md). No change to the shipped package. (TASK-003)
