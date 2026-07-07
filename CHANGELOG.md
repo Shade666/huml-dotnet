@@ -10,7 +10,9 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
-(no changes yet)
+### Fixed
+
+- **Stale XML doc on `HumlOptions.TypeInfoResolver`** — the remarks claimed the resolver "is not yet consumed by the deserialiser or serialiser"; it has been consumed by both since the source-generator work (0.2.0-alpha.4). The doc now describes the actual behaviour.
 
 ## [0.2.0-beta.2] - 2026-07-01
 

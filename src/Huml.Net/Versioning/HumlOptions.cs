@@ -247,8 +247,9 @@ public sealed class HumlOptions
     /// Set this property on a <see cref="HumlOptions"/> instance to register a custom
     /// <see cref="Serialization.IHumlTypeInfoResolver"/>. When the resolver returns
     /// <see langword="null"/> for a type, the built-in reflection path is used as a fallback.
-    /// In the current release the resolver result is not yet consumed by the deserialiser or
-    /// serialiser — this property wires the call site for future source-generator support.
+    /// Both the serialiser and the deserialiser consult this resolver before falling back to
+    /// reflection; <see cref="Serialization.HumlGeneratedContext"/> (the source-generator base
+    /// class) is the primary implementation.
     /// </remarks>
     public Serialization.IHumlTypeInfoResolver? TypeInfoResolver { get; init; }
 
