@@ -1,5 +1,11 @@
 # Support
 
+## Questions & Discussion
+
+The quickest place for questions, ideas, and general discussion is
+[GitHub Discussions](https://github.com/primeBeri/huml-dotnet/discussions). If you are not sure
+whether something is a bug, start there — it can always be promoted to an issue.
+
 ## Reporting Bugs / Requesting Features
 
 Open an issue on [GitHub Issues](https://github.com/primeBeri/huml-dotnet/issues).
@@ -19,8 +25,8 @@ the [HUML specification](https://huml.io) and the upstream
 [huml-lang/tests](https://github.com/huml-lang/tests) repository is the shared fixture suite —
 use it for fixture issues, not general language questions.)
 
-For questions specific to this .NET implementation, open a GitHub Issue with the
-`question` label.
+For questions specific to this .NET implementation, ask in
+[GitHub Discussions](https://github.com/primeBeri/huml-dotnet/discussions).
 
 ## Compatibility & Version Support
 

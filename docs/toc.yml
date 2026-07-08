@@ -1,11 +1,17 @@
 # Diátaxis-organised docs sidebar (see documentation-plan.md).
+# Every first-level node needs an href: the navbar dropdown renders each one as a
+# link, and an href-less node becomes a dead /undefined link (docfx modern template).
 - name: Tutorial
+  href: getting-started.md
   items:
     - name: Getting started
       href: getting-started.md
 
 - name: How-to guides
+  href: how-to-guides.md
   items:
+    - name: Overview
+      href: how-to-guides.md
     - name: Customize property names
       href: naming-policy.md
     - name: Ignore properties & omit defaults
@@ -37,8 +43,14 @@
     - name: Use the source generator
       href: source-generator.md
 
+- name: Examples
+  href: examples.md
+
 - name: Reference
+  href: reference.md
   items:
+    - name: Overview
+      href: reference.md
     - name: API reference
       href: api/toc.yml
     - name: Options reference
@@ -47,7 +59,10 @@
       href: attributes-reference.md
 
 - name: Explanation
+  href: explanation.md
   items:
+    - name: Overview
+      href: explanation.md
     - name: Versioning model
       href: versioning.md
     - name: The pipeline

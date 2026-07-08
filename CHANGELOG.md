@@ -10,7 +10,16 @@ See [docs/versioning.md](docs/versioning.md) for the full policy.
 
 ## [Unreleased]
 
-(no changes yet)
+### Added
+
+- **Documentation: section landing pages and an examples page.** New `docs/how-to-guides.md`, `docs/reference.md`, and `docs/explanation.md` landing pages give each docs section a real home, and `docs/examples.md` surfaces the companion [huml-dotnet-examples](https://github.com/primeBeri/huml-dotnet-examples) repository (E01–E13 runnable examples + BenchmarkDotNet suite) directly on the site with an `Examples` navbar entry.
+- **GitHub Discussions** is now linked from the README, `SUPPORT.md`, `CONTRIBUTING.md`, and the issue-template contact links as the home for questions and design discussion.
+
+### Fixed
+
+- **Documentation site: dead links in the navbar "Docs" dropdown.** The four section headers (Tutorial, How-to guides, Reference, Explanation) had no `href` in `docs/toc.yml`, and the docfx modern template renders href-less dropdown entries as links to `/undefined` (HTTP 404). Every first-level TOC node now carries an `href` to its landing page.
+- **README documentation links now resolve everywhere.** The Documentation section previously listed repo-relative `docs/*.md` paths, which never reached the published site and rendered broken on nuget.org (the README ships inside the package). Key entry points now link to the published site pages.
+- **Stale version references.** The README banner now reflects the `0.2.0-rc.1` release line, and the site landing page no longer refers to the pre-rename `Huml` facade.
 
 ## [0.2.0-rc.1] - 2026-07-07
 

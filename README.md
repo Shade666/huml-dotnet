@@ -7,10 +7,10 @@
 **HUML for .NET.** A full-featured [HUML](https://huml.io) v0.1/v0.2 parser, serialiser, and
 deserialiser with a `System.Text.Json`-style API and **zero runtime dependencies**.
 
-> **Beta.** The public API is frozen for the `0.2.0-beta.1` line; breaking changes (if any) will
-> wait for the next minor version.
+> **Release candidate.** The current release is `0.2.0-rc.1`; the public API is frozen for the
+> `0.2.0` line and breaking changes (if any) will wait for the next minor version.
 
-📖 **[Documentation](https://primeberi.github.io/huml-dotnet/)** · 📦 **[NuGet](https://www.nuget.org/packages/Huml.Net/)** · 📝 **[Changelog](CHANGELOG.md)**
+📖 **[Documentation](https://primeberi.github.io/huml-dotnet/)** · 📦 **[NuGet](https://www.nuget.org/packages/Huml.Net/)** · 💬 **[Discussions](https://github.com/primeBeri/huml-dotnet/discussions)** · 📝 **[Changelog](CHANGELOG.md)**
 
 ## Install
 
@@ -148,31 +148,24 @@ The mental model is the same; the table maps what you know to its Huml.Net equiv
 ## Documentation
 
 The full documentation site — tutorial, how-to guides, API reference, and explanation — is at
-**[primeberi.github.io/huml-dotnet](https://primeberi.github.io/huml-dotnet/)**. Key pages:
+**[primeberi.github.io/huml-dotnet](https://primeberi.github.io/huml-dotnet/)**. Key entry points
+(links go to the published site, so they work from GitHub and nuget.org alike):
 
-- [Getting Started](docs/getting-started.md) — the five-minute tutorial
-- [Attributes Reference](docs/attributes-reference.md) — every `[Huml*]` attribute
-- [Use the Source Generator](docs/source-generator.md) — reflection-free metadata for AOT
-- [Options Reference](docs/options-reference.md)
-- [Versioning Policy](docs/versioning.md)
-- [AST Usage Guide](docs/ast-usage.md)
-- [Error Handling](docs/error-handling.md)
-- [Inline Serialisation](docs/inline-serialisation.md)
-- [Naming Policy](docs/naming-policy.md)
-- [Ignore Properties & Omit Defaults](docs/ignore-properties.md)
-- [Enum Serialisation](docs/enum-serialisation.md)
-- [Number Handling](docs/number-handling.md)
-- [Polymorphic Types](docs/polymorphism.md)
-- [Custom Converters](docs/custom-converters.md)
-- [Populate](docs/populate.md)
-- [Constructor Binding](docs/constructor-binding.md)
-- [Extension Data](docs/extension-data.md)
-- [Date and Time](docs/date-time.md)
-- [Required Properties](docs/required-properties.md)
-- [AOT and Trimming](docs/aot-trimming.md)
+- [Getting Started](https://primeberi.github.io/huml-dotnet/docs/getting-started.html) — the five-minute tutorial
+- [How-to guides](https://primeberi.github.io/huml-dotnet/docs/how-to-guides.html) — fifteen task-focused guides, from naming policies to AOT publishing
+- [Examples & benchmarks](https://primeberi.github.io/huml-dotnet/docs/examples.html) — runnable, self-asserting examples of every feature
+- [API reference](https://primeberi.github.io/huml-dotnet/docs/api/Huml.Net.HumlSerializer.html) — every public type, generated from the XML docs
+- [Options reference](https://primeberi.github.io/huml-dotnet/docs/options-reference.html) · [Attributes reference](https://primeberi.github.io/huml-dotnet/docs/attributes-reference.html)
+- [Explanation](https://primeberi.github.io/huml-dotnet/docs/explanation.html) — versioning model, pipeline internals, AST, performance benchmarks
 
-Runnable, worked examples of every feature live in the companion
-**[huml-dotnet-examples](https://github.com/primeBeri/huml-dotnet-examples)** repository.
+The examples live in the companion
+**[huml-dotnet-examples](https://github.com/primeBeri/huml-dotnet-examples)** repository, which
+doubles as an end-to-end test suite run against the published NuGet package.
+
+## Community & support
+
+- 💬 **[GitHub Discussions](https://github.com/primeBeri/huml-dotnet/discussions)** — questions, ideas, and show-and-tell
+- 🐛 **[GitHub Issues](https://github.com/primeBeri/huml-dotnet/issues)** — bug reports and feature requests (see [SUPPORT.md](SUPPORT.md) for what to include)
 
 ## Links
 

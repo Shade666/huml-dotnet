@@ -7,7 +7,9 @@ bug, requesting a feature, or opening a pull request, your involvement is apprec
 
 Before you start, please also see the [Code of Conduct](CODE_OF_CONDUCT.md), the
 [Security Policy](SECURITY.md) for reporting vulnerabilities, and [Support](SUPPORT.md) for where
-to ask questions.
+to ask questions. For anything you want to talk through before opening an issue or PR — an API
+idea, an unclear behaviour, a design question — use
+[GitHub Discussions](https://github.com/primeBeri/huml-dotnet/discussions).
 
 ## Getting Started
 

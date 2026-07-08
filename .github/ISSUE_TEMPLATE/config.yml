@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Questions & Discussion
+    url: https://github.com/primeBeri/huml-dotnet/discussions
+    about: Ask questions, share ideas, or discuss usage — no issue template required.
   - name: HUML Specification
     url: https://huml.io
     about: Questions about the HUML language itself rather than this .NET implementation.

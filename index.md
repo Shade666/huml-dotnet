@@ -20,13 +20,15 @@ var config = HumlSerializer.Deserialize<ServerConfig>("""
 ## Where to next
 
 - **New here?** Start with the [Getting Started tutorial](docs/getting-started.md).
-- **Need to do a specific thing?** Browse the [how-to guides](docs/toc.yml).
+- **Need to do a specific thing?** Browse the [how-to guides](docs/how-to-guides.md).
+- **Prefer runnable code?** Every feature has a worked example in the [examples repository](docs/examples.md).
 - **Looking up an API?** See the API reference: <xref:Huml.Net.HumlSerializer>.
-- **Want to understand the design?** Read the [explanation pages](docs/versioning.md).
+- **Want to understand the design?** Read the [explanation pages](docs/explanation.md).
+- **Stuck, or have an idea?** Ask in [GitHub Discussions](https://github.com/primeBeri/huml-dotnet/discussions).
 
 ## Why Huml.Net
 
-- **Familiar API** — if you know `JsonSerializer`, you know `Huml`.
+- **Familiar API** — if you know `JsonSerializer`, you know `HumlSerializer`.
 - **Spec-compliant** — validated against the shared `huml-lang/tests` fixture suite for HUML v0.1 and v0.2.
 - **No dependencies** — nothing pulled into your app's dependency graph.
 - **Multi-target** — `netstandard2.1`, `.NET 8`, `.NET 9`, `.NET 10`.
