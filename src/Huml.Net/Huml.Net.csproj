@@ -24,7 +24,7 @@
     <None Include="../../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301" PrivateAssets="All" />
     <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="All" />
     <!-- API-freeze enforcement (docs/internals/api-freeze.md): any public-surface change not
          declared in PublicAPI.Shipped.txt/PublicAPI.Unshipped.txt fails the build (RS0016/RS0017).
