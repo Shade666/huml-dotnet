@@ -17,6 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Meziantou.Analyzer: PrivateAssets=All ensures it does not leak to library consumers -->
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.117" PrivateAssets="All" />
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.125" PrivateAssets="All" />
   </ItemGroup>
 </Project>
